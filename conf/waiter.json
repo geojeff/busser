@@ -1,0 +1,475 @@
+{
+  "default-app-dev": {
+    "theme": "sc-theme",
+    "buildLanguage": "english",
+    "combineScripts": true,
+    "combineStylesheets": true,
+    "minifyScripts": false,
+    "minifyStylesheets": false
+  },
+  "default-app-prod": {
+    "theme": "sc-theme",
+    "buildLanguage": "english",
+    "combineScripts": true,
+    "combineStylesheets": true,
+    "minifyScripts": true,
+    "minifyStylesheets": true
+  },
+  "default-sproutcoreFrameworks-dev": {
+    "ajax": {
+      "name": "ajax",
+      "path": "frameworks/sproutcore/frameworks/ajax",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "animation": {
+      "name": "animation",
+      "path": "frameworks/sproutcore/frameworks/animation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "bootstrap": {
+      "name": "bootstrap",
+      "path": "frameworks/sproutcore/frameworks/bootstrap",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "core_foundation": {
+      "name": "core_foundation",
+      "path": "frameworks/sproutcore/frameworks/core_foundation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "core_tools": {
+      "name": "core_tools",
+      "path": "frameworks/sproutcore/frameworks/core_tools",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "datastore": {
+      "name": "datastore",
+      "path": "frameworks/sproutcore/frameworks/datastore",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "datetime": {
+      "name": "datetime",
+      "path": "frameworks/sproutcore/frameworks/datetime",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "debug": {
+      "name": "debug",
+      "path": "frameworks/sproutcore/frameworks/debug",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "desktop": {
+      "name": "desktop",
+      "path": "frameworks/sproutcore/frameworks/desktop",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "documentation": {
+      "name": "documentation",
+      "path": "frameworks/sproutcore/frameworks/documentation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "experimental": {
+      "name": "experimental",
+      "path": "frameworks/sproutcore/frameworks/experimental",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "foundation": {
+      "name": "foundation",
+      "path": "frameworks/sproutcore/frameworks/foundation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "jquery": {
+      "name": "jquery",
+      "path": "frameworks/sproutcore/frameworks/jquery",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "media": {
+      "name": "media",
+      "path": "frameworks/sproutcore/frameworks/media",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "mini": {
+      "name": "mini",
+      "path": "frameworks/sproutcore/frameworks/mini",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "qunit": {
+      "name": "qunit",
+      "path": "frameworks/sproutcore/frameworks/qunit",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "routing": {
+      "name": "routing",
+      "path": "frameworks/sproutcore/frameworks/routing",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "runtime": {
+      "name": "runtime",
+      "path": "frameworks/sproutcore/frameworks/runtime",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "statechart": {
+      "name": "statechart",
+      "path": "frameworks/sproutcore/frameworks/statechart",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "table": {
+      "name": "table",
+      "path": "frameworks/sproutcore/frameworks/table",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "template_view": {
+      "name": "template_view",
+      "path": "frameworks/sproutcore/frameworks/template_view",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "testing": {
+      "name": "testing",
+      "path": "frameworks/sproutcore/frameworks/testing",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
+    "yuireset": {
+      "name": "yuireset",
+      "path": "frameworks/sproutcore/frameworks/yuireset",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    }
+  },
+  "default-sproutcoreFrameworks-prod": {
+    "ajax": {
+      "name": "ajax",
+      "path": "frameworks/sproutcore/frameworks/ajax",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "animation": {
+      "name": "animation",
+      "path": "frameworks/sproutcore/frameworks/animation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "bootstrap": {
+      "name": "bootstrap",
+      "path": "frameworks/sproutcore/frameworks/bootstrap",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "core_foundation": {
+      "name": "core_foundation",
+      "path": "frameworks/sproutcore/frameworks/core_foundation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "core_tools": {
+      "name": "core_tools",
+      "path": "frameworks/sproutcore/frameworks/core_tools",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "datastore": {
+      "name": "datastore",
+      "path": "frameworks/sproutcore/frameworks/datastore",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "datetime": {
+      "name": "datetime",
+      "path": "frameworks/sproutcore/frameworks/datetime",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "debug": {
+      "name": "debug",
+      "path": "frameworks/sproutcore/frameworks/debug",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "desktop": {
+      "name": "desktop",
+      "path": "frameworks/sproutcore/frameworks/desktop",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "documentation": {
+      "name": "documentation",
+      "path": "frameworks/sproutcore/frameworks/documentation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "experimental": {
+      "name": "experimental",
+      "path": "frameworks/sproutcore/frameworks/experimental",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "foundation": {
+      "name": "foundation",
+      "path": "frameworks/sproutcore/frameworks/foundation",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "jquery": {
+      "name": "jquery",
+      "path": "frameworks/sproutcore/frameworks/jquery",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "media": {
+      "name": "media",
+      "path": "frameworks/sproutcore/frameworks/media",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "mini": {
+      "name": "mini",
+      "path": "frameworks/sproutcore/frameworks/mini",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "qunit": {
+      "name": "qunit",
+      "path": "frameworks/sproutcore/frameworks/qunit",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "routing": {
+      "name": "routing",
+      "path": "frameworks/sproutcore/frameworks/routing",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "runtime": {
+      "name": "runtime",
+      "path": "frameworks/sproutcore/frameworks/runtime",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "statechart": {
+      "name": "statechart",
+      "path": "frameworks/sproutcore/frameworks/statechart",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "table": {
+      "name": "table",
+      "path": "frameworks/sproutcore/frameworks/table",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "template_view": {
+      "name": "template_view",
+      "path": "frameworks/sproutcore/frameworks/template_view",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "testing": {
+      "name": "testing",
+      "path": "frameworks/sproutcore/frameworks/testing",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    },
+    "yuireset": {
+      "name": "yuireset",
+      "path": "frameworks/sproutcore/frameworks/yuireset",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true
+    }
+  },
+  "apps": {
+    "OnePointSeven-dev": {
+      "name": "OnePointSeven",
+      "title": "One Point Seven",
+      "path": "apps/OnePointSeven",
+      "theme": "sc-theme",
+      "buildLanguage": "english",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false,
+      "sproutcoreFrameworks": [
+        { "name": "jquery",          "conf": "dev" },
+        { "name": "runtime",         "conf": "dev" },
+        { "name": "core_foundation", "conf": "dev" },
+        { "name": "datetime",        "conf": "dev" },
+        { "name": "foundation",      "conf": "dev" },
+        { "name": "datastore",       "conf": "dev" },
+        { "name": "desktop",         "conf": "dev" },
+        { "name": "template_view",   "conf": "dev" }
+      ],
+      "customFrameworks": [
+        { "name": "empty_theme",     
+          "conf": { 
+            "name": "empty_theme",
+            "path": "frameworks/sproutcore/themes/empty_theme",
+            "combineScripts": true,
+            "combineStylesheets": true,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        },
+        { "name": "ace",
+          "conf": {
+            "name": "ace",
+            "path": "frameworks/sproutcore/themes/ace",
+            "combineScripts": true,
+            "combineStylesheets": true,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        }
+      ]
+    },
+    "OnePointSeven-prod": {
+      "name": "OnePointSeven",
+      "theme": "sc-theme",
+      "buildLanguage": "english",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true,
+      "pathsToExclude": [ "/fixtures\//" ],
+      "sproutcoreFrameworks": [
+        { "name": "jquery",          "conf": "prod" },
+        { "name": "runtime",         "conf": "prod" },
+        { "name": "core_foundation", "conf": "prod" },
+        { "name": "datetime",        "conf": "prod" },
+        { "name": "foundation",      "conf": "prod" },
+        { "name": "datastore",       "conf": "prod" },
+        { "name": "desktop",         "conf": "prod" },
+        { "name": "template_view",   "conf": "prod" }
+      ],
+      "customFrameworks": [
+        { "name": "empty_theme",     
+          "conf": { 
+            "path": "frameworks/sproutcore/themes/empty_theme",
+            "combineScripts": true,
+            "combineStylesheets": false,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        },
+        { "name": "ace",
+          "conf": {
+            "path": "frameworks/sproutcore/themes/ace",
+            "combineScripts": true,
+            "combineStylesheets": false,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        }
+      ]
+    }
+  }
+}
