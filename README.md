@@ -1,3 +1,9 @@
+Prominent Note at the Top
+=========================
+
+This program does not work yet. If you get it running, you'll get a blank
+web page with errors. 2010-01-22.
+
 Description
 ===========
 
@@ -23,8 +29,8 @@ to the Coffeescript ways of doing things, and to add understanding where
 needed. Several node.js libraries have been added to the mix, and to 
 attempt to find and follow best practices for their use.
 
-Roadmap
-=======
+Roadmap and ToDo List
+=====================
 
 In the short-term, certainly within the timeframe for 0.1.x incremental 
 releases, focus will be on getting Waiter to work with SproutCore master, 
@@ -39,13 +45,14 @@ progression of development of official SproutCore build tools may be
 followed at https://github.com/sproutcore/sproutcore/issues/639.
 
 Waiter will be developed with a fresh look at new tools available, such 
-as browserify, stitch, and the like, to see where use of these tools can
-replace code or enhance the program.
+as browserify, stylus, stitch, and the like, to see where use of these 
+tools can replace code or enhance the program.
 
 Async programming style in Waiter will be reviewed by comparison to
 examples found on the web and to the build tools called ember-runner, 
 developed by Juan Pablo Goldfinger (Juan77). In particular, the use of 
-the async module in ember-runner will be reviewed.
+the async module in ember-runner will be reviewed. ember-runner may be
+found at https://github.com/envone/ember-runner.
 
 Also, the design and operation of ember-runner will be reviewed. One aspect
 to be considered is the way the system of handlers works, compared to the
@@ -78,6 +85,13 @@ making a version for new users that prompts them for their project file
 name, app name or version, build action, etc. And the colors module can
 be used for custom reporting from the server and in analysis printouts.
 
+Format the docco presentation by customizing docco css for the project.
+
+Make Waiter into an installable npm module.
+
+Add tests, using vows perhaps. Some of the new modules can be used in
+concert to make fixtures and testing harnesses.
+
 Support for Coffeescript programming of SproutCore will be explored and
 developed as a primary focus after the dust settles on other roadmap items.
 Waiter was written in Coffeescript as an exploration to learn the language
@@ -99,12 +113,40 @@ programming in Waiter may be attractive, as for Python developers. All of
 that said with the caveat that the underlying async capabilities of node.js
 are celebrated in Waiter, so effort to learn or appreciate it may be required.
 
-Installation
-------------
+Eventual Installation
+---------------------
 
 Install with:
 
     npm install waiter
+
+This would install the dependencies and waiter, but that doesn't work yet.
+
+Development Installation
+------------------------
+
+git clone http://www.github.com/geojeff/waiter
+
+cd waiter
+
+npm install coffee-script (use -g for global -- you know you want to)
+
+npm install nconf
+
+npm install less
+
+npm install uglify-js
+
+npm install events
+
+These npm install steps will populate a node_modules directory in the waiter
+directory. If you installed coffee-script globally, with -g, you can run
+coffee to get a REPL for learning, if you want. The coffee command is used
+to compile src/waiter.coffee to bin/coffee.js, with the command:
+
+    coffee --output bin ./src/waiter.coffee
+
+With a successful step to get a bin/coffee.js, you are ready to run waiter.
 
 Preparing Config File
 ---------------------
@@ -125,10 +167,17 @@ where appTargets lists the SproutCore apps to be built, and action specifies
 one of: build, buildrun, buildsave, and buildsaverun. Waiter and app-specific
 configuration is assumed to be in conf/waiter.json, read by nconf.
 
+Visit localhost:8000/OnePointSeven to get the broken app.
+
 Contributors
 ============
 
 Jeff Pittman (geojeff)
+
+License
+=======
+
+MIT
 
 Tests
 =====
