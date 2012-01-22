@@ -137,8 +137,6 @@ npm install less
 
 npm install uglify-js
 
-npm install events
-
 These npm install steps will populate a node_modules directory in the waiter
 directory. If you installed coffee-script globally, with -g, you can run
 coffee to get a REPL for learning, if you want. The coffee command is used
