@@ -2,7 +2,7 @@ Prominent Note at the Top
 =========================
 
 This program does not work yet. If you get it running, you'll get a blank
-web page with errors. 2010-01-22.
+web page with errors. 2012-01-22.
 
 Description
 ===========
