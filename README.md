@@ -144,7 +144,11 @@ to compile src/waiter.coffee to bin/coffee.js, with the command:
 
     coffee --output bin ./src/waiter.coffee
 
-With a successful step to get a bin/coffee.js, you are ready to run waiter.
+If you installed coffeescript locally, you will need to use the path:
+
+    ./node_modules/coffee-script/bin/coffee
+
+After a successful step to get a bin/coffee.js, you are ready to run waiter.
 
 Preparing Config File
 ---------------------
