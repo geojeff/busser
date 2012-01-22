@@ -71,7 +71,7 @@ tools for SproutCore will be studied and evaluated for bringing Waiter
 features up to par, including code in Abbot and in the theme-building
 helper program called Chance. Graphics production and handling may be
 enhanced, by using node.js modules such as node-canvas, to add screen
-capturing capturing for SproutCore testing and software release tasks.
+capturing for SproutCore testing and software release tasks.
 
 The latest mauritslamers version of garçon includes a start for handling
 of bundles and also includes use of special components from SproutCore 
@@ -110,7 +110,7 @@ new users of SproutCore from the Python community, which many of us already
 know from experience or from use of Python on the backend. Although the Ruby
 community already may look to Abbot, which is written in Ruby, the style of
 programming in Waiter may be attractive, as for Python developers. All of
-that said with the caveat that the underlying async capabilities of node.js
+that is said with the caveat that the underlying async capabilities of node.js
 are celebrated in Waiter, so effort to learn or appreciate it may be required.
 
 Eventual Installation
