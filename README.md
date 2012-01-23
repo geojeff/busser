@@ -113,8 +113,8 @@ programming in Waiter may be attractive, as for Python developers. All of
 that is said with the caveat that the underlying async capabilities of node.js
 are celebrated in Waiter, so effort to learn or appreciate it may be required.
 
-Eventual Installation
----------------------
+Eventual Tool Installation [TODO] Not yet implemented
+-----------------------------------------------------
 
 Install with:
 
@@ -181,8 +181,9 @@ License
 
 MIT
 
-Tests
-=====
+Tests [TODO] Not yet implemented
+================================
+
 Tests are made in **Waiter** with the Vows testing framework. If you wish to 
 install Vows for running tests, you may do so with:
 
