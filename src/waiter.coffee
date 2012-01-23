@@ -1907,15 +1907,14 @@ for own key of appConfigurations
     myApp.frameworks.push new BootstrapFramework()
 
     for fwConf in appConf["sproutcoreFrameworks"]
-      if fwConf.conf is "dev"
-        myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
-      else if fwConf.conf is "prod"
-        myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
-      else if fwConf.conf instanceof String # The default for unknown is dev.
-        myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
-      else if fwConf.conf instanceof Object
-        myApp.frameworks.push new Framework(fwConf.conf)
-  
+      switch fwConf.conf
+        when "dev" then myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
+        when "prod" then myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
+        when fwConf.conf instanceof String # The default for unknown is dev.
+          myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
+        when fwConf.conf instanceof Object
+          myApp.frameworks.push new Framework(fwConf.conf)
+
     for fwConf in appConf["customFrameworks"]
       if fwConf.conf instanceof Object
         myApp.frameworks.push new Framework(fwConf.conf)
