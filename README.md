@@ -1,8 +1,7 @@
 Prominent Note at the Top
 =========================
 
-This program does not work yet. If you get it running, you'll get a blank
-web page with errors. 2012-01-22.
+This program does not well work yet...
 
 UPDATE 2012-01-23: Jasko reported in irc a problem trying an older SC app
 against master, and it turns out to be the same thing plaguing waiter. If
@@ -180,7 +179,9 @@ where appTargets lists the SproutCore apps to be built, and action specifies
 one of: build, buildrun, buildsave, and buildsaverun. Waiter and app-specific
 configuration is assumed to be in conf/waiter.json, read by nconf.
 
-Visit localhost:8000/OnePointSeven to get the broken app.
+Visit localhost:8000/OnePointSeven to show the app, which, as of 2012-01-23,
+will come up with the first window and pane skewed far left, unusable (Ace
+problems, probably...).
 
 Contributors
 ============
