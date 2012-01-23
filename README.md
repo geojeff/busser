@@ -89,6 +89,9 @@ Format the docco presentation by customizing docco css for the project.
 
 Make Waiter into an installable npm module.
 
+Review the url, urlFor, and similar functions in Waiter, which were not
+substantially changed from garçon, to see if all of that can be simpler.
+
 Add tests, using vows perhaps, but take a fresh look at mocha and any other
 testing frameworks available. Some of the node.js modules can be used in
 concert to make fixtures and testing harnesses.
@@ -149,7 +152,9 @@ If you installed coffeescript locally, you will need to use the path:
 
     ./node_modules/coffee-script/bin/coffee
 
-After a successful step to get a bin/waiter.js, you are ready to run waiter.
+After a successful step to get a bin/waiter.js, you are ready to run waiter,
+after adding a frameworks directory inside waiter, then cloning SproutCore
+master in there (https://github.com/sproutcore/sproutcore/).
 
 Preparing Config File
 ---------------------
