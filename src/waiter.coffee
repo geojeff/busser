@@ -586,7 +586,8 @@ class Waiter
     exec: (file, request, callback) ->
       if @next?
         @next.exec file, request, (response) ->
-          util.puts "ERROR in " + file.path + ": sc_super() should not be called with arguments. Modify the arguments array instead."  if /sc_super\(\s*[^\)\s]+\s*\)/.test(response.data)
+          if /sc_super\(\s*[^\)\s]+\s*\)/.test(response.data)
+            util.puts "ERROR in " + file.path + ": sc_super() should not be called with arguments. Modify the arguments array instead."
           response.data = response.data.replace(/sc_super\(\)/g, "arguments.callee.base.apply(this,arguments)")
           callback response
       else
@@ -1814,7 +1815,8 @@ class Server
       status = r.status  if r.status?
       if @allowCrossSiteRequests
         headers["Access-Control-Allow-Origin"] = "*"
-        headers["Access-Control-Allow-Headers"] = request.headers["access-control-request-headers"]  if request.headers["access-control-request-headers"]
+        if request.headers["access-control-request-headers"]
+          headers["Access-Control-Allow-Headers"] = request.headers["access-control-request-headers"]
       response.writeHead status, headers
       response.write r.data, "utf8"  if r.data?
       response.end()
