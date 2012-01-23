@@ -1929,17 +1929,14 @@ for own key of appConfigurations
       minifyStylesheets: false
     )
       
-    if "build" is nconf.get("action")
-      myApp.build()
-    else if "buildsave" is nconf.get("action")
-      myApp.build(myApp.save)
-    else if "buildrun" is nconf.get("action")
-      myApp.build ->
+    switch nconf.get("action")
+      when "build" then myApp.build()
+      when "buildsave" then myApp.build(myApp.save)
+      when "buildrun" then myApp.build ->
         server = new Server()
         server.addApp(myApp)
         server.run()
-    else if "buildsaverun" is nconf.get("action")
-      myApp.build ->
+      when "buildsaverun" then myApp.build ->
         myApp.save()
         server = new Server()
         server.addApp(myApp)
