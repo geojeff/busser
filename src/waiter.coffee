@@ -35,14 +35,14 @@ catch err
 
 nconf.argv().env().file file: "./conf/waiter.json"
 
-extname = (aPath) ->
-  path_module.extname(aPath)
+extname = (path) ->
+  path_module.extname(path)
 
-fileType = (aPath) ->
-  ext = extname(aPath)
+fileType = (path) ->
+  ext = extname(path)
   return "stylesheet" if /^\.(css|less)$/.test ext
-  return "script"     if (ext is ".js") or (ext is ".handlebars") and not /tests\//.test(aPath)
-  return "test"       if ext is ".js" and /tests\//.test(aPath)
+  return "script"     if (ext is ".js") or (ext is ".handlebars") and not /tests\//.test(path)
+  return "test"       if ext is ".js" and /tests\//.test(path)
   return "resource"   if ext in ResourceFile.resourceExtensions
   return "unknown"
 
@@ -98,8 +98,8 @@ buildLanguageAbbreviation = (buildLanguage) ->
 # the path "apps/myapp/en.lproj/main.js" would evaluate to "en". A language
 # fullname, e.g., "english.lproj", is also possible.
 #
-languageInPath = (aPath) ->
-  match = /([a-z]+)\.lproj\//.exec(aPath)
+languageInPath = (path) ->
+  match = /([a-z]+)\.lproj\//.exec(path)
   (if match is null then null else match[1])
 
 # The following section is for the system setting to allow a higher number of open
@@ -606,28 +606,28 @@ class Waiter
     else
       resourceUrls = (file.url() for file in file.framework.resourceFiles)
       data = data.toString("utf8").gsub(re, (match) ->
-        aPath = path_module.join(dirname, match[3])
-        #unless file.framework.resourceFiles[aPath]?
+        path = path_module.join(dirname, match[3])
+        #unless file.framework.resourceFiles[path]?
           #[ "", "images" ].some (prefix) ->
             #ResourceFile.resourceExtensions.some (extname) ->
               #alternatePath = path_module.join(dirname, prefix, match[3] + extname)
               #if file.framework.resourceFiles[alternatePath]
-                #aPath = alternatePath
+                #path = alternatePath
                 #true
               #else
                 #false
-        if aPath in resourceUrls is false
+        if path in resourceUrls is false
           for prefix in [ "", "images" ]
             for extname in ResourceFile.resourceExtensions
               alternatePath = path_module.join(dirname, prefix, match[3] + extname)
               if alternatePath in resourceUrls
-                aPath = alternatePath
+                path = alternatePath
                 break
     
-          #unless file.framework.resourceFiles[aPath]?
-          unless aPath in resourceUrls
-            util.puts "WARNING: " + aPath + " referenced in " + file.path + " but was not found."
-        format.replace "%@", path_module.join(@urlPrefix, aPath)
+          #unless file.framework.resourceFiles[path]?
+          unless path in resourceUrls
+            util.puts "WARNING: " + path + " referenced in " + file.path + " but was not found."
+        format.replace "%@", path_module.join(@urlPrefix, path)
       )
 
   # The rewriteStaticInStylesheet handler calls the rewriteStatic method with the
@@ -931,23 +931,23 @@ class Framework
       else
         @pathsToExclude.push options.pathsToExclude if options.pathsToExclude instanceof RegExp
 
-  addStylesheetFile: (aPath) ->
+  addStylesheetFile: (path) ->
     if @minifyStylesheets
-      @stylesheetFiles.push(new MinifiedStylesheetFile({ path: aPath, framework: this }))
+      @stylesheetFiles.push(new MinifiedStylesheetFile({ path: path, framework: this }))
     else
-      @stylesheetFiles.push(new StylesheetFile({ path: aPath, framework: this }))
+      @stylesheetFiles.push(new StylesheetFile({ path: path, framework: this }))
 
-  addScriptFile: (aPath) ->
+  addScriptFile: (path) ->
     if @minifyScripts
-      @scriptFiles.push(new MinifiedScriptFile({ path: aPath, framework: this }))
+      @scriptFiles.push(new MinifiedScriptFile({ path: path, framework: this }))
     else
-      @scriptFiles.push(new ScriptFile({ path: aPath, framework: this }))
+      @scriptFiles.push(new ScriptFile({ path: path, framework: this }))
 
-  addTestFile: (aPath) ->
-    @testFiles.push(new TestFile({ path: aPath, framework: this }))
+  addTestFile: (path) ->
+    @testFiles.push(new TestFile({ path: path, framework: this }))
 
-  addResourceFile: (aPath) ->
-    @resourceFiles.push(new ResourceFile({ path: aPath, framework: this }))
+  addResourceFile: (path) ->
+    @resourceFiles.push(new ResourceFile({ path: path, framework: this }))
 
   # The allFiles method returns virtual (combined) files, if defined, and also
   # the individual stylesheet, script, test, and resource files, as a concatenated
@@ -967,8 +967,8 @@ class Framework
   # referred to with file urls, so the paths in the original project can be
   # simplified by omitting unneeded elements. 
   #
-  pathReplacedNameFor: (aPath) ->
-    aPath.replace /(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g, ""
+  pathReplacedNameFor: (path) ->
+    path.replace /(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g, ""
   
   # [TODO] The urlFor method previously had @buildVersion as the first part
   # of the join, but this was recently removed... If the buildVersion is set
@@ -978,8 +978,8 @@ class Framework
   #
   # Note that this is the same as pathReplacedNameFor.
   #
-  urlFor: (aPath) ->
-    path_module.join @buildVersion, @pathReplacedNameFor(aPath)
+  urlFor: (path) ->
+    path_module.join @buildVersion, @pathReplacedNameFor(path)
   
   # See [TODO] note in urlFor...
   #
@@ -995,10 +995,10 @@ class Framework
   # matches any exluded path. Then it checks if buildLanguage is in allowed
   # lists.
   #
-  shouldExcludeFile: (aPath) ->
+  shouldExcludeFile: (path) ->
     for re in @pathsToExclude
-      return true if re.test(aPath)
-    lang = languageInPath(aPath)
+      return true if re.test(path)
+    lang = languageInPath(path)
     if not lang?
       return false
     else if lang in [ @buildLanguage, defaultLanguage, buildLanguageAbbreviation(@buildLanguage) ]
@@ -1037,9 +1037,9 @@ class Framework
           @file.deps = []
           re = new RegExp("require\\([\"'](.*?)[\"']\\)", "g")
           while match = re.exec(data)
-            aPath = match[1]
-            aPath += ".js"  unless /\.js$/.test(aPath)
-            @file.deps.push @framework.urlFor(path_module.join(@framework.path, aPath))
+            path = match[1]
+            path += ".js"  unless /\.js$/.test(path)
+            @file.deps.push @framework.urlFor(path_module.join(@framework.path, path))
           callbackAfterFileDependencies()
 
     class DependenciesComputer extends process.EventEmitter
@@ -1130,10 +1130,8 @@ class Framework
       for script in sortedScripts
         @sortDependencies(script, orderedScriptFiles, sortedScripts)
   
-      console.log "SCRIPTS", (script.path for script in scripts)
       continue  while scripts.shift()
       scripts.push i  while i = orderedScriptFiles.shift()
-      console.log "SCRIPTS", (script.path for script in scripts)
       callback()
  
   # The bundleInfo method is unused in the martoche version of garcon, but bundle support was
@@ -1200,25 +1198,25 @@ class Framework
         constructor: (@framework) ->
           @count = 0
   
-        scan: (aPath) ->
+        scan: (path) ->
           @count += 1
-          fs.stat aPath, (err, stats) =>
+          fs.stat path, (err, stats) =>
             @count -= 1
             throw err  if err
             if stats.isDirectory()
               @count += 1
-              fs.readdir aPath, (err, subpaths) =>
+              fs.readdir path, (err, subpaths) =>
                 @count -= 1
                 throw err  if err
-                @scan path_module.join(aPath, subpath) for subpath in subpaths when subpath[0] isnt "."
+                @scan path_module.join(path, subpath) for subpath in subpaths when subpath[0] isnt "."
               @emit "end" if @count <= 0
             else
-              if not @framework.shouldExcludeFile(aPath)
-                switch fileType(aPath)
-                  when "stylesheet" then @framework.addStylesheetFile(aPath)
-                  when "script" then @framework.addScriptFile(aPath)
-                  when "test" then @framework.addTestFile(aPath)
-                  when "resource" then @framework.addResourceFile(aPath)
+              if not @framework.shouldExcludeFile(path)
+                switch fileType(path)
+                  when "stylesheet" then @framework.addStylesheetFile(path)
+                  when "script" then @framework.addScriptFile(path)
+                  when "test" then @framework.addTestFile(path)
+                  when "resource" then @framework.addResourceFile(path)
             @emit "end" if @count <= 0
     
       scanner = new Scanner(this)
@@ -1366,11 +1364,11 @@ class File
   content: (callback) ->
     readFile @path, callback
   
-  @createDirectory: (aPath) ->
-    prefix = path_module.dirname(aPath)
+  @createDirectory: (path) ->
+    prefix = path_module.dirname(path)
     File.createDirectory prefix  if prefix isnt "." and prefix isnt "/"
     try
-      fs.mkdirSync aPath, parseInt("0755", 8)
+      fs.mkdirSync path, parseInt("0755", 8)
     catch e
       throw e  if e.code isnt "EEXIST"
 
@@ -1706,9 +1704,9 @@ class App
       save: ->
         @file.handlerSet.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            aPath = path_module.join(@app.pathForSave, @buildVersion.toString(), @file.pathForSave())
-            File.createDirectory path_module.dirname(aPath)
-            fs.writeFile aPath, response.data, (err) ->
+            path = path_module.join(@app.pathForSave, @buildVersion.toString(), @file.pathForSave())
+            File.createDirectory path_module.dirname(path)
+            fs.writeFile path, response.data, (err) ->
               throw err  if err
 
     for framework in @frameworks
@@ -1772,10 +1770,10 @@ class App
       app: this
       framework: this
     )
-    aPath = path_module.join(@pathForSave, @buildVersion.toString(), htmlFile.pathForSave())
-    File.createDirectory path_module.dirname(aPath)
+    path = path_module.join(@pathForSave, @buildVersion.toString(), htmlFile.pathForSave())
+    File.createDirectory path_module.dirname(path)
     htmlFile.html (data) ->
-      fs.writeFile aPath, data, (err) ->
+      fs.writeFile path, data, (err) ->
         throw err  if err
 
 class Server
@@ -1842,10 +1840,10 @@ class Server
       proxyResponse.on "end", ->
         response.end()
   
-  file: (aPath) ->
+  file: (path) ->
     file = null
     for app in @apps
-      file = app.files[aPath]
+      file = app.files[path]
       return file if file?
     file
 
