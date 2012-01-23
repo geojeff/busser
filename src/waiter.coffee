@@ -243,6 +243,11 @@ dateFormat.i18n =
 Date::format = (mask, utc) ->
   dateFormat this, mask, utc
 
+# gsub, from Ruby, is added to the prototyp of String here. See:
+# http://flochip.com/2011/09/06/rubys-string-gsub-in-javascript/
+#
+# [TODO] Is there another web reference needed for this? 
+#
 String::gsub = (re, callback) ->
   result = ""
   source = this
