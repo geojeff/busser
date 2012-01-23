@@ -24,6 +24,18 @@
 #   -- ...
 #
 # JGP, 2012-01-23
+#
+# Consider also the name busser.coffee... but, as busboy, the invocation, could be
+# something like:
+#
+#   busboy.bus(
+#     action: 'theme'
+#     ...
+#   )
+#
+# but, of course, something boring like busboy.makeTheme(...
+#
+#
 
 
 
