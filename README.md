@@ -4,6 +4,11 @@ Prominent Note at the Top
 This program does not work yet. If you get it running, you'll get a blank
 web page with errors. 2012-01-22.
 
+UPDATE 2012-01-23: Jasko reported in irc a problem trying an older SC app
+against master, and it turns out to be the same thing plaguing waiter. If
+lines 86-89 of sproutcore/frameworks/runtime/system/index_set.js are
+commented out, the hello world app now comes up. Woohoo!
+
 Description
 ===========
 
