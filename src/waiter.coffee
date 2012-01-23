@@ -13,8 +13,8 @@ nconf        = require "nconf"
 #prompt       = require "prompt"
 #express      = require "express"
 #browserify   = require "browserify"
-exec         = require("child_process").exec
-spawn        = require("child_process").spawn
+{exec}       = require "child_process"
+{spawn}      = require "child_process"
 EventEmitter = require('events').EventEmitter
 uglify =
   parser: require("uglify-js").parser
@@ -1406,13 +1406,12 @@ class RootContentHtmlFile extends File
     html = []
 
     # Load html for document, head, and meta sections.
-    html.push(
+    html.push
       "<!DOCTYPE html>",
       "<html lang=\"" + buildLanguageAbbreviation() + "\">",
       "<head>",
       "<meta charset=\"utf-8\">",
       "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">"
-    )
 
 #<!DOCTYPE html>
 #<html>
@@ -1561,22 +1560,20 @@ class BootstrapFramework extends Framework
     super(options)
 
   headFile: =>
-    new File(
+    new File
       path: path_module.join(@path, "before.js")
       framework: this
       content: (callback) ->
         callback null, [ "var SC = SC || { BUNDLE_INFO: {}, LAZY_INSTANTIATION: {} };", "var require = require || function require() {};" ].join("\n")
       handlerSet: uncombinedScriptHandlerSet
-    )
   
   tailFile: =>
-    new File(
+    new File
       path: path_module.join(@path, "after.js")
       framework: this
       content: (callback) ->
         callback null, "; if (SC.setupBodyClassNames) SC.setupBodyClassNames();"
       handlerSet: uncombinedScriptHandlerSet
-    )
 
   #@virtualScriptFile = new BootstrapVirtualScriptFile()
 
@@ -1642,12 +1639,11 @@ class App
     @htmlFileReference = new Reference(file.url(), file)
 
     # Set a file for a symlink to the root html file.
-    symlink = new SymlinkFile(
+    symlink = new SymlinkFile
       path: @name
       app: this
       symlink: file
       framework: this
-    )
     @htmlSymlinkReference = new Reference(@name, symlink)
 
   # The build method uses the contained Builder class to build an app, first
@@ -1728,12 +1724,11 @@ class App
         new Saver(@buildVersion, this, file) for file in framework.orderedScriptFiles
 
     if @combineStylesheets
-      virtualStylesheetFile = new VirtualStylesheetFile(
+      virtualStylesheetFile = new VirtualStylesheetFile
         path: @name + ".css"
         framework: this
         handlerSet: joinHandlerSet
         children: (fw.virtualStylesheetReference.file for fw in @frameworks when fw.virtualStylesheetReference?)
-      )
       new Saver(@buildVersion, this, virtualStylesheetFile).save()
     else
       for framework in @frameworks
@@ -1741,12 +1736,11 @@ class App
           new Saver(@buildVersion, this, file).save()
 
     if @combineScripts
-      virtualScriptFile = new VirtualScriptFile(
+      virtualScriptFile = new VirtualScriptFile
         path: @name + ".js"
         framework: this
         handlerSet: joinHandlerSet
         children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
-      )
       new Saver(@buildVersion, this, virtualScriptFile).save()
     else
       for framework in @frameworks
@@ -1771,11 +1765,11 @@ class App
           htmlScriptLinks.push "<link href=\"" + @urlPrefix + fw.virtualScriptFile.url() + "\" rel=\"stylesheet\" type=\"text/css\">"
       htmlScriptLinks.join('\n')
 
-    htmlFile = new RootContentHtmlFile(
+    htmlFile = new RootContentHtmlFile
       path: @name
       app: this
       framework: this
-    )
+
     path = path_module.join(@pathForSave, @buildVersion.toString(), htmlFile.pathForSave())
     File.createDirectory path_module.dirname(path)
     htmlFile.html (data) ->
@@ -1871,11 +1865,10 @@ class Server
     ).listen @port, @hostname, ->
       console.log 'HOSTNAME', @hostname
       console.log 'PORT', @port
-      app_url = url.format(
+      app_url = url.format
         protocol: "http"
         hostname: (if @hostname then @hostname else "localhost")
         port: (if @port then @port else 8000)
-      )
       util.puts "Server started on " + app_url + "/APPLICATION_NAME"
   
 # Instantiation and Execution
@@ -1891,7 +1884,7 @@ for own key of appConfigurations
   appKey = key
   if appKey is nconf.get("appTargets") or appKey in nconf.get("appTargets")        # one or more apps, e.g. myapp-dev, myotherapp-dev [TODO] make robust
     appConf = appConfigurations[appKey]
-    myApp = new App(
+    myApp = new App
       name: appConf["name"]
       title: appConf["title"]
       path: appConf["path"]
@@ -1901,7 +1894,6 @@ for own key of appConfigurations
       combineStylesheets: appConf["combineStylesheets"]
       minifyScripts: appConf["minifyScripts"]
       minifyStylesheets: appConf["minifyStylesheets"]
-    )
   
     myApp.frameworks = []
     myApp.frameworks.push new BootstrapFramework()
@@ -1919,14 +1911,13 @@ for own key of appConfigurations
       if fwConf.conf instanceof Object
         myApp.frameworks.push new Framework(fwConf.conf)
   
-    myApp.frameworks.push new Framework(
+    myApp.frameworks.push new Framework
       name: myApp.name
       path: "apps/" + myApp.name
       combineScripts: true
       combineStylesheets: true
       minifyScripts: false
       minifyStylesheets: false
-    )
       
     switch nconf.get("action")
       when "build" then myApp.build()
