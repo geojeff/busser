@@ -10,6 +10,11 @@
   "contributors": [
     { "name": "Jeff Pittman", "email": "geojeff@me.com" }
   ],
+  "keywords" : [
+    "sproutcore",
+    "coffee",
+    "javascript"
+  ],
   "bin": {
     "busser": "./bin/cli.js"
   },
@@ -26,5 +31,6 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/geojeff/busser.git",
-  }
+  },
+  "engine" : { "node" : ">=0.4.0" }
 }
