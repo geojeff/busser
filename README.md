@@ -193,8 +193,11 @@ License
 
 MIT
 
+Development
+===========
+
 Tests [TODO] Not yet implemented
-================================
+--------------------------------
 
 Tests are made in **Waiter** with the Vows testing framework. If you wish to 
 install Vows for running tests, you may do so with:
@@ -212,4 +215,28 @@ or, to see a more complete report, run:
 and individual tests, for example, with:
 
     node test/config.js
+
+Notes
+-----
+
+For learning coffeescript, the [coffeescript.org](http://www.coffeescript.org) website is succinct and very
+good. 
+
+Other websites:
+
+[Smooth Coffeescript](http://autotelicum.github.com/Smooth-CoffeeScript/)
+
+[Coffeescript Cookbook](http://coffeescriptcookbook.com/)
+
+[Coffeescript One-liners](http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html)
+
+When first starting, use [js2coffee.org](http://js2coffee.org/) to experiment. It is still handy after you
+have learned coffeescript pretty well.
+
+A very nice video for background and "top ten" favorites is by Sam Stephenson:
+
+    http://vimeo.com/35258313
+
+Color-coding for coffeescript code is really nice to use.  There are many [editor plugins](https://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins).
+
 
