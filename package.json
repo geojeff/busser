@@ -1,19 +1,26 @@
 {
   "name": "busser",
-  "description": "SproutCore build tools for Node.JS",
+  "description": "SproutCore build tools for Node.JS written in Coffeescript",
   "version": "0.1.0",
-  "author": "Jeff Pittman (http://geojeff.org)",
+  "author" : {
+    "name" : "Jeff Pittman",
+    "email" : "geojeff@me.com",
+    "url" : "http://geojeff.org"
+  },
+  "contributors": [
+    { "name": "Jeff Pittman", "email": "geojeff@me.com" }
+  ],
   "bin": {
     "busser": "./bin/cli.js"
   },
   "dependencies": {
     "nconf": ">= 0.5.0",
-    "prompt": ">= 0.1.11",
-    "colors": ">= 0.6.0",
     "uglify-js": ">= 1.2.2",
-    "less": ">= 1.1.6",
+    "less": ">= 1.1.6"
   },
   "main": "busser",
-  "repository": "git://github.com/geojeff/busser.git",
-  "preferGlobal": true
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/geojeff/busser.git",
+  }
 }
