@@ -25,6 +25,10 @@
     "uglify-js": ">= 1.2.2",
     "less": ">= 1.1.6"
   },
+  "devDependencies": {
+    "coffee-script": "1.2.x",
+    "vows": "0.6.x"
+  },
   "licenses": [{
     "type": "MIT",
     "url": "http://opensource.org/licenses/mit-license.php"
@@ -32,7 +36,7 @@
   "main": "busser",
   "repository": {
     "type": "git",
-    "url": "git://github.com/geojeff/busser.git",
+    "url": "git://github.com/geojeff/busser.git"
   },
   "engine" : { "node" : ">=0.4.0" }
 }

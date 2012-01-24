@@ -1406,12 +1406,27 @@ class RootContentHtmlFile extends File
     html = []
 
     # Load html for document, head, and meta sections.
-    html.push
-      "<!DOCTYPE html>",
-      "<html lang=\"" + buildLanguageAbbreviation() + "\">",
-      "<head>",
-      "<meta charset=\"utf-8\">",
-      "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">"
+    html.push """ <!DOCTYPE html>
+                  <html lang=\"#{buildLanguageAbbreviation()}\">
+                    <head>
+                      <meta charset=\"utf-8\">,
+                      <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">
+
+                      <script>
+                        var SC_benchmarkPreloadEvents = { headStart: new Date().getTime() };
+                      </script>
+
+                      <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />
+                      <meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\" />
+                      <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />
+                      <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />
+                      <meta name=\"viewport\" content=\"initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no\" />
+
+                      <link rel=\"apple-touch-icon\" href=\"/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-logo.png?1317844275\" />
+                      <link rel=\"apple-touch-startup-image\" media=\"screen and (orientation:portrait)\" href=\"/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-startup-portrait.png?1317844275\" /> 
+                      <link rel=\"apple-touch-startup-image\" media=\"screen and (orientation:landscape)\" href=\"/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-startup-landscape.png?1317844275\" />
+                      <link rel=\"shortcut icon\" href=\"/static/sproutcore/foundation/en/current/resources/images/favicon.ico?1317844275\" type=\"image/x-icon\" />
+              """
 
 #<!DOCTYPE html>
 #<html>
@@ -1451,11 +1466,12 @@ class RootContentHtmlFile extends File
         html.push "<script type=\"text/javascript\" src=\"" + @app.urlPrefix + script.url() + "\"></script>"
       
     # Close the body and page.
-#  <script>
-#  SC.benchmarkPreloadEvents['bodyEnd'] = new Date().getTime();
-#  </script>
-
-    html.push "</body>", "</html>"
+    html.push """ <script>
+                    SC.benchmarkPreloadEvents['bodyEnd'] = new Date().getTime();
+                  </script>
+                </body>
+              </html>
+              """
     html = html.join("\n")
       
     callback null, html
