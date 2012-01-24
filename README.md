@@ -6,6 +6,13 @@ Prominent Note at the Top
 
 This program does not well work yet...
 
+UPDATE 2012-01-24a: busboy, for handling the graphics side of things and 
+other "helper" tasks, has been moved from a source file within busser to
+a separate repository, for a program, graphics-heavy, that will be made
+as a separately intallable npm module. So, a developer will be able to
+install busser for general building and serving tasks, while electing to
+install busboy also, when theme-building and graphics needs arise.
+
 UPDATE 2012-01-23: Jasko reported in irc a problem trying an older SC app
 against master, and it turns out to be the same thing plaguing busser. If
 lines 86-89 of sproutcore/frameworks/runtime/system/index_set.js are
