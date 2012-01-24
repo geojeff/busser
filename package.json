@@ -18,6 +18,10 @@
     "uglify-js": ">= 1.2.2",
     "less": ">= 1.1.6"
   },
+  "licenses": [{
+    "type": "MIT",
+    "url": "http://opensource.org/licenses/mit-license.php"
+  }],
   "main": "busser",
   "repository": {
     "type": "git",
