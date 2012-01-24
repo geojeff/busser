@@ -1,4 +1,4 @@
-# waiter.coffee
+# busser.coffee
 #
  
 #stylus       = require "stylus"
@@ -33,7 +33,7 @@ try
 catch err
   console.log "Running without colors module..."
 
-nconf.argv().env().file file: "./conf/waiter.json"
+nconf.argv().env().file file: "./conf/busser.json"
 
 extname = (path) ->
   path_module.extname(path)
@@ -69,7 +69,7 @@ fileClassType = (file) ->
   return "File" if file instanceof File
 
 # defaultLanguage and buildLanguage are set as globals for now, but should
-# be handled in general waiter.conf. [TODO]
+# be handled in general busser.conf. [TODO]
 #
 defaultLanguage = "english"
 buildLanguage = "english"
@@ -277,8 +277,8 @@ String::gsub = (re, callback) ->
 #
 #     @next -- a link to the next handler.
 #     
-#   Handler specifications are given in the Waiter class. HandlerSet instances are 
-#   created by calls to Waiter, with a subset of intantiated available handlers.
+#   Handler specifications are given in the Busser class. HandlerSet instances are 
+#   created by calls to Busser, with a subset of intantiated available handlers.
 #
 #   
 class Handler
@@ -340,19 +340,19 @@ class HandlerSet
     headHandler = @head()
     headHandler.exec(file, request, callback)
 
-# The Waiter class is the main workhorse for the build system. It contains the
+# The Busser class is the main workhorse for the build system. It contains the
 # code for available handlers and related utility functions. The handlerSet
 # method is used to create HandlerSet instances with a subset of available
 # handlers, instantiated and returned as a singly-linked-list.
 #
-# A single Waiter instance is created for a build session with a simple call as
+# A single Busser instance is created for a build session with a simple call as
 #
-#   waiter = Waiter()
+#   busser = Busser()
 #
-# This Waiter instance is used for creating HandlerSets and for their use during 
+# This Busser instance is used for creating HandlerSets and for their use during 
 # a call to build and/or save an app.
 #
-class Waiter
+class Busser
   constructor ->
 
   # The handlerSet method returns a HandlerSet instance that contains a linked-list
@@ -453,7 +453,7 @@ class Waiter
         else
           callback status: 304
       else
-        Waiter.mtimeScanner files, (mtime) ->
+        Busser.mtimeScanner files, (mtime) ->
           if mtime > Date.parse(request.headers["if-modified-since"])
             if @next?
               @next.exec file, request, (response) ->
@@ -564,11 +564,11 @@ class Waiter
       if @next?
         @next.exec file, request, (response) ->
           if isStylesheet(file)
-            Waiter.minifyStylesheet response.data, (minifiedData) ->
+            Busser.minifyStylesheet response.data, (minifiedData) ->
               response.data = minifiedData
               callback response
           else if isScript(file)
-            Waiter.minifyScript response.data, (minifiedData) ->
+            Busser.minifyScript response.data, (minifiedData) ->
               response.data = minifiedData
               callback response
       else
@@ -576,7 +576,7 @@ class Waiter
           if err
             throw err
           else
-            Waiter.minifyScript data, (minifiedData) ->
+            Busser.minifyScript data, (minifiedData) ->
               callback data: minifiedData
 
   # The rewriteSuper handler replaces instances of sc_super in SproutCore javascript
@@ -643,14 +643,14 @@ class Waiter
     exec: (file, request, callback) ->
       if @next?
         @next.exec file, request, (response) ->
-          response.data = Waiter.rewriteStatic "url('%@')", file, response.data
+          response.data = Busser.rewriteStatic "url('%@')", file, response.data
           callback response
       else
         file.content (err, data) ->
           if err
             throw err
           else
-            callback data: Waiter.rewriteStatic "url('%@')", file, data
+            callback data: Busser.rewriteStatic "url('%@')", file, data
 
   # The rewriteStaticInScript handler calls the rewriteStatic method with the
   # format '%@' for simple references in javascript.
@@ -659,14 +659,14 @@ class Waiter
     exec: (file, request, callback) ->
       if @next?
         @next.exec file, request, (response) ->
-          response.data = Waiter.rewriteStatic "'%@'", file, response.data
+          response.data = Busser.rewriteStatic "'%@'", file, response.data
           callback response
       else
         file.content (err, data) ->
           if err
             throw err
           else
-            callback data: Waiter.rewriteStatic "'%@'", file, data
+            callback data: Busser.rewriteStatic "'%@'", file, data
 
   # The rewriteFile handler replaces instances of direct file references, which
   # are found via __FILE__, with the file url.
@@ -771,14 +771,14 @@ class Waiter
       if less and extname(file.path) is ".less"
         if @next?
           @next.exec file, request, (response) ->
-            Waiter.lessify file.framework.path, response.data, (lessifiedData) ->
+            Busser.lessify file.framework.path, response.data, (lessifiedData) ->
               callback data: lessifiedData
         else
           file.content (err, data) ->
             if err
               throw err
             else
-              Waiter.lessify file.framework.path, data, (lessifiedData) ->
+              Busser.lessify file.framework.path, data, (lessifiedData) ->
                 callback data: lessifiedData
       else
         if @next?
@@ -1288,37 +1288,37 @@ class Framework
     #
     createBasicFiles callbackAfterBuild
 
-# The global Waiter instance is created.
+# The global Busser instance is created.
 #
-waiter = new Waiter
+busser = new Busser
 
 # availableHandlerNames is a utility method for use by developers in listing
-# handlers defined in the Waiter class. The global instance of waiter is queried
+# handlers defined in the Busser class. The global instance of busser is queried
 # for its own properties, which will include variables and methods, and the
 # list returned is filtered for known non-handler properties and methods.
 #
 availableHandlerNames  = ->
-  (h for own h of waiter when h in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ] is false)
+  (h for own h of busser when h in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ] is false)
 
 # HandlerSet singletons are used in the specialized File subclasses defined
 # below. The names of the handlerSets match the File subclasses, generally,
 # and there are several with descriptive names.
 #
-rootContentHtmlHandlerSet = waiter.handlerSet("root content html", "/", [ "cache", "contentType", "file" ])
-rootSymlinkHandlerSet = waiter.handlerSet("root symlink", "/", [ "symlink" ])
+rootContentHtmlHandlerSet = busser.handlerSet("root content html", "/", [ "cache", "contentType", "file" ])
+rootSymlinkHandlerSet = busser.handlerSet("root symlink", "/", [ "symlink" ])
 
-stylesheetHandlerSet = waiter.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
-minifiedStylesheetHandlerSet = waiter.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
-virtualStylesheetHandlerSet = waiter.handlerSet("virtual stylesheet", "/", [ "join" ])
+stylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
+minifiedStylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
+virtualStylesheetHandlerSet = busser.handlerSet("virtual stylesheet", "/", [ "join" ])
 
-scriptHandlerSet = waiter.handlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-minifiedScriptHandlerSet = waiter.handlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptHandlerSet = waiter.handlerSet("virtual script", "/", [ "join" ])
+scriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+minifiedScriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+virtualScriptHandlerSet = busser.handlerSet("virtual script", "/", [ "join" ])
 
-testHandlerSet = waiter.handlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
-resourceHandlerSet = waiter.handlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
-uncombinedScriptHandlerSet = waiter.handlerSet("uncombined script", "/", [ "contentType", "file" ])
-joinHandlerSet = waiter.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
+testHandlerSet = busser.handlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
+resourceHandlerSet = busser.handlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
+uncombinedScriptHandlerSet = busser.handlerSet("uncombined script", "/", [ "contentType", "file" ])
+joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
 # The Reference class is a simple url/file couplet. It is used for html and symlink files, 
 # and for the virtual stylesheet and script files.

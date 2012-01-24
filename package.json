@@ -1,10 +1,10 @@
 {
-  "name": "waiter",
+  "name": "busser",
   "description": "SproutCore build tools for Node.JS",
   "version": "0.1.0",
   "author": "Jeff Pittman (http://geojeff.org)",
   "bin": {
-    "waiter": "./bin/cli.js"
+    "busser": "./bin/cli.js"
   },
   "dependencies": {
     "nconf": ">= 0.5.0",
@@ -13,7 +13,7 @@
     "uglify-js": ">= 1.2.2",
     "less": ">= 1.1.6",
   },
-  "main": "waiter",
-  "repository": "git://github.com/geojeff/waiter.git",
+  "main": "busser",
+  "repository": "git://github.com/geojeff/busser.git",
   "preferGlobal": true
 }

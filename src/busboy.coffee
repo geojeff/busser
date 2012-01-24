@@ -1,6 +1,6 @@
 # busboy.coffee
 #
-# busboy, as part of waiter, is responsible for "setting the table" (will take the
+# busboy, as part of busser, is responsible for "setting the table" (will take the
 # role of Chance, in the Abbot build tools) and will do other tasks "otherwise to
 # assist the waiting staff" (http://en.wikipedia.org/wiki/Busboy)
 #
