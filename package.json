@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "nconf": ">= 0.5.0",
+    "prompt": ">= 0.1.0",
+    "colors": ">= 0.6.0",
     "uglify-js": ">= 1.2.2",
     "less": ">= 1.1.6"
   },
