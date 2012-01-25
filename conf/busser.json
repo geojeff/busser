@@ -470,6 +470,90 @@
           }
         }
       ]
+    },
+    "test_controls-dev": {
+      "name": "test_controls",
+      "title": "One Point Seven",
+      "path": "apps/test_controls",
+      "theme": "sc-theme",
+      "buildLanguage": "english",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false,
+      "sproutcoreFrameworks": [
+        { "name": "jquery",          "conf": "dev" },
+        { "name": "runtime",         "conf": "dev" },
+        { "name": "core_foundation", "conf": "dev" },
+        { "name": "datetime",        "conf": "dev" },
+        { "name": "experimental",    "conf": "dev" },
+        { "name": "foundation",      "conf": "dev" },
+        { "name": "datastore",       "conf": "dev" },
+        { "name": "desktop",         "conf": "dev" },
+        { "name": "template_view",   "conf": "dev" }
+      ],
+      "customFrameworks": [
+        { "name": "empty_theme",     
+          "conf": { 
+            "name": "empty_theme",
+            "path": "frameworks/sproutcore/themes/empty_theme",
+            "combineScripts": true,
+            "combineStylesheets": true,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        },
+        { "name": "ace",
+          "conf": {
+            "name": "ace",
+            "path": "frameworks/sproutcore/themes/ace",
+            "combineScripts": true,
+            "combineStylesheets": true,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        }
+      ]
+    },
+    "test_controls-prod": {
+      "name": "test_controls",
+      "theme": "sc-theme",
+      "buildLanguage": "english",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true,
+      "pathsToExclude": [ "/fixtures\//" ],
+      "sproutcoreFrameworks": [
+        { "name": "jquery",          "conf": "prod" },
+        { "name": "runtime",         "conf": "prod" },
+        { "name": "core_foundation", "conf": "prod" },
+        { "name": "datetime",        "conf": "prod" },
+        { "name": "foundation",      "conf": "prod" },
+        { "name": "datastore",       "conf": "prod" },
+        { "name": "desktop",         "conf": "prod" },
+        { "name": "template_view",   "conf": "prod" }
+      ],
+      "customFrameworks": [
+        { "name": "empty_theme",     
+          "conf": { 
+            "path": "frameworks/sproutcore/themes/empty_theme",
+            "combineScripts": true,
+            "combineStylesheets": false,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        },
+        { "name": "ace",
+          "conf": {
+            "path": "frameworks/sproutcore/themes/ace",
+            "combineScripts": true,
+            "combineStylesheets": false,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
+          }
+        }
+      ]
     }
   }
 }

@@ -1098,7 +1098,8 @@ class Framework
               @sortDependencies files[i], orderedFiles, files, recursionHistory
               break
             ++i
-          util.puts "WARNING: " + url + " is required in " + file.url() + " but does not exists."  unless found
+          if not found
+            util.puts "WARNING: " + url + " is required in " + file.url() + " but does not exist."
       orderedFiles.push file
   
   # The orderScripts method calls computeDependencies on a list of javascript files,

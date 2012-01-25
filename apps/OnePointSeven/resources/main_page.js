@@ -11,7 +11,7 @@ OnePointSeven.mainPage = SC.Page.design({
   // Add childViews to this pane for views to display immediately on page 
   // load.
   mainPane: SC.MainPane.design({
-    //layout: { left: 0, right: 0, top: 0, bottom: 0 },
+    layout: { left: 0, right: 0, top: 0, bottom: 0 },
     childViews: 'labelView'.w(),
     
     labelView: SC.LabelView.design({
