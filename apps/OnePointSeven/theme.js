@@ -19,6 +19,8 @@ OnePointSeven.Theme = SC.AceTheme.create({
   name: 'OnePointSeven'
 });
 
+console.log(SC.inspect(OnePointSeven.Theme));
+
 // SproutCore needs to know that your app's theme exists
 SC.Theme.addTheme(OnePointSeven.Theme);
 
