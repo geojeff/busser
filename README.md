@@ -6,12 +6,17 @@ Prominent Note at the Top
 
 This program does not well work yet...
 
-UPDATE 2012-01-24a: busboy, for handling the graphics side of things and 
+UPDATE 2012-01-26: Added use of prompt and color node.js modules.
+
+UPDATE 2012-01-24b: busboy, for handling the graphics side of things and 
 other "helper" tasks, has been moved from a source file within busser to
 a separate repository, for a program, graphics-heavy, that will be made
 as a separately intallable npm module. So, a developer will be able to
 install busser for general building and serving tasks, while electing to
 install busboy also, when theme-building and graphics needs arise.
+
+UPDATE 2012-01-24a: Had to rename project from waiter to busser/busboy,
+because of a name conflict in npm registry.
 
 UPDATE 2012-01-23: Jasko reported in irc a problem trying an older SC app
 against master, and it turns out to be the same thing plaguing busser. If
@@ -93,11 +98,12 @@ itself. The development of Busser will include coverage of bundle support,
 and may also incorporate these SproutCore components, especially if they
 are packaged in dedicated npm modules, per discussion with mauritslamers.
 
-The node.js modules prompt and color were successfully used in linelizer,
-so it will be easy to add their use to Busser. prompt will be useful for
-making a version for new users that prompts them for their project file
-name, app name or version, build action, etc. And the colors module can
-be used for custom reporting from the server and in analysis printouts.
+[ **DONE 2012-01-26** The node.js modules prompt and color were successfully 
+used in linelizer, so it will be easy to add their use to Busser. prompt 
+will be useful for making a version for new users that prompts them for 
+their project file name, app name or version, build action, etc. And the 
+colors module can be used for custom reporting from the server and in 
+analysis printouts.]
 
 Format the docco presentation by customizing docco css for the project.
 
@@ -151,6 +157,10 @@ npm install coffee-script (use -g for global -- you know you want to)
 
 npm install nconf
 
+npm install prompt
+
+npm install colors
+
 npm install less
 
 npm install uglify-js
@@ -181,17 +191,37 @@ See https://github.com/flatiron/nconf for nconf details.
 Running
 -------
 
-The simple invocation is:
+busser and busboy use the node.js prompt module, along with the colors module,
+to prompt for and validate user input. After validation and parsing, user input
+is fed to nconf. So, busser is invoked with:
 
-    node bin/busser.js --appTargets=myapp-dev --action=buildrun
+    node bin/busser.js --prompt
 
-where appTargets lists the SproutCore apps to be built, and action specifies
-one of: build, buildrun, buildsave, and buildsaverun. Busser and app-specific
-configuration is assumed to be in conf/busser.json, read by nconf.
+which will prompt for the following input items:
 
-Visit localhost:8000/OnePointSeven to show the app, which, as of 2012-01-23,
-will come up with the first window and pane skewed far left, unusable (Ace
-problems, probably...).
+* config -- Use the default 'conf/busser.json' until you have a need to customize.
+
+* appTargets -- Use the test app 'OnePointSeven-dev' for which info is in busser.json.
+This is designed to take multiple targets in comma-delimited format, but for now
+one app at a time works.
+
+* actions -- Use a combination of build, save, and run, comma-delimited.
+
+Power users will want command line-only functionality, something like:
+
+    node bin/busser.js --appTargets=myapp-dev --actions=build,run
+
+Something like this was working before the addition of the prompt module, so it can
+be restored, perhaps along with use of the prompt-override facility, per prompt docs.
+
+If you run with on the build action, you should see a report to the console.
+
+Same for build and save.
+
+For build, save, run, you will see the same output, finishing with a message that 
+the server is now running on localhost, port 8000. In that event, visit
+localhost:8000/OnePointSeven to show the app, which, as of 2012-01-23, will
+show the first window and pane skewed far left, unusable (Ace problems, probably...).
 
 Contributors
 ============
@@ -245,7 +275,7 @@ have learned coffeescript pretty well.
 
 A very nice video for background and "top ten" favorites is by Sam Stephenson:
 
-    http://vimeo.com/35258313
+[Better JS with Coffeescript](http://vimeo.com/35258313)
 
 Color-coding for coffeescript code is really nice to use.  There are many [editor plugins](https://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins).
 
