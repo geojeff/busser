@@ -199,7 +199,7 @@ is fed to nconf. So, busser is invoked with:
 
 which will prompt for the following input items:
 
-* config -- Use the default 'conf/busser.json' until you have a need to customize.
+* configPath -- Use the default 'conf/busser.json' until you have a need to customize.
 
 * appTargets -- Use the test app 'OnePointSeven-dev' for which info is in busser.json.
 This is designed to take multiple targets in comma-delimited format, but for now

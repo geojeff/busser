@@ -42,9 +42,27 @@ Array::unique = ->
   output[@[key]] = @[key] for key in [0...@length]
   value for key, value of output
 
+# appTargets are normal looking "filename" style app names as used in the busser.json
+# conf file, such as OnePointSeven-dev, where the -dev is a user chosen suffix to
+# distinguish between their another configuration, say OnePointSeven-prod, as you can
+# see in the default conf/busser.json file. So, the regular expression here allows any
+# alphanumeric characters with numbers or a dash.
+#
 appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
+
+# See code in the prompt result-handling section for the reasoning behind this regular
+# expression, which allows any combination of the action verbs build, save, and run, in
+# any order, and even jambed up, as buildsave or buildsaverun. But the preferred, and
+# documented input style is one of 'build', 'build, run', 'build, save', and 'build,
+# save, run'.
+#
 actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)*$/
 
+# The actionsSplit function is used in parsing user input for actions, as described
+# above for the actionsValidator. In parsing, a simple call is made here to match
+# on these action verbs for any word that parsed out of csv splitting. In this way,
+# even redundant mistyping should be handled.
+#
 actionsSplit = (actionsString) ->
   actions = []
   actions.push 'build' if actionsString.indexOf('build') isnt -1
@@ -52,9 +70,13 @@ actionsSplit = (actionsString) ->
   actions.push 'run' if actionsString.indexOf('run') isnt -1
   actions
 
+# Use the node.js path module to pull the file extension from the path.
+#
 extname = (path) ->
   path_module.extname(path)
 
+# The fileType function is used to identify paths by their file extension.
+#
 fileType = (path) ->
   ext = extname(path)
   return "stylesheet" if /^\.(css|less)$/.test ext
@@ -63,6 +85,8 @@ fileType = (path) ->
   return "resource"   if ext in ResourceFile.resourceExtensions
   return "unknown"
 
+# isStylesheet and the others in this set of functions are for shorthand reference.
+#
 isStylesheet = (file) -> fileType(file.path) is "stylesheet"
 isScript = (file) -> fileType(file.path) is "script"
 isTest = (file) -> fileType(file.path) is "test"
@@ -1994,7 +2018,7 @@ if nconf.get("prompt")
   prompts = []
 
   prompts.push
-    name: "config"
+    name: "configPath"
     message: "Config path?".magenta
   prompts.push
     name: "appTargets"
@@ -2008,17 +2032,22 @@ if nconf.get("prompt")
     message: "Action(s)?".magenta
 
   prompt.get prompts, (err, result) ->
-    if result.config?
-      console.log "You said your config path is: ".cyan + result.config.cyan
+    if result.configPath?
+      console.log "You said your config path is: ".cyan + result.configPath.cyan
       try
-        config_file = fs.readFileSync(result.config, "utf-8")
-        nconf.argv().env().file file: result.config
+        config_file = fs.readFileSync(result.configPath, "utf-8")
+        nconf.argv().env().file file: result.configPath
       catch err
         console.log "Problem reading custom config file"
     
     if result.appTargets? and result.actions?
       appTargets = (target.trim() for target in result.appTargets.split(','))
 
+      # For the actions argument, the preferred style of input is to simply type
+      # 'build' of 'build, save' or 'build, save, run', or 'build, run'. The next
+      # two lines, and the called functions attempt to account for any manner of
+      # incorrect order, jambed up words without commas and the like.
+       
       # Split and trim action words.
       #
       actions = (action.trim() for action in result.actions.split(','))
@@ -2047,7 +2076,7 @@ if nconf.get("prompt")
     else
       console.log "Valid target(s) and action are needed... Please try again... Aborting."
 else
-  if nconf.get('config')?
+  if nconf.get('configPath')?
     try
       config_file = fs.readFileSync(nconf.get('config'), "utf-8")
       nconf.argv().env().file file: nconf.get('config')
@@ -2066,13 +2095,13 @@ else
   else
     errors.push "appTargets argument is missing."
       
-  if nconf.get('action')?
-    if actionsValidator.exec(nconf.get('action'))
-      actions = (target.trim() for target in nconf.get("action").split(','))
+  if nconf.get('actions')?
+    if actionsValidator.exec(nconf.get('actions'))
+      actions = (target.trim() for target in nconf.get("actions").split(','))
     else
-      errors.push "action did not parse."
+      errors.push "actions did not parse."
   else
-    errors.push "action argument is missing."
+    errors.push "actions argument is missing."
 
   if errors.length > 0
     console.log errors
