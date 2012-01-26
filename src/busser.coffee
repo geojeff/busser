@@ -1,16 +1,16 @@
 # busser.coffee
 #
  
-#stylus       = require "stylus"
-#scss         = require "scss"
-#csslike      = require "csslike"
 util         = require "util"
 fs           = require "fs"
 http         = require "http"
 url          = require "url"
 path_module  = require "path"
 nconf        = require "nconf"
-#prompt       = require "prompt"
+prompt       = require "prompt"
+#stylus       = require "stylus"
+#scss         = require "scss"
+#csslike      = require "csslike"
 #express      = require "express"
 #browserify   = require "browserify"
 {exec}       = require "child_process"
@@ -33,7 +33,24 @@ try
 catch err
   console.log "Running without colors module..."
 
-nconf.argv().env().file file: "./conf/busser.json"
+# Add a unique method on Array -- used in parsing input for actions.
+#
+# http://coffeescriptcookbook.com/chapters/arrays/removing-duplicate-elements-from-arrays
+#
+Array::unique = ->
+  output = {}
+  output[@[key]] = @[key] for key in [0...@length]
+  value for key, value of output
+
+appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
+actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)*$/
+
+actionsSplit = (actionsString) ->
+  actions = []
+  actions.push 'build' if actionsString.indexOf('build') isnt -1
+  actions.push 'save' if actionsString.indexOf('save') isnt -1
+  actions.push 'run' if actionsString.indexOf('run') isnt -1
+  actions
 
 extname = (path) ->
   path_module.extname(path)
@@ -1282,8 +1299,12 @@ class Framework
           else
             @orderedScriptFiles = (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
           
+          console.log "  #{@name} ", "built.".red
+
           callbackAfterBuild() if callbackAfterBuild?
       else
+        console.log "  #{@name} ", "built.".red
+
         callbackAfterBuild() if callbackAfterBuild?
 
     # Fire the build methods, passing the provided callbackAfterBuild.
@@ -1359,7 +1380,7 @@ class File
   # the use of an overridden content method in RootContentHtml are tied together.
   #
   pathForSave: ->
-    if isHtml
+    if @isHtml
       @url() + '.html'
     else
       @url()
@@ -1685,8 +1706,12 @@ class App
     @buildRoot()
     builder = new FrameworksBuilder(@frameworks)
     builder.on 'end', =>
-      @registerFiles()
-      callbackAfterBuild()
+      console.log "Build for #{@path} is complete."
+      if callbackAfterBuild?
+        console.log "Registering files."
+        @registerFiles()
+        callbackAfterBuild()
+    console.log "Build for #{@path} has started."
     builder.build()
     
   # registerFile sets the url of the file as the key in the files associative
@@ -1790,14 +1815,14 @@ class App
 
     path = path_module.join(@pathForSave, @buildVersion.toString(), htmlFile.pathForSave())
     File.createDirectory path_module.dirname(path)
-    htmlFile.html (data) ->
+    htmlFile.content (data) ->
       fs.writeFile path, data, (err) ->
         throw err  if err
 
 class Server
   constructor: (options={}) ->
     @port = 8000
-    @hostname = null
+    @hostname = "localhost"
     @proxyHost = null
     @proxyPort = null
     @proxyPrefix = ""
@@ -1880,72 +1905,177 @@ class Server
             response.end()
         else
           @serve file, request, response
-    ).listen @port, @hostname, ->
-      console.log 'HOSTNAME', @hostname
-      console.log 'PORT', @port
+    ).listen @port, @hostname, =>
       app_url = url.format
         protocol: "http"
-        hostname: (if @hostname then @hostname else "localhost")
-        port: (if @port then @port else 8000)
-      util.puts "Server started on " + app_url + "/APPLICATION_NAME"
-  
+        hostname: @hostname
+        port: @port
+      console.log "Server started on #{app_url}/APPLICATION_NAME"
+      console.log '  HOSTNAME:', @hostname
+      console.log '  PORT:', @port
+
 # Instantiation and Execution
 #
-defaultAppDevConf = nconf.get("default-app-dev")
-defaultAppProdConf = nconf.get("default-app-prod")
-defaultFrameworksDevConf = nconf.get("default-sproutcoreFrameworks-dev")
-defaultFrameworksProdConf = nconf.get("default-sproutcoreFrameworks-prod")
-
-apps = []
-appConfigurations = nconf.get("apps")
-for own key of appConfigurations
-  appKey = key
-  if appKey is nconf.get("appTargets") or appKey in nconf.get("appTargets")        # one or more apps, e.g. myapp-dev, myotherapp-dev [TODO] make robust
-    appConf = appConfigurations[appKey]
-    myApp = new App
-      name: appConf["name"]
-      title: appConf["title"]
-      path: appConf["path"]
-      theme: appConf["theme"]
-      buildLanguage: appConf["buildLanguage"]
-      combineScripts: appConf["combineScripts"]
-      combineStylesheets: appConf["combineStylesheets"]
-      minifyScripts: appConf["minifyScripts"]
-      minifyStylesheets: appConf["minifyStylesheets"]
+exec = (appTargets, actionsSet) ->
+  defaultAppDevConf = nconf.get("default-app-dev")
+  defaultAppProdConf = nconf.get("default-app-prod")
+  defaultFrameworksDevConf = nconf.get("default-sproutcoreFrameworks-dev")
+  defaultFrameworksProdConf = nconf.get("default-sproutcoreFrameworks-prod")
   
-    myApp.frameworks = []
-    myApp.frameworks.push new BootstrapFramework()
-
-    for fwConf in appConf["sproutcoreFrameworks"]
-      switch fwConf.conf
-        when "dev" then myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
-        when "prod" then myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
-        when fwConf.conf instanceof String # The default for unknown is dev.
-          myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
-        when fwConf.conf instanceof Object
+  apps = []
+  appConfigurations = nconf.get("apps")
+  for own key of appConfigurations
+    appKey = key
+    if appKey in appTargets
+      appConf = appConfigurations[appKey]
+      myApp = new App
+        name: appConf["name"]
+        title: appConf["title"]
+        path: appConf["path"]
+        theme: appConf["theme"]
+        buildLanguage: appConf["buildLanguage"]
+        combineScripts: appConf["combineScripts"]
+        combineStylesheets: appConf["combineStylesheets"]
+        minifyScripts: appConf["minifyScripts"]
+        minifyStylesheets: appConf["minifyStylesheets"]
+  
+      myApp.frameworks = []
+      myApp.frameworks.push new BootstrapFramework()
+  
+      for fwConf in appConf["sproutcoreFrameworks"]
+        switch fwConf.conf
+          when "dev" then myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
+          when "prod" then myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
+          when fwConf.conf instanceof String # The default for unknown is dev.
+            myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
+          when fwConf.conf instanceof Object
+            myApp.frameworks.push new Framework(fwConf.conf)
+  
+      for fwConf in appConf["customFrameworks"]
+        if fwConf.conf instanceof Object
           myApp.frameworks.push new Framework(fwConf.conf)
+    
+      myApp.frameworks.push new Framework
+        name: myApp.name
+        path: "apps/" + myApp.name
+        combineScripts: true
+        combineStylesheets: true
+        minifyScripts: false
+        minifyStylesheets: false
+        
+      switch actionsSet
+        when "build" then myApp.build()
+        when "buildsave" then myApp.build(myApp.save)
+        when "buildrun" then myApp.build ->
+          server = new Server()
+          server.addApp(myApp)
+          server.run()
+        when "buildsaverun" then myApp.build ->
+          myApp.save()
+          server = new Server()
+          server.addApp(myApp)
+          server.run()
 
-    for fwConf in appConf["customFrameworks"]
-      if fwConf.conf instanceof Object
-        myApp.frameworks.push new Framework(fwConf.conf)
+# Initialize nconf for command line arguments and for environmental settings
+#
+nconf.argv().env()
+
+# If the operating mode is prompt, which could be set either by a command line
+# argument or by an environmental setting, use the prompt system. Otherwise,
+# in the else below, assume that all needed info, in addition to arguments
+# already in nconf via command line and environment, is in conf/busser.json.
+#
+if nconf.get("prompt")
+  prompt.message = "Question!".blue
+  prompt.delimiter = ">|".green
+
+  prompt.start()
   
-    myApp.frameworks.push new Framework
-      name: myApp.name
-      path: "apps/" + myApp.name
-      combineScripts: true
-      combineStylesheets: true
-      minifyScripts: false
-      minifyStylesheets: false
+  prompts = []
+
+  prompts.push
+    name: "config"
+    message: "Config path?".magenta
+  prompts.push
+    name: "appTargets"
+    validator: appTargetsValidator
+    warning: 'Target names have letters, numbers, or dashes, and are comma-delimited. No quotes are needed.'
+    message: "Target(s)?".magenta
+  prompts.push
+    name: "actions"
+    validator: actionsValidator
+    warning: 'Actions are one or more of: build, save, and run, in any order, and comma-delimited. No quotes are needed.'
+    message: "Action(s)?".magenta
+
+  prompt.get prompts, (err, result) ->
+    if result.config?
+      console.log "You said your config path is: ".cyan + result.config.cyan
+      try
+        config_file = fs.readFileSync(result.config, "utf-8")
+        nconf.argv().env().file file: result.config
+      catch err
+        console.log "Problem reading custom config file"
+    
+    if result.appTargets? and result.actions?
+      appTargets = (target.trim() for target in result.appTargets.split(','))
+
+      # Split and trim action words.
+      #
+      actions = (action.trim() for action in result.actions.split(','))
+
+      # Split words, so that buildsaverun becomes ['build', 'save', 'run'],
+      # followed by a concat of such arrays, to produce a single array with
+      # perhaps redundant entries, e.g. [ 'build', 'run', 'run', 'build', 'save ]
+      # if a user gave an odd, and bad, combination of words. The call to 
+      # unique() will clean that up, to have a single array with some combination
+      # of build, save, and run action words.
+      #
+      actions = ([].concat (actionsSplit(action) for action in actions)...).unique()
+
+      # After all that, the only combinations possible are these four, but the
+      # parsing and processing of csv input may be preferrable than the direct
+      # typing of these, which could be harder to remember.
+      #
+      actionsSet = 'build'        if actions.length is 1 and 'build' in actions
+      actionsSet = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
+      actionsSet = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
+      actionsSet = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
+
+      console.log "Performing: #{actionsSet}".cyan
       
-    switch nconf.get("action")
-      when "build" then myApp.build()
-      when "buildsave" then myApp.build(myApp.save)
-      when "buildrun" then myApp.build ->
-        server = new Server()
-        server.addApp(myApp)
-        server.run()
-      when "buildsaverun" then myApp.build ->
-        myApp.save()
-        server = new Server()
-        server.addApp(myApp)
-        server.run()
+      exec appTargets, actionsSet
+    else
+      console.log "Valid target(s) and action are needed... Please try again... Aborting."
+else
+  if nconf.get('config')?
+    try
+      config_file = fs.readFileSync(nconf.get('config'), "utf-8")
+      nconf.argv().env().file file: nconf.get('config')
+    catch err
+      console.log "Problem reading custom config file"
+  else
+    nconf.argv().env().file file: "./conf/busser.json"
+
+  errors = []
+
+  if nconf.get('appTargets')?
+    if appTargetsValidator.exec(nconf.get('appTargets'))
+      appTargets = (target.trim() for target in nconf.get("appTargets").split(','))
+    else
+      errors.push "appTargets did not parse."
+  else
+    errors.push "appTargets argument is missing."
+      
+  if nconf.get('action')?
+    if actionsValidator.exec(nconf.get('action'))
+      actions = (target.trim() for target in nconf.get("action").split(','))
+    else
+      errors.push "action did not parse."
+  else
+    errors.push "action argument is missing."
+
+  if errors.length > 0
+    console.log errors
+  else
+    exec appTargets, actions
+

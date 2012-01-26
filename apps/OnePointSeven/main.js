@@ -17,7 +17,7 @@ OnePointSeven.main = function main() {
   // The default code here will make the mainPane for your application visible
   // on screen.  If you app gets any level of complexity, you will probably 
   // create multiple pages and panes.  
-  console.log("Appending mainPage.mainPane");
+  console.log(SC.inspect(OnePointSeven.getPath('mainPage.mainPane').childViews));
   OnePointSeven.getPath('mainPage.mainPane').append() ;
   console.log("Appended mainPage.mainPane");
 

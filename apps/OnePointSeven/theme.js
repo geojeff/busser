@@ -15,6 +15,7 @@
 //
 // NOTE: if you want to change the theme this one is based on, don't
 // forget to change the :css_theme property in your buildfile.
+console.log(SC.inspect(OnePointSeven));
 OnePointSeven.Theme = SC.AceTheme.create({
   name: 'OnePointSeven'
 });

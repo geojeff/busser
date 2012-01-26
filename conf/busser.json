@@ -428,16 +428,6 @@
             "minifyScripts": false,
             "minifyStylesheets": false 
           }
-        },
-        { "name": "OnePointSeven",
-          "conf": {
-            "name": "OnePointSeven",
-            "path": "apps/OnePointSeven/theme.js",
-            "combineScripts": true,
-            "combineStylesheets": true,
-            "minifyScripts": false,
-            "minifyStylesheets": false 
-          }
         }
       ]
     },
