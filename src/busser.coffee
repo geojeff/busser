@@ -2004,12 +2004,12 @@ exec = (appTargets, actionsSet) ->
 #
 nconf.argv().env()
 
-# If the operating mode is prompt, which could be set either by a command line
-# argument or by an environmental setting, use the prompt system. Otherwise,
+# If the operating mode is prompt, which we determine by checking for an arg
+# length of 2 (node bin/busser.js), we use the prompt system. Otherwise,
 # in the else below, assume that all needed info, in addition to arguments
 # already in nconf via command line and environment, is in conf/busser.json.
 #
-if nconf.get("prompt")
+if process.argv.length is 2
   prompt.message = "Question!".blue
   prompt.delimiter = ">|".green
 

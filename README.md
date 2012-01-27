@@ -193,9 +193,9 @@ Running
 
 busser and busboy use the node.js prompt module, along with the colors module,
 to prompt for and validate user input. After validation and parsing, user input
-is fed to nconf. So, busser is invoked with:
+is fed to nconf. So, busser is invoked with no arguments as:
 
-    node bin/busser.js --prompt
+    node bin/busser.js
 
 which will prompt for the following input items:
 
@@ -222,6 +222,8 @@ For build, save, run, you will see the same output, finishing with a message tha
 the server is now running on localhost, port 8000. In that event, visit
 localhost:8000/OnePointSeven to show the app, which, as of 2012-01-23, will
 show the first window and pane skewed far left, unusable (Ace problems, probably...).
+
+It is not necessary to save -- during development, you will commonly use build, run.
 
 Contributors
 ============
