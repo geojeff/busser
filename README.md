@@ -190,7 +190,8 @@ Preparing Config File
 ---------------------
 
 **Busser** uses the node.js nconf module for configurations. See the default
-conf/busser.json file for usage. busser.json contains the following defaults:
+conf/busser.json file for usage. busser.json contains the following default
+sections, which are rather long, offering fine-grained control, per framework:
 
 * default-app-dev
 
@@ -210,6 +211,12 @@ frameworks required. This will change, especially after flexibility for bundle
 support is added, but it is a start. Likewise, there is a custom-frameworks
 section for each app, for specifying configurations for external frameworks
 used from github or from in-house customizations and development.
+
+One idea to be pursued is the customization per application "instance," e.g.
+HelloWorld-dev vs. HelloWorld-prod, which can be maintained for different
+development experiments, the "master" dev and prod versions, and so on. This
+flexibility can be matched to horsepower within busser to perform large
+build jobs, if needed. 
 
 See https://github.com/flatiron/nconf for nconf details.
 
