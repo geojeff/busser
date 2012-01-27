@@ -33,15 +33,6 @@ try
 catch err
   console.log "Running without colors module..."
 
-# Add a unique method on Array -- used in parsing input for actions.
-#
-# http://coffeescriptcookbook.com/chapters/arrays/removing-duplicate-elements-from-arrays
-#
-Array::unique = ->
-  output = {}
-  output[@[key]] = @[key] for key in [0...@length]
-  value for key, value of output
-
 # appTargets are normal looking "filename" style app names as used in the busser.json
 # conf file, such as OnePointSeven-dev, where the -dev is a user chosen suffix to
 # distinguish between their another configuration, say OnePointSeven-prod, as you can
@@ -50,7 +41,7 @@ Array::unique = ->
 #
 appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 
-# See code in the prompt result-handling section for the reasoning behind this regular
+# See the prompt result-handling method, parseActionsArgument, for design of this regular
 # expression, which allows any combination of the action verbs build, save, and run, in
 # any order, and even jambed up, as buildsave or buildsaverun. But the preferred, and
 # documented input style is one of 'build', 'build, run', 'build, save', and 'build,
@@ -58,17 +49,40 @@ appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 #
 actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)*$/
 
-# The actionsSplit function is used in parsing user input for actions, as described
-# above for the actionsValidator. In parsing, a simple call is made here to match
-# on these action verbs for any word that parsed out of csv splitting. In this way,
-# even redundant mistyping should be handled.
+# The appTargets input, having passed the validator above, is simply split
+# on comma, then the items are trimmed.
 #
-actionsSplit = (actionsString) ->
+parseAppTargetsArgument = (appTargetsResult) ->
+  (target.trim() for target in appTargetsResult.split(','))
+
+# For the actions argument, the preferred style of input is to simply type
+# 'build' of 'build, save' or 'build, save, run', or 'build, run', or any of
+# the same combinations without commas, e.g. 'build save run'. The user
+# could also enter a compound word, such as buildsaverun, or any manner of
+# incorrect order, jambed up words without commas and the like. Here we
+# simply check for presence of build, save, run and form one of several
+# actionsSets.
+#
+parseActionsArgument = (actionsResult) ->
+  actionsResult = actionsResult.toLowerCase()
+
   actions = []
-  actions.push 'build' if actionsString.indexOf('build') isnt -1
-  actions.push 'save' if actionsString.indexOf('save') isnt -1
-  actions.push 'run' if actionsString.indexOf('run') isnt -1
-  actions
+  actions.push 'build' if actionsResult.indexOf('build') isnt -1
+  actions.push 'save' if actionsResult.indexOf('save') isnt -1
+  actions.push 'run' if actionsResult.indexOf('run') isnt -1
+       
+  # The possible combinations for actions are these four compound actionSets, 
+  # as used internally. These could be exposed for a user API, but the freeform
+  # allowance for typing build, save, and run in any order as csv input may
+  # preferrable than the direct typing of these compounds, which could be harder
+  # to remember and harder to type compound words with no blanks.
+  #
+  actionsSet = 'build'        if actions.length is 1 and 'build' in actions
+  actionsSet = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
+  actionsSet = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
+  actionsSet = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
+
+  actionsSet
 
 # Use the node.js path module to pull the file extension from the path.
 #
@@ -2041,34 +2055,8 @@ if process.argv.length is 2
         console.log "Problem reading custom config file"
     
     if result.appTargets? and result.actions?
-      appTargets = (target.trim() for target in result.appTargets.split(','))
-
-      # For the actions argument, the preferred style of input is to simply type
-      # 'build' of 'build, save' or 'build, save, run', or 'build, run'. The next
-      # two lines, and the called functions attempt to account for any manner of
-      # incorrect order, jambed up words without commas and the like.
-       
-      # Split and trim action words.
-      #
-      actions = (action.trim() for action in result.actions.split(','))
-
-      # Split words, so that buildsaverun becomes ['build', 'save', 'run'],
-      # followed by a concat of such arrays, to produce a single array with
-      # perhaps redundant entries, e.g. [ 'build', 'run', 'run', 'build', 'save ]
-      # if a user gave an odd, and bad, combination of words. The call to 
-      # unique() will clean that up, to have a single array with some combination
-      # of build, save, and run action words.
-      #
-      actions = ([].concat (actionsSplit(action) for action in actions)...).unique()
-
-      # After all that, the only combinations possible are these four, but the
-      # parsing and processing of csv input may be preferrable than the direct
-      # typing of these, which could be harder to remember.
-      #
-      actionsSet = 'build'        if actions.length is 1 and 'build' in actions
-      actionsSet = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
-      actionsSet = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
-      actionsSet = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
+      appTargets = parseAppTargetsArgument result.appTargets
+      actionsSet = parseActionsArgument result.actions
 
       console.log "Performing: #{actionsSet}".cyan
       
@@ -2089,7 +2077,7 @@ else
 
   if nconf.get('appTargets')?
     if appTargetsValidator.exec(nconf.get('appTargets'))
-      appTargets = (target.trim() for target in nconf.get("appTargets").split(','))
+      appTargets = parseAppTargetsArgument nconf.get("appTargets")
     else
       errors.push "appTargets did not parse."
   else
@@ -2097,7 +2085,7 @@ else
       
   if nconf.get('actions')?
     if actionsValidator.exec(nconf.get('actions'))
-      actions = (target.trim() for target in nconf.get("actions").split(','))
+      actionsSet = parseActionsArgument nconf.get('actions')
     else
       errors.push "actions did not parse."
   else
@@ -2106,5 +2094,5 @@ else
   if errors.length > 0
     console.log errors
   else
-    exec appTargets, actions
+    exec appTargets, actionsSet
 

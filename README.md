@@ -205,18 +205,21 @@ which will prompt for the following input items:
 This is designed to take multiple targets in comma-delimited format, but for now
 one app at a time works.
 
-* actions -- Use a combination of build, save, and run, comma-delimited.
+* actions -- Use a combination of build, save, and run, comma-delimited, blank-delimited,
+or even all jambed up, as buildsaverun.
 
 Power users will want command line-only functionality, something like:
 
     node bin/busser.js --appTargets=myapp-dev --actions=build,run
 
-Something like this was working before the addition of the prompt module, so it can
-be restored, perhaps along with use of the prompt-override facility, per prompt docs.
+Because this is command line input, when providing multiples for either argument, use
+comma-delimited style with no blanks, certainly for appTargets, with no blanks, or use
+quotes, e.g. --appTargets="myapp-dev, myapp-prod" or --actions=build,save,run. You can
+also use compound words for actions, e.g. --actions=buildsaverun. For actions, the
+order of input doesn't matter -- build will always be first, then save, if required,
+then run.
 
-If you run with on the build action, you should see a report to the console.
-
-Same for build and save.
+You should see a colorized report to the console after executing.
 
 For build, save, run, you will see the same output, finishing with a message that 
 the server is now running on localhost, port 8000. In that event, visit
