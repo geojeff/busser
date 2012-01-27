@@ -1030,7 +1030,7 @@ class Framework
   # referred to with file urls, so the paths in the original project can be
   # simplified by omitting unneeded elements. 
   #
-  pathReplacedNameFor: (path) ->
+  reducedPathFor: (path) ->
     path.replace /(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g, ""
   
   # [TODO] The urlFor method previously had @buildVersion as the first part
@@ -1039,20 +1039,20 @@ class Framework
   # the urls for frameworks must be prepended with buildVersion in some or
   # all cases.
   #
-  # Note that this is the same as pathReplacedNameFor.
+  # Note that this is the same as reducedPathFor.
   #
   urlFor: (path) ->
-    path_module.join @buildVersion, @pathReplacedNameFor(path)
+    path_module.join @buildVersion, @reducedPathFor(path)
   
   # See [TODO] note in urlFor...
   #
-  pathReplacedName: ->
-    @pathReplacedNameFor(@path)
+  reducedPath: ->
+    @reducedPathFor(@path)
   
   # See [TODO] note in urlFor...
   #
   url: ->
-    @urlFor(@pathReplacedName())
+    @urlFor(@reducedPath())
   
   # shouldExcludeFile first operates on pathsToExclude, checking if the path 
   # matches any exluded path. Then it checks if buildLanguage is in allowed
@@ -1076,7 +1076,7 @@ class Framework
       path: path_module.join(@path, "after.js")
       framework: this
       content: (callback) =>
-        callback null, "; if ((typeof SC !== \"undefined\") && SC && SC.bundleDidLoad) SC.bundleDidLoad(\"" + @pathReplacedName() + "\");\n"
+        callback null, "; if ((typeof SC !== \"undefined\") && SC && SC.bundleDidLoad) SC.bundleDidLoad(\"" + @reducedPath() + "\");\n"
       handlerSet: uncombinedScriptHandlerSet
     )
 
@@ -1202,7 +1202,7 @@ class Framework
   # support was added in a branch of the mauritslamers version. 
   #
   bundleInfo: ->
-    [ ";SC.BUNDLE_INFO['" + @pathReplacedName() + "'] = {", "requires: [],", "scripts: [" + @orderedScriptFiles.map((script) ->
+    [ ";SC.BUNDLE_INFO['" + @reducedPath() + "'] = {", "requires: [],", "scripts: [" + @orderedScriptFiles.map((script) ->
       "'" + script.url() + "'"
     ).join(",") + "],", "styles: [" + @orderedStylesheetFiles.map((stylesheet) ->
       "'" + stylesheet.url() + "'"
@@ -1692,11 +1692,11 @@ class App
 
   @buildVersion: 0
 
-  # The pathReplacedNameFor, urlFor, and url methods are the same as those for
+  # The reducedPathFor, urlFor, and url methods are the same as those for
   # the Framework class, tied here to the prototype definitions.
   #
-  pathReplacedNameFor: Framework::pathReplacedNameFor
-  pathReplacedName: Framework::pathReplacedName
+  reducedPathFor: Framework::reducedPathFor
+  reducedPath: Framework::reducedPath
   urlFor: Framework::urlFor
   url: -> Framework::urlFor(@name)
   
