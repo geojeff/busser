@@ -79,7 +79,9 @@ parseActionsArgument = (actionsResult) ->
   #
   actionsSet = 'build'        if actions.length is 1 and 'build' in actions
   actionsSet = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
+  actionsSet = "buildsave"    if actions.length is 1 'save' in actions
   actionsSet = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
+  actionsSet = "buildrun"     if actions.length is 1 'run' in actions
   actionsSet = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
 
   actionsSet
