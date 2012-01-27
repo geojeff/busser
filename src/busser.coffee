@@ -35,19 +35,19 @@ catch err
 
 # appTargets are normal looking "filename" style app names as used in the busser.json
 # conf file, such as OnePointSeven-dev, where the -dev is a user chosen suffix to
-# distinguish between their another configuration, say OnePointSeven-prod, as you can
+# distinguish between another configuration of theirs, say OnePointSeven-prod, as you can
 # see in the default conf/busser.json file. So, the regular expression here allows any
-# alphanumeric characters with numbers or a dash.
+# alphanumeric characters with numbers, dashes, or underscores.
 #
 appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 
-# See the prompt result-handling method, parseActionsArgument, for design of this regular
+# See the user input-handling method, parseActionsArgument, for design of this regular
 # expression, which allows any combination of the action verbs build, save, and run, in
-# any order, and even jambed up, as buildsave or buildsaverun. But the preferred, and
+# any order, and even jambed-up, as buildsave or buildsaverun. But the preferred, and
 # documented input style is one of 'build', 'build, run', 'build, save', and 'build,
-# save, run'.
+# save, run', and the shortcuts 'run' and 'save' which will also trigger build, first.
 #
-actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<run\>*\s*]*[\s*\<save\>*\s*]*)*$/
+actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
 
 # The appTargets input, having passed the validator above, is simply split
 # on comma, then the items are trimmed.
@@ -56,12 +56,12 @@ parseAppTargetsArgument = (appTargetsResult) ->
   (target.trim() for target in appTargetsResult.split(','))
 
 # For the actions argument, the preferred style of input is to simply type
-# 'build' of 'build, save' or 'build, save, run', or 'build, run', or any of
+# 'build' or 'build, save' or 'build, save, run', or 'build, run', or any of
 # the same combinations without commas, e.g. 'build save run'. The user
 # could also enter a compound word, such as buildsaverun, or any manner of
-# incorrect order, jambed up words without commas and the like. Here we
-# simply check for presence of build, save, run and form one of several
-# actionsSets.
+# incorrect order, jambed up words without commas and the like. So, here we
+# simply check for presence of build, save, run and construct one of several
+# possible actionsSets.
 #
 parseActionsArgument = (actionsResult) ->
   actionsResult = actionsResult.toLowerCase()
@@ -71,7 +71,7 @@ parseActionsArgument = (actionsResult) ->
   actions.push 'save' if actionsResult.indexOf('save') isnt -1
   actions.push 'run' if actionsResult.indexOf('run') isnt -1
        
-  # The possible combinations for actions are these four compound actionSets, 
+  # The possible combinations for actions are these four compound actionsSets, 
   # as used internally. These could be exposed for a user API, but the freeform
   # allowance for typing build, save, and run in any order as csv input may
   # preferrable than the direct typing of these compounds, which could be harder
@@ -2020,10 +2020,10 @@ exec = (appTargets, actionsSet) ->
 #
 nconf.argv().env()
 
-# If the operating mode is prompt, which we determine by checking for an arg
-# length of 2 (node bin/busser.js), we use the prompt system. Otherwise,
-# in the else below, assume that all needed info, in addition to arguments
-# already in nconf via command line and environment, is in conf/busser.json.
+# If the operating mode is to use prompt, which we determine by checking for 
+# an arg length of 2 (node bin/busser.js), we use the prompt system. Otherwise,
+# in the else below, startup will initialize from command line arguments and/or
+# environment settings.
 #
 if process.argv.length is 2
   prompt.message = "Question!".blue
@@ -2066,7 +2066,15 @@ if process.argv.length is 2
     else
       console.log "Valid target(s) and action are needed... Please try again... Aborting."
 else
-  if nconf.get('configPath')?
+  # All info is provided as command line arguments, or from environment settings. nconf
+  # will be initialized with these, and will also be given the config file specified in
+  # the config command line argument.
+  # 
+  # First, parse the config path, which for the command line argument '--config' is used,
+  # and not the configPath internal name used in the prompt menu. The default config path
+  # is conf/busser.json.
+  #
+  if nconf.get('config')?
     try
       config_file = fs.readFileSync(nconf.get('config'), "utf-8")
       nconf.argv().env().file file: nconf.get('config')
@@ -2075,8 +2083,12 @@ else
   else
     nconf.argv().env().file file: "./conf/busser.json"
 
+  # Prepare to catch command line argument parsing errors, for appTargets and actions.
+  #
   errors = []
 
+  # Parse appTargets.
+  #
   if nconf.get('appTargets')?
     if appTargetsValidator.exec(nconf.get('appTargets'))
       appTargets = parseAppTargetsArgument nconf.get("appTargets")
@@ -2085,6 +2097,8 @@ else
   else
     errors.push "appTargets argument is missing."
       
+  # Parse actions.
+  #
   if nconf.get('actions')?
     if actionsValidator.exec(nconf.get('actions'))
       actionsSet = parseActionsArgument nconf.get('actions')
@@ -2093,6 +2107,8 @@ else
   else
     errors.push "actions argument is missing."
 
+  # Report errors or execute.
+  #
   if errors.length > 0
     console.log errors
   else
