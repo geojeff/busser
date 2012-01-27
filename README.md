@@ -6,7 +6,10 @@ Prominent Note at the Top
 
 This program does not well work yet...
 
-UPDATE 2012-01-26: Added use of prompt and color node.js modules.
+UPDATE 2012-01-26b: Added use of prompt and color node.js modules.
+
+UPDATE 2012-01-26a: Thanks to Tyler Keating for fixing the index_set.js
+bug in SproutCore master, discussed below, in 2012-01-23 entry.
 
 UPDATE 2012-01-24b: busboy, for handling the graphics side of things and 
 other "helper" tasks, has been moved from a source file within busser to
@@ -54,10 +57,10 @@ Roadmap and ToDo List
 In the short-term, certainly within the timeframe for 0.1.x incremental 
 releases, focus will be on getting Busser to work with SproutCore master, 
 the development target, for running and building the "test controls"
-SproutCore app in the SproutCore 1.7 release, using an Ace theme. 
+SproutCore app in the SproutCore 1.8 release, using an Ace theme. 
 
 A longer-term goal is to match the feature set of the Abbot/Chance build 
-tools in Ruby for the next release of SproutCore (1.8?), if not to be 
+tools in Ruby for the next release of SproutCore (1.9?), if not to be 
 incorporated as an official build tools option, to begin a life as a 
 separately maintained project as an unofficial build tools option. The 
 progression of development of official SproutCore build tools may be 
@@ -113,8 +116,8 @@ Review the url, urlFor, and similar functions in Busser, which were not
 substantially changed from garçon, to see if all of that can be simpler.
 
 Add tests, using vows perhaps, but take a fresh look at mocha and any other
-testing frameworks available. Some of the node.js modules can be used in
-concert to make fixtures and testing harnesses.
+testing frameworks available. Some of the node.js modules already employed
+in busser/busboy can be used in concert to make fixtures and testing harnesses.
 
 Support for Coffeescript programming of SproutCore will be explored and
 developed as a primary focus after the dust settles on other roadmap items.
@@ -145,6 +148,9 @@ Install with:
     npm install busser
 
 This would install the dependencies and busser, but that doesn't work yet.
+Significant note: CoffeeScript, nor the testing framework, will not be required
+in a normal user installation. This will simply be a node.js tool installable
+via npm.
 
 Development Installation
 ------------------------
@@ -178,13 +184,32 @@ If you installed coffeescript locally, you will need to use the path:
 
 After a successful step to get a bin/busser.js, you are ready to run busser,
 after adding a frameworks directory inside busser, then cloning SproutCore
-master in there (https://github.com/sproutcore/sproutcore/).
+master in there. Clone from https://github.com/sproutcore/sproutcore/.
 
 Preparing Config File
 ---------------------
 
 **Busser** uses the node.js nconf module for configurations. See the default
-conf/busser.json file for usage.
+conf/busser.json file for usage. busser.json contains the following defaults:
+
+* default-app-dev
+
+* default-app-prod
+
+* default-sc-frameworks-dev
+
+* default-sc-frameworks-prod
+
+Below these default specifications in the file, there is an apps section, where
+a developer adds their own app configurations. In the sample config file, there
+are app sections for 'OnePointSeven-dev' and 'OnePointSeven-prod' and the same
+for the test_controls app. Within each app, there are properties for basic
+metadata items and for build control settings. There is an sc-frameworks section,
+where addition SproutCore frameworks can be added, in addition to the core
+frameworks required. This will change, especially after flexibility for bundle
+support is added, but it is a start. Likewise, there is a custom-frameworks
+section for each app, for specifying configurations for external frameworks
+used from github or from in-house customizations and development.
 
 See https://github.com/flatiron/nconf for nconf details.
 

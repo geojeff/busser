@@ -15,7 +15,7 @@
     "minifyScripts": true,
     "minifyStylesheets": true
   },
-  "default-sproutcoreFrameworks-dev": {
+  "default-sc-frameworks-dev": {
     "ajax": {
       "name": "ajax",
       "path": "frameworks/sproutcore/frameworks/ajax",
@@ -201,7 +201,7 @@
       "minifyStylesheets": false
     }
   },
-  "default-sproutcoreFrameworks-prod": {
+  "default-sc-frameworks-prod": {
     "ajax": {
       "name": "ajax",
       "path": "frameworks/sproutcore/frameworks/ajax",
@@ -398,7 +398,7 @@
       "combineStylesheets": true,
       "minifyScripts": false,
       "minifyStylesheets": false,
-      "sproutcoreFrameworks": [
+      "sc-frameworks": [
         { "name": "jquery",          "conf": "dev" },
         { "name": "runtime",         "conf": "dev" },
         { "name": "core_foundation", "conf": "dev" },
@@ -408,7 +408,7 @@
         { "name": "desktop",         "conf": "dev" },
         { "name": "template_view",   "conf": "dev" }
       ],
-      "customFrameworks": [
+      "custom-frameworks": [
         { "name": "empty_theme",     
           "conf": { 
             "name": "empty_theme",
@@ -440,7 +440,7 @@
       "minifyScripts": true,
       "minifyStylesheets": true,
       "pathsToExclude": [ "/fixtures\//" ],
-      "sproutcoreFrameworks": [
+      "sc-frameworks": [
         { "name": "jquery",          "conf": "prod" },
         { "name": "runtime",         "conf": "prod" },
         { "name": "core_foundation", "conf": "prod" },
@@ -450,7 +450,7 @@
         { "name": "desktop",         "conf": "prod" },
         { "name": "template_view",   "conf": "prod" }
       ],
-      "customFrameworks": [
+      "custom-frameworks": [
         { "name": "empty_theme",     
           "conf": { 
             "path": "frameworks/sproutcore/themes/empty_theme",
@@ -481,7 +481,7 @@
       "combineStylesheets": true,
       "minifyScripts": false,
       "minifyStylesheets": false,
-      "sproutcoreFrameworks": [
+      "sc-frameworks": [
         { "name": "jquery",          "conf": "dev" },
         { "name": "runtime",         "conf": "dev" },
         { "name": "core_foundation", "conf": "dev" },
@@ -492,7 +492,7 @@
         { "name": "desktop",         "conf": "dev" },
         { "name": "template_view",   "conf": "dev" }
       ],
-      "customFrameworks": [
+      "custom-frameworks": [
         { "name": "empty_theme",     
           "conf": { 
             "name": "empty_theme",
@@ -524,7 +524,7 @@
       "minifyScripts": true,
       "minifyStylesheets": true,
       "pathsToExclude": [ "/fixtures\//" ],
-      "sproutcoreFrameworks": [
+      "sc-frameworks": [
         { "name": "jquery",          "conf": "prod" },
         { "name": "runtime",         "conf": "prod" },
         { "name": "core_foundation", "conf": "prod" },
@@ -534,7 +534,7 @@
         { "name": "desktop",         "conf": "prod" },
         { "name": "template_view",   "conf": "prod" }
       ],
-      "customFrameworks": [
+      "custom-frameworks": [
         { "name": "empty_theme",     
           "conf": { 
             "path": "frameworks/sproutcore/themes/empty_theme",

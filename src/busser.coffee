@@ -79,9 +79,9 @@ parseActionsArgument = (actionsResult) ->
   #
   actionsSet = 'build'        if actions.length is 1 and 'build' in actions
   actionsSet = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
-  actionsSet = "buildsave"    if actions.length is 1 'save' in actions
+  actionsSet = "buildsave"    if actions.length is 1 and 'save' in actions
   actionsSet = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
-  actionsSet = "buildrun"     if actions.length is 1 'run' in actions
+  actionsSet = "buildrun"     if actions.length is 1 and 'run' in actions
   actionsSet = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
 
   actionsSet
@@ -1959,8 +1959,8 @@ class Server
 exec = (appTargets, actionsSet) ->
   defaultAppDevConf = nconf.get("default-app-dev")
   defaultAppProdConf = nconf.get("default-app-prod")
-  defaultFrameworksDevConf = nconf.get("default-sproutcoreFrameworks-dev")
-  defaultFrameworksProdConf = nconf.get("default-sproutcoreFrameworks-prod")
+  defaultFrameworksDevConf = nconf.get("default-sc-frameworks-dev")
+  defaultFrameworksProdConf = nconf.get("default-sc-frameworks-prod")
   
   apps = []
   appConfigurations = nconf.get("apps")
@@ -1982,7 +1982,7 @@ exec = (appTargets, actionsSet) ->
       myApp.frameworks = []
       myApp.frameworks.push new BootstrapFramework()
   
-      for fwConf in appConf["sproutcoreFrameworks"]
+      for fwConf in appConf["sc-frameworks"]
         switch fwConf.conf
           when "dev" then myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
           when "prod" then myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
@@ -1991,7 +1991,7 @@ exec = (appTargets, actionsSet) ->
           when fwConf.conf instanceof Object
             myApp.frameworks.push new Framework(fwConf.conf)
   
-      for fwConf in appConf["customFrameworks"]
+      for fwConf in appConf["custom-frameworks"]
         if fwConf.conf instanceof Object
           myApp.frameworks.push new Framework(fwConf.conf)
     
