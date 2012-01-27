@@ -1,8 +1,8 @@
 // ==========================================================================
-// Project:   OnePointSeven
+// Project:   HelloWorld
 // Copyright: @2011 My Company, Inc.
 // ==========================================================================
-/*globals OnePointSeven */
+/*globals HelloWorld */
 
 // This is the function that will start your app running.  The default
 // implementation will load any fixtures you have created then instantiate
@@ -11,22 +11,22 @@
 // As you develop your application you will probably want to override this.
 // See comments for some pointers on what to do next.
 //
-OnePointSeven.main = function main() {
+HelloWorld.main = function main() {
 
   // Step 1: Instantiate Your Views
   // The default code here will make the mainPane for your application visible
   // on screen.  If you app gets any level of complexity, you will probably 
   // create multiple pages and panes.  
-  console.log(SC.inspect(OnePointSeven.getPath('mainPage.mainPane').childViews));
-  OnePointSeven.getPath('mainPage.mainPane').append() ;
+  console.log(SC.inspect(HelloWorld.getPath('mainPage.mainPane').childViews));
+  HelloWorld.getPath('mainPage.mainPane').append() ;
   console.log("Appended mainPage.mainPane");
 
   // Step 2. Set the content property on your primary controller.
   // This will make your app come alive!
 
   // TODO: Set the content property on your primary controller
-  // ex: OnePointSeven.contactsController.set('content',OnePointSeven.contacts);
+  // ex: HelloWorld.contactsController.set('content',HelloWorld.contacts);
 
 } ;
 
-function main() { OnePointSeven.main(); }
+function main() { HelloWorld.main(); }

@@ -34,8 +34,8 @@ catch err
   console.log "Running without colors module..."
 
 # appTargets are normal looking "filename" style app names as used in the busser.json
-# conf file, such as OnePointSeven-dev, where the -dev is a user chosen suffix to
-# distinguish between another configuration of theirs, say OnePointSeven-prod, as you can
+# conf file, such as HelloWorld-dev, where the -dev is a user chosen suffix to
+# distinguish between another configuration of theirs, say HelloWorld-prod, as you can
 # see in the default conf/busser.json file. So, the regular expression here allows any
 # alphanumeric characters with numbers, dashes, or underscores.
 #

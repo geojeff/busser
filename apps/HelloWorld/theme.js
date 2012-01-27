@@ -1,8 +1,8 @@
 // ==========================================================================
-// Project:   OnePointSeven
+// Project:   HelloWorld
 // Copyright: @2011 My Company, Inc.
 // ==========================================================================
-/*globals OnePointSeven */
+/*globals HelloWorld */
 
 // This is the theme that defines how your app renders.
 //
@@ -15,16 +15,16 @@
 //
 // NOTE: if you want to change the theme this one is based on, don't
 // forget to change the :css_theme property in your buildfile.
-console.log(SC.inspect(OnePointSeven));
-OnePointSeven.Theme = SC.AceTheme.create({
-  name: 'OnePointSeven'
+console.log(SC.inspect(HelloWorld));
+HelloWorld.Theme = SC.AceTheme.create({
+  name: 'HelloWorld'
 });
 
-console.log(SC.inspect(OnePointSeven.Theme));
+console.log(SC.inspect(HelloWorld.Theme));
 
 // SproutCore needs to know that your app's theme exists
-SC.Theme.addTheme(OnePointSeven.Theme);
+SC.Theme.addTheme(HelloWorld.Theme);
 
 // Setting it as the default theme makes every pane SproutCore
 // creates default to this theme unless otherwise specified.
-SC.defaultTheme = 'OnePointSeven';
+SC.defaultTheme = 'HelloWorld';

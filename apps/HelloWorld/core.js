@@ -1,8 +1,8 @@
 // ==========================================================================
-// Project:   OnePointSeven
+// Project:   HelloWorld
 // Copyright: @2011 My Company, Inc.
 // ==========================================================================
-/*globals OnePointSeven */
+/*globals HelloWorld */
 
 /** @namespace
 
@@ -10,10 +10,10 @@
   
   @extends SC.Object
 */
-OnePointSeven = SC.Application.create(
-  /** @scope OnePointSeven.prototype */ {
+HelloWorld = SC.Application.create(
+  /** @scope HelloWorld.prototype */ {
 
-  NAMESPACE: 'OnePointSeven',
+  NAMESPACE: 'HelloWorld',
   VERSION: '0.1.0'
 
   // This is your application store.  You will use this store to access all

@@ -388,10 +388,10 @@
     }
   },
   "apps": {
-    "OnePointSeven-dev": {
-      "name": "OnePointSeven",
+    "HelloWorld-dev": {
+      "name": "HelloWorld",
       "title": "One Point Seven",
-      "path": "apps/OnePointSeven",
+      "path": "apps/HelloWorld",
       "theme": "sc-theme",
       "buildLanguage": "english",
       "combineScripts": true,
@@ -431,8 +431,8 @@
         }
       ]
     },
-    "OnePointSeven-prod": {
-      "name": "OnePointSeven",
+    "HelloWorld-prod": {
+      "name": "HelloWorld",
       "theme": "sc-theme",
       "buildLanguage": "english",
       "combineScripts": true,

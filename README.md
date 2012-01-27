@@ -202,7 +202,7 @@ conf/busser.json file for usage. busser.json contains the following defaults:
 
 Below these default specifications in the file, there is an apps section, where
 a developer adds their own app configurations. In the sample config file, there
-are app sections for 'OnePointSeven-dev' and 'OnePointSeven-prod' and the same
+are app sections for 'HelloWorld-dev' and 'HelloWorld-prod' and the same
 for the test_controls app. Within each app, there are properties for basic
 metadata items and for build control settings. There is an sc-frameworks section,
 where addition SproutCore frameworks can be added, in addition to the core
@@ -226,7 +226,7 @@ which will prompt for the following input items:
 
 * configPath -- Use the default 'conf/busser.json' until you have a need to customize.
 
-* appTargets -- Use the test app 'OnePointSeven-dev' for which info is in busser.json.
+* appTargets -- Use the test app 'HelloWorld-dev' for which info is in busser.json.
 This is designed to take multiple targets in comma-delimited format, but for now
 one app at a time works.
 
@@ -248,7 +248,7 @@ You should see a colorized report to the console after executing.
 
 For build, save, run, you will see the same output, finishing with a message that 
 the server is now running on localhost, port 8000. In that event, visit
-localhost:8000/OnePointSeven to show the app, which, as of 2012-01-23, will
+localhost:8000/HelloWorld to show the app, which, as of 2012-01-23, will
 show the first window and pane skewed far left, unusable (Ace problems, probably...).
 
 It is not necessary to save -- during development, you will commonly use build, run.
