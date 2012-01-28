@@ -301,7 +301,7 @@ good.
 
 Other websites:
 
-[Smooth Coffeescript](http://autotelicum.github.com/Smooth-CoffeeScript/)
+[Smooth Coffeescript](http://autotelicum.github.com/Smooth-CoffeeScript/) (This book is interactive).
 
 [The Little Book of CoffeeScript](http://arcturo.github.com/library/coffeescript/index.html)
 
