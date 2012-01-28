@@ -1,6 +1,3 @@
-# busser.coffee
-#
- 
 util         = require "util"
 fs           = require "fs"
 http         = require "http"
@@ -8,18 +5,12 @@ url          = require "url"
 path_module  = require "path"
 nconf        = require "nconf"
 prompt       = require "prompt"
-#stylus       = require "stylus"
-#scss         = require "scss"
-#csslike      = require "csslike"
-#express      = require "express"
-#browserify   = require "browserify"
 {exec}       = require "child_process"
 {spawn}      = require "child_process"
 EventEmitter = require('events').EventEmitter
 uglify =
   parser: require("uglify-js").parser
   processor: require("uglify-js").uglify
-#jslint       = require("./jslint").JSLINT
 
 try
   less = require("less")
@@ -33,6 +24,9 @@ try
 catch err
   console.log "Running without colors module..."
 
+# Input Arguments Handling
+# ------------------------
+#
 # appTargets are normal looking "filename" style app names as used in the busser.json
 # conf file, such as HelloWorld-dev, where the -dev is a user chosen suffix to
 # distinguish between another configuration of theirs, say HelloWorld-prod, as you can
@@ -86,6 +80,9 @@ parseActionsArgument = (actionsResult) ->
 
   actionsSet
 
+# File Extension and Type Functions
+# ---------------------------------
+
 # Use the node.js path module to pull the file extension from the path.
 #
 extname = (path) ->
@@ -125,6 +122,9 @@ fileClassType = (file) ->
   return "BootstrapVirtualScriptFile" if file instanceof BootstrapVirtualScriptFile
   return "File" if file instanceof File
 
+# Language Handling
+# -----------------
+#
 # defaultLanguage and buildLanguage are set as globals for now, but should
 # be handled in general busser.conf. [TODO]
 #
@@ -159,6 +159,9 @@ languageInPath = (path) ->
   match = /([a-z]+)\.lproj\//.exec(path)
   (if match is null then null else match[1])
 
+# File Reading Queue System
+# -------------------------
+#
 # The following section is for the system setting to allow a higher number of open
 # files during processing. See the mauritslamers versions of garcon for the history
 # of "upping" the values.
@@ -197,6 +200,9 @@ dequeue = ->
 readFile = (path, callback) ->
   queue [ "readFile", path, callback ]
 
+# Date Handling
+# -------------
+#
 # The following block of Date Format code is from the martoche version of garcon. The
 # mauritslamers version of garcon improves date handling.
 #
@@ -300,6 +306,9 @@ dateFormat.i18n =
 Date::format = (mask, utc) ->
   dateFormat this, mask, utc
 
+# String Substitution
+# -------------------
+#
 # gsub, from Ruby, is added to the prototyp of String here. See:
 # http://flochip.com/2011/09/06/rubys-string-gsub-in-javascript/
 #
@@ -318,8 +327,11 @@ String::gsub = (re, callback) ->
       source = ""
   result
 
-# 
-# Class Handler
+# File Handler System
+# ===================
+#
+# Handler
+# -------
 # 
 # Synopsis: 
 #   
@@ -346,7 +358,8 @@ class Handler
 
     @[key] = options[key] for own key of options
 
-# Class HandlerSet
+# HandlerSet
+# ----------
 # 
 # Synopsis: 
 #
@@ -397,6 +410,9 @@ class HandlerSet
     headHandler = @head()
     headHandler.exec(file, request, callback)
 
+# Busser
+# ------
+#
 # The Busser class is the main workhorse for the build system. It contains the
 # code for available handlers and related utility functions. The handlerSet
 # method is used to create HandlerSet instances with a subset of available
@@ -895,6 +911,12 @@ class Busser
         else
           callback data: if data.length is 0 then "" else data
 
+# Main Classes
+# ============
+#
+# Framework
+# ---------
+#
 # The Framework class contains the build() method and related methods for
 # processing files in an on-disk project framework, which is a directory with
 # javascript, css, and image files. Frameworks constitute different parts of
@@ -1383,6 +1405,9 @@ resourceHandlerSet = busser.handlerSet("resource", "/", [ "ifModifiedSince", "co
 uncombinedScriptHandlerSet = busser.handlerSet("uncombined script", "/", [ "contentType", "file" ])
 joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
+# Reference
+# ---------
+#
 # The Reference class is a simple url/file couplet. It is used for html and symlink files, 
 # and for the virtual stylesheet and script files.
 #
@@ -1391,6 +1416,9 @@ class Reference
     @url ?= null
     @file ?= null
 
+# File
+# ----
+#
 # The File class holds information about an on-disk file or a virtual file, which is
 # an abstraction for a framework directory. The children array is used for virtual
 # files, either the VirtualStylesheetFile or VirtualScriptFile derived classes. The
@@ -1441,6 +1469,9 @@ class File
     catch e
       throw e  if e.code isnt "EEXIST"
 
+# SymlinkFile
+# -----------
+#
 # SymlinkFile is used for the instance of a symlink to the root html file.
 #
 class SymlinkFile extends File
@@ -1449,6 +1480,9 @@ class SymlinkFile extends File
     @handlerSet = rootSymlinkHandlerSet
     @[key] = options[key] for own key of options
 
+# RootContentHtmlFile
+# -------------------
+#
 # The RootContentHtmlFile contains the html with main links to a project's stylesheets,
 # scripts, and resources. Its rootContentHtmlHandlerSet has cache, contentType, and file
 # handlers, so that during serving it is read once, then cached. The RootContentHtmlFile
@@ -1539,6 +1573,9 @@ class RootContentHtmlFile extends File
       
     callback null, html
 
+# StylesheetFile
+# --------------
+#
 # StylesheetFile is a class for .css and related file types.
 #
 class StylesheetFile extends File
@@ -1547,6 +1584,9 @@ class StylesheetFile extends File
     @handlerSet = stylesheetHandlerSet
     @[key] = options[key] for own key of options
 
+# MinifiedStylesheetFile 
+# ----------------------
+#
 # MinifiedStylesheetFile is a class for .css and related file types, minified.
 #
 class MinifiedStylesheetFile extends File
@@ -1555,6 +1595,9 @@ class MinifiedStylesheetFile extends File
     @handlerSet = minifiedStylesheetHandlerSet
     @[key] = options[key] for own key of options
 
+# ScriptFile
+# ----------
+#
 # ScriptFile is a class for .js files.
 #
 class ScriptFile extends File
@@ -1563,6 +1606,9 @@ class ScriptFile extends File
     @handlerSet = scriptHandlerSet
     @[key] = options[key] for own key of options
 
+# MinifiedScriptFile
+# ------------------
+#
 # MinifiedScriptFile is a class for .js files, minified.
 #
 class MinifiedScriptFile extends File
@@ -1571,6 +1617,9 @@ class MinifiedScriptFile extends File
     @handlerSet = minifiedScriptHandlerSet
     @[key] = options[key] for own key of options
 
+# TestFile
+# --------
+#
 # TestFile is a class for .js files used in testing, and are idendified
 # as such by matching against a set of known directory names in paths.
 #
@@ -1580,6 +1629,9 @@ class TestFile extends File
     @handlerSet = testHandlerSet
     @[key] = options[key] for own key of options
 
+# ResourceFile
+# ------------
+#
 # ResourceFile is a class for a variety of image types used in a project,
 # defined in the static property resourceExtensions.
 #
@@ -1591,6 +1643,9 @@ class ResourceFile extends File
 
   @resourceExtensions = ['.png', '.jpg', '.gif', '.svg']
 
+# VirtualStylesheetFile
+# ---------------------
+#
 # The VirtualStylesheetFile class is an extension of StylesheetFile, for use in
 # handling framework directories that contain individual stylesheet files. So,
 # by virtual here, we refer to the fact that the file is not actually found on
@@ -1605,6 +1660,9 @@ class VirtualStylesheetFile extends StylesheetFile
     @handlerSet = virtualStylesheetHandlerSet
     @[key] = options[key] for own key of options
 
+# VirtualScriptFile
+# -----------------
+#
 # The VirtualScriptFile extends ScriptFile, for use in handling script files in
 # a framework. It is identical in structure to VirtualStylesheetFile, with the
 # addition of two methods, headFile and tailFile, which contain javascript to be
@@ -1622,6 +1680,9 @@ class VirtualScriptFile extends ScriptFile
     @handlerSet = virtualScriptHandlerSet
     @[key] = options[key] for own key of options
 
+# BootstrapFramework
+# ------------------
+#
 # The BootstrapFramework class has headFile and tailFile methods that return
 # needed script fragments before and after child files in the bootstrap
 # framework, the files of which are read from disk in the build procedure.
@@ -1656,6 +1717,9 @@ class BootstrapFramework extends Framework
 
   #@virtualScriptFile = new BootstrapVirtualScriptFile()
 
+# App
+# ---
+#
 # The App class contains metadata properties for a single SproutCore application, along
 # with build-specific properties and their default values. An App is Framework-like, in
 # the similarity of properties. It contains a list of frameworks and a files associative
@@ -1859,6 +1923,9 @@ class App
       fs.writeFile path, data, (err) ->
         throw err  if err
 
+# Server
+# ======
+#
 class Server
   constructor: (options={}) ->
     @port = 8000
@@ -1955,6 +2022,7 @@ class Server
       console.log '  PORT:', @port
 
 # Instantiation and Execution
+# ===========================
 #
 exec = (appTargets, actionsSet) ->
   defaultAppDevConf = nconf.get("default-app-dev")
