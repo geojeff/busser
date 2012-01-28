@@ -108,7 +108,7 @@ their project file name, app name or version, build action, etc. And the
 colors module can be used for custom reporting from the server and in 
 analysis printouts.]
 
-Format the docco presentation by customizing docco css for the project.
+[ **DONE 2012-01-28** Format the docco presentation by customizing docco css for the project.]
 
 Make Busser into an installable npm module.
 
