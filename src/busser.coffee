@@ -22,7 +22,6 @@ catch e
   util.puts "         You won't be able to parse .less files."
   util.puts "         Install it with `npm install less`."
 
-
 # Input Arguments Handling
 # ------------------------
 #
@@ -682,7 +681,7 @@ class Busser
       data = data.toString("utf8").gsub(re, (match) ->
         path = path_module.join(dirname, match[3])
 
-        if path in resourceUrls is false
+        if path not in resourceUrls
           for prefix in [ "", "images" ]
             for extname in ResourceFile.resourceExtensions
               alternatePath = path_module.join(dirname, prefix, match[3] + extname)
@@ -907,7 +906,7 @@ busser = new Busser
 # list returned is filtered for known non-handler properties and methods.
 #
 availableHandlerNames  = ->
-  (h for own h of busser when h in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ] is false)
+  (h for own h of busser when h not in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ])
 
 # **HandlerSet** singletons are used in the specialized File subclasses defined
 # below. The names of the handlerSets match the **File** subclasses, generally,
@@ -1180,7 +1179,7 @@ class Framework
     else
       recursionHistory.push file
 
-    if file in orderedFiles is false
+    if file not in orderedFiles
       if file.deps?
         for url in file.deps
           len = files.length
