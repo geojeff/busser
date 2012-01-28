@@ -29,7 +29,7 @@ commented out, the hello world app now comes up. Woohoo!
 Description
 ===========
 
-**Busser** is a node.js development system for SproutCore written in Coffeescript.
+**Busser** is a node.js development system for SproutCore written in CoffeeScript.
 
 This project is based on garçon, which was written by Martin Ottenwaelter 
 (martoche) and updated substantially by Maurits Lamers (mauritslamers). 
@@ -40,14 +40,14 @@ Please see these github repos for the basis of work here:
 
   https://github.com/mauritslamers/garçon
 
-During development of this Coffeescript version, discussion with Maurits
+During development of this CoffeeScript version, discussion with Maurits
 Lamers for background and for explanation has been very important. The
 martoche version of garçon was used as a starting point for the current
 development, followed by comparison to the later mauritslamers versions.
 
 General similarities to garçon remain in the first version of Busser, but 
 reorganization and renaming of variables has happened in course, to adapt 
-to the Coffeescript ways of doing things, and to add understanding where
+to the CoffeeScript ways of doing things, and to add understanding where
 needed. Several node.js libraries have been added to the mix, and to 
 attempt to find and follow best practices for their use.
 
@@ -85,7 +85,7 @@ by Erich Ocean (erichocean), https://github.com/fohr/blossom.  Blossom's
 build tools take a fresh approach to the way SproutCore frameworks are 
 incorporated, attendant with a refactoring of framework configuration 
 specific to Blossom. An abstraction like this might be a good fit for 
-implementation in Coffeescript, but must be compared to the merits of the 
+implementation in CoffeeScript, but must be compared to the merits of the 
 fine-grained simple json configuration files, via nconf, now in Busser.
 
 The design and operation of Abbot, the very capable Ruby-based development
@@ -119,18 +119,18 @@ Add tests, using vows perhaps, but take a fresh look at mocha and any other
 testing frameworks available. Some of the node.js modules already employed
 in busser/busboy can be used in concert to make fixtures and testing harnesses.
 
-Support for Coffeescript programming of SproutCore will be explored and
+Support for CoffeeScript programming of SproutCore will be explored and
 developed as a primary focus after the dust settles on other roadmap items.
-Busser was written in Coffeescript as an exploration to learn the language
+Busser was written in CoffeeScript as an exploration to learn the language
 and to test its viability. This experience has been so favorable that an 
-expansion for support of Coffeescript programming for SproutCore development
+expansion for support of CoffeeScript programming for SproutCore development
 is a goal.
 
 Another original goal of the project has been reevaluated after saturation in
-Coffeescript programming: to offer a Python version of the build tools or to 
+CoffeeScript programming: to offer a Python version of the build tools or to 
 wrap/incorporate the build tools in an effective Python development environment. 
 Instead of writing a version in Python, using a common API, the similarity of
-Coffeescript to Python is now deemed enough to serve as a draw to Python
+CoffeeScript to Python is now deemed enough to serve as a draw to Python
 programmers who wish to understand or modify the build tools. This goal exists 
 primarily for addressing a perceived missed opportunity to empower and draw in
 new users of SproutCore from the Python community, which many of us already 
@@ -301,21 +301,28 @@ good.
 
 Other websites:
 
-[Smooth Coffeescript](http://autotelicum.github.com/Smooth-CoffeeScript/) (This book is interactive).
-
 [The Little Book of CoffeeScript](http://arcturo.github.com/library/coffeescript/index.html)
 
-[Coffeescript Cookbook](http://coffeescriptcookbook.com/)
+[Smooth CoffeeScript](http://autotelicum.github.com/Smooth-CoffeeScript/) (This book is interactive).
 
-[Coffeescript One-liners](http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html)
+[CoffeeScript Cookbook](http://coffeescriptcookbook.com/)
+
+[CoffeeScript One-liners](http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html)
 
 When first starting, use [js2coffee.org](http://js2coffee.org/) to experiment. It is still handy after you
 have learned coffeescript pretty well.
 
 A very nice video for background and "top ten" favorites is by Sam Stephenson:
 
-[Better JS with Coffeescript](http://vimeo.com/35258313)
+[Better JS with CoffeeScript](http://vimeo.com/35258313)
+
+and another by Trevor Burnham:
+
+(Introduction to CoffeeScript)[http://screencasts.org/episodes/introduction-to-coffeescript], which is related
+to his book on CoffeeScript: [*CoffeeScript: Accelerated JavaScript Development*](http://pragprog.com/book/tbcoffee/coffeescript).
 
 Color-coding for coffeescript code is really nice to use.  There are many [editor plugins](https://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins).
 
+See also the file CoffeeScriptHelp.md in the docs directory for help in learning
+CoffeeScript in the context of busser.
 

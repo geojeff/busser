@@ -394,9 +394,7 @@ class Handler
 #   the head, via the return sequence of callbacks.
 #
 class HandlerSet
-  constructor: (name, urlPrefix) ->
-    @name = name
-    @urlPrefix = if urlPrefix? then urlPrefix else "/"
+  constructor: (@name, @urlPrefix="/") ->
     @handlers  = []
 
   # *head* returns the first handler in the **HandlerSet** instance.
@@ -487,10 +485,9 @@ class Busser
     # maxMtime value that is returned upon completion of the scan.
     #
     class Scanner extends process.EventEmitter
-      constructor: (files) ->
-        @count = if files? then files.length else 0
+      constructor: (@files=[]) ->
+        @count = @files.length
         @maxMtime = 0
-        @files = if files? then files else []
 
       scan: ->
         for file in @files
@@ -588,8 +585,7 @@ class Busser
   #
   @minifyStylesheet: (dataToMinify, callback) ->
     class Minifier extends process.EventEmitter
-      constructor: (incomingData) ->
-        @incomingData = incomingData
+      constructor: (@incomingData) ->
         @minifiedData = ''
 
       minify: ->
@@ -616,8 +612,7 @@ class Busser
   #
   @minifyScript: (dataToMinify, callback) ->
     class Minifier extends process.EventEmitter
-      constructor: (incomingData) ->
-        @incomingData = incomingData
+      constructor: (@incomingData) ->
         @minifiedData = ''
 
       minify: ->
@@ -1139,9 +1134,7 @@ class Framework
   #
   computeDependencies: (files, callback) ->
     class FileDependenciesComputer
-      constructor: (file, framework) ->
-        @file = file
-        @framework = framework
+      constructor: (@file, @framework) ->
 
       readFileAndCompute: (callbackAfterFileDependencies) ->
         readFile @file.path, (err, data) =>
@@ -1155,10 +1148,8 @@ class Framework
           callbackAfterFileDependencies()
 
     class DependenciesComputer extends process.EventEmitter
-      constructor: (files, framework) ->
-        @count = if files? then files.length else 0
-        @files = if files? then files else null
-        @framework = if framework? then framework else null
+      constructor: (@files=[], @framework) ->
+        @count = @files.length
 
       compute: ->
         if @count > 0
@@ -1407,8 +1398,6 @@ class Framework
 #
 class Reference
   constructor: (@url, @file) ->
-    @url ?= null
-    @file ?= null
 
 # File
 # ----
@@ -1817,10 +1806,7 @@ class App
     @buildVersion = new Date().getTime()
 
     class Saver
-      constructor: (buildVersion, app, file) ->
-        @buildVersion = if buildVersion? then buildVersion else null
-        @app = if app? then app else null
-        @file = if file? then file else null
+      constructor: (@buildVersion, @app, @file) ->
         
       save: ->
         @file.handlerSet.exec @file, null, (response) =>
