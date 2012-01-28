@@ -1028,28 +1028,28 @@ class Framework
 
   # Frameworks are known in a built or deployed project by their names and are
   # referred to with file urls, so the paths in the original project can be
-  # simplified by omitting unneeded elements. 
+  # simplified by omitting common path elements. For example,
+  #
+  #     '/frameworks/sproutcore/frameworks/runtime/system/index_set.js'
+  #
+  #   becomes
+  #
+  #     '/sproutcore/runtime/system/index_set.js'
   #
   reducedPathFor: (path) ->
     path.replace /(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g, ""
   
-  # [TODO] The urlFor method previously had @buildVersion as the first part
-  # of the join, but this was recently removed... If the buildVersion is set
-  # only during the save process, and not propagated down to frameworks, then
-  # the urls for frameworks must be prepended with buildVersion in some or
-  # all cases.
-  #
-  # Note that this is the same as reducedPathFor.
+  # A url consists of the joined buildVersion and reducedPath.
   #
   urlFor: (path) ->
     path_module.join @buildVersion, @reducedPathFor(path)
   
-  # See [TODO] note in urlFor...
+  # Same as reducedPathFor, as a convenience call for reducedPathFor(@path).
   #
   reducedPath: ->
     @reducedPathFor(@path)
   
-  # See [TODO] note in urlFor...
+  # The url for this framework is made by urlFor @path, reduced.
   #
   url: ->
     @urlFor(@reducedPath())
@@ -1085,7 +1085,7 @@ class Framework
   # and making a list of urls, built from paths of dependencies, with .js 
   # added, in each file's new deps array.
   #
-  # When finished, the callback is fired with list of files, which then
+  # When finished, the callback is fired with the list of files, which then
   # have their .deps arrays added.
   #
   computeDependencies: (files, callback) ->
