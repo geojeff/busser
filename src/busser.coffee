@@ -7,6 +7,7 @@ url          = require "url"
 path_module  = require "path"
 nconf        = require "nconf"
 prompt       = require "prompt"
+colors       = require "colors"
 {exec}       = require "child_process"
 {spawn}      = require "child_process"
 EventEmitter = require('events').EventEmitter
@@ -21,10 +22,6 @@ catch e
   util.puts "         You won't be able to parse .less files."
   util.puts "         Install it with `npm install less`."
 
-try
-  colors = require "colors"
-catch err
-  console.log "Running without colors module..."
 
 # Input Arguments Handling
 # ------------------------
