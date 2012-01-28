@@ -303,6 +303,8 @@ Other websites:
 
 [Smooth Coffeescript](http://autotelicum.github.com/Smooth-CoffeeScript/)
 
+[The Little Book of CoffeeScript](http://arcturo.github.com/library/coffeescript/index.html)
+
 [Coffeescript Cookbook](http://coffeescriptcookbook.com/)
 
 [Coffeescript One-liners](http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html)
