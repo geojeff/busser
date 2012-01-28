@@ -1,3 +1,5 @@
+# -----
+ 
 util         = require "util"
 fs           = require "fs"
 http         = require "http"
@@ -27,7 +29,7 @@ catch err
 # Input Arguments Handling
 # ------------------------
 #
-# appTargets are normal looking "filename" style app names as used in the busser.json
+# *appTargets* are normal looking "filename" style app names as used in the busser.json
 # conf file, such as HelloWorld-dev, where the -dev is a user chosen suffix to
 # distinguish between another configuration of theirs, say HelloWorld-prod, as you can
 # see in the default conf/busser.json file. So, the regular expression here allows any
@@ -35,7 +37,7 @@ catch err
 #
 appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 
-# See the user input-handling method, parseActionsArgument, for design of this regular
+# See the user input-handling method, *parseActionsArgument*, for design of this regular
 # expression, which allows any combination of the action verbs build, save, and run, in
 # any order, and even jambed-up, as buildsave or buildsaverun. But the preferred, and
 # documented input style is one of 'build', 'build, run', 'build, save', and 'build,
@@ -43,7 +45,7 @@ appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 #
 actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
 
-# The appTargets input, having passed the validator above, is simply split
+# The *appTargets* input, having passed the validator above, is simply split
 # on comma, then the items are trimmed.
 #
 parseAppTargetsArgument = (appTargetsResult) ->
@@ -88,7 +90,7 @@ parseActionsArgument = (actionsResult) ->
 extname = (path) ->
   path_module.extname(path)
 
-# The fileType function is used to identify paths by their file extension.
+# The *fileType* function is used to identify paths by their file extension.
 #
 fileType = (path) ->
   ext = extname(path)
@@ -98,17 +100,17 @@ fileType = (path) ->
   return "resource"   if ext in ResourceFile.resourceExtensions
   return "unknown"
 
-# isStylesheet and the others in this set of functions are for shorthand reference.
+# *isStylesheet* and the others in this set of functions are for shorthand reference.
 #
 isStylesheet = (file) -> fileType(file.path) is "stylesheet"
 isScript = (file) -> fileType(file.path) is "script"
 isTest = (file) -> fileType(file.path) is "test"
 isResource = (file) -> fileType(file.path) is "resource"
 
-# fileClassType is a utility function for use on the File class and its
+# *fileClassType* is a utility function for use on the **File** class and its
 # derivatives.
 #
-# fileClassType uses instanceof, which would be true for superclasses, as
+# *fileClassType* uses instanceof, which would be true for superclasses, as
 # well as the actual class, so put subclasses before superclasses in the checks.
 #
 fileClassType = (file) ->
@@ -125,13 +127,13 @@ fileClassType = (file) ->
 # Language Handling
 # -----------------
 #
-# defaultLanguage and buildLanguage are set as globals for now, but should
+# *defaultLanguage* and *buildLanguage* are set as globals for now, but should
 # be handled in general busser.conf. [TODO]
 #
 defaultLanguage = "english"
 buildLanguage = "english"
 
-# buildLanguageAbbreviations is a global hash, where keys are language names
+# *buildLanguageAbbreviations* is a global hash, where keys are language names
 # and values are abbreviations.
 #
 buildLanguageAbbreviations =
@@ -142,7 +144,7 @@ buildLanguageAbbreviations =
   spanish: "es"
   italian: "it"
 
-# buildLanguageAbbreviation is a utility function for returning the abbreviation
+# *buildLanguageAbbreviation* is a utility function for returning the abbreviation
 # matching the buildLanguage given in the configuration.
 #
 buildLanguageAbbreviation = (buildLanguage) ->
@@ -151,7 +153,7 @@ buildLanguageAbbreviation = (buildLanguage) ->
   else
     "en"
 
-# languageInPath returns null or the language abbreviation in the path, where
+# *languageInPath* returns null or the language abbreviation in the path, where
 # the path "apps/myapp/en.lproj/main.js" would evaluate to "en". A language
 # fullname, e.g., "english.lproj", is also possible.
 #
@@ -162,7 +164,7 @@ languageInPath = (path) ->
 # File Reading Queue System
 # -------------------------
 #
-# The following section is for the system setting to allow a higher number of open
+# This section is for the system setting to allow a higher number of open
 # files during processing. See the mauritslamers versions of garcon for the history
 # of "upping" the values.
 #
@@ -178,9 +180,8 @@ guessMaxSimultaneouslyOpenedFileDescriptors = ->
 
 guessMaxSimultaneouslyOpenedFileDescriptors()
 
-# The following section, for queue, dequeue, and readFile, is from the original garcon.
-# It is tied to the system settings for file descriptors above. Look at the content method
-# in File and derivatives for calls to readFile.
+# *queue*, *dequeue*, and *readFile*, are tied to the system settings for file descriptors 
+# above. Look at the content method in **File** and derivatives for calls to *readFile*.
 #
 queue = (method) ->
   @_queue = []  unless @_queue
@@ -203,7 +204,7 @@ readFile = (path, callback) ->
 # Date Handling
 # -------------
 #
-# The following block of Date Format code is from the martoche version of garcon. The
+# This block of Date Format code is from the martoche version of garcon. The
 # mauritslamers version of garcon improves date handling.
 #
 
@@ -309,7 +310,7 @@ Date::format = (mask, utc) ->
 # String Substitution
 # -------------------
 #
-# gsub, from Ruby, is added to the prototyp of String here. See:
+# *gsub*, from Ruby, is added to the prototyp of String here. See:
 # http://flochip.com/2011/09/06/rubys-string-gsub-in-javascript/
 #
 # [TODO] Is there another web reference needed for this? 
@@ -327,6 +328,8 @@ String::gsub = (re, callback) ->
       source = ""
   result
 
+# -----
+
 # File Handler System
 # ===================
 #
@@ -335,7 +338,7 @@ String::gsub = (re, callback) ->
 # 
 # Synopsis: 
 #   
-#   A Handler handles some type of file or content processing, for reading file
+#   A **Handler** handles some type of file or content processing, for reading file
 #   content, for minifying, for text replacement, etc.
 #
 # Constructor:
@@ -346,8 +349,8 @@ String::gsub = (re, callback) ->
 #
 #     @next -- a link to the next handler.
 #     
-#   Handler specifications are given in the Busser class. HandlerSet instances are 
-#   created by calls to Busser, with a subset of intantiated available handlers.
+#   **Handler** specifications are given in the **Busser** class. **HandlerSet** instances are 
+#   created by calls to **Busser**, with a subset of intantiated available handlers.
 #
 #   
 class Handler
@@ -363,9 +366,9 @@ class Handler
 # 
 # Synopsis: 
 #
-#   HandlerSet is a container for handlers which work on files and content in a 
-#   SproutCore project to build an system for development or deployment. A HandlerSet 
-#   consists of a linked-list of handlers built from the available set. A HandlerSet
+#   **HandlerSet** is a container for handlers which work on files and content in a 
+#   SproutCore project to build an system for development or deployment. A **HandlerSet**
+#   consists of a linked-list of handlers built from the available set. A **HandlerSet**
 #   instance is fired with exec().
 #
 # Constructor:
@@ -377,8 +380,8 @@ class Handler
 #     @urlPrefix -- to be prepended to resulting paths.
 #                   Used within the class, so set with @.
 #
-#   Handlers are referenced by name, as they are part of the HandlerSet
-#   class, with: @[handlerName]. Each Handler instance has exec and next, 
+#   **Handlers** are referenced by name, as they are part of the **HandlerSet**
+#   class, with: @[handlerName]. Each **Handler** instance has exec and next, 
 #   which are called during traversal from an initial exec call.
 #
 #   The exec() method fires on the head handler, beginning an "async waterfall,"
@@ -396,13 +399,13 @@ class HandlerSet
     @urlPrefix = if urlPrefix? then urlPrefix else "/"
     @handlers  = []
 
-  # head() returns the first handler in the HandlerSet instance.
+  # *head* returns the first handler in the **HandlerSet** instance.
   #
   head: ->
     if @handlers.length > 0
       @handlers[0]
 
-  # exec() fires on the head handler in the HandlerSet instance. The file and
+  # *exec* fires on the head handler in the **HandlerSet** instance. The file and
   # callback parameters are always used; request is used during server operations
   # for passing a modification time, but could otherwise be useful.
   #
@@ -413,16 +416,16 @@ class HandlerSet
 # Busser
 # ------
 #
-# The Busser class is the main workhorse for the build system. It contains the
+# The **Busser** class is the main workhorse for the build system. It contains the
 # code for available handlers and related utility functions. The handlerSet
-# method is used to create HandlerSet instances with a subset of available
+# method is used to create **HandlerSet** instances with a subset of available
 # handlers, instantiated and returned as a singly-linked-list.
 #
-# A single Busser instance is created for a build session with a simple call as
+# A single **Busser** instance is created for a build session with a simple call as
 #
 #   busser = Busser()
 #
-# This Busser instance is used for creating HandlerSets and for their use during 
+# This **Busser** instance is used for creating **HandlerSets** and for their use during 
 # a call to build and/or save an app.
 #
 class Busser
@@ -440,18 +443,18 @@ class Busser
   #
   #    handlerNames -- an array of handler names from the list of those available.
   #
-  # A new HandlerSet instance is first created, with the name and urlPrefix. Then
+  # A new **HandlerSet** instance is first created, with the name and urlPrefix. Then
   # a list of handlers is created from handlerNames, setting handlerSet.handlers.
   # The @[handlerName] parameter, passed in new Handler @[handlerName] calls, is a
   # lookup to the data for a given handler held herein. If you examine, for example, 
   # the ifModifiedSince method, you will see that it consists of name, next, and exec 
   # arguments for creating a new Handler. ifModifiedSince() returns a hash of name, 
-  # next (null), and exec (a function) for a new Handler instance.
+  # next (null), and exec (a function) for a new **Handler** instance.
   # 
   # The last loop in handlerSet() sets the next property of each handler to transform
   # the handlers list into a singly-linked-list.
   #
-  # The completed HandlerSet instance is returned.
+  # The completed **HandlerSet** instance is returned.
   #
   handlerSet: (name, urlPrefix, handlerNames) ->
     urlPrefix = if urlPrefix? then urlPrefix else "/"
@@ -473,14 +476,14 @@ class Busser
 
     handlerSet
 
-  # mtimeScanner is a static utility function that takes a list of files,
+  # *mtimeScanner* is a static utility function that takes a list of files,
   # scans each file for modification time, finding the max (most recent),
   # then calls the callback.
   #
   @mtimeScanner: (files, callback) ->
     mtime = 0
 
-    # The Scanner class scans files for modification time, keeping a
+    # The **Scanner** class scans files for modification time, keeping a
     # maxMtime value that is returned upon completion of the scan.
     #
     class Scanner extends process.EventEmitter
@@ -505,7 +508,7 @@ class Busser
       callback mtime
     scanner.scan()
 
-  # The ifModifiedSince handler checks if a file's children have been modified since
+  # The *ifModifiedSince* handler checks if a file's children have been modified since
   # a time given in the request argument. If no request is passed, then control
   # passes on, without checking, to the next handler, if there is one.
   #
@@ -537,11 +540,11 @@ class Busser
           else
             callback status: 304
 
-  # The cache handler creates a cache if it doesn't exist. The first time
+  # The *cache* handler creates a cache if it doesn't exist. The first time
   # control passes through here for a given file, the downstream response for
   # the file is cached. Subsequent calls for the file will get the cached value.
   #
-  # The cache handler can be used at the head of a handler set to avoid unneeded
+  # The *cache* handler can be used at the head of a handler set to avoid unneeded
   # processing.
   #
   cache:
@@ -559,7 +562,7 @@ class Busser
       else
         callback @cache[file.path]
 
-  # The contentType handler adds the content type of the file to the response for
+  # The *contentType* handler adds the content type of the file to the response for
   # the handler set.
   #
   contentType:
@@ -580,7 +583,7 @@ class Busser
       else
         callback contentType: contentTypes[extname(file.path)]
 
-  # minifyStylesheet is a static utility method that uses yuicompressor
+  # *minifyStylesheet* is a static utility method that uses yuicompressor
   # to minify data. 
   #
   @minifyStylesheet: (dataToMinify, callback) ->
@@ -609,7 +612,7 @@ class Busser
       callback minifier.minifiedData
     minifier.minify()
 
-  # minifyScript is a static utility method that uses uglify to minify data. 
+  # *minifyScript* is a static utility method that uses uglify to minify data. 
   #
   @minifyScript: (dataToMinify, callback) ->
     class Minifier extends process.EventEmitter
@@ -629,7 +632,7 @@ class Busser
       callback minifier.minifiedData
     minifier.minify()
 
-  # The minify handler minifies the downstream response for stylesheets and scripts. 
+  # The *minify* handler minifies the downstream response for stylesheets and scripts. 
   # Stylesheets are minified with yuicompressor. Scripts are minified with uglify.
   #
   minify:
@@ -652,7 +655,7 @@ class Busser
             Busser.minifyScript data, (minifiedData) ->
               callback data: minifiedData
 
-  # The rewriteSuper handler replaces instances of sc_super in SproutCore javascript
+  # The *rewriteSuper* handler replaces instances of sc_super in SproutCore javascript
   # with the magic equivalent: arguments.callee.base.apply(this,arguments).
   #
   rewriteSuper:
@@ -670,7 +673,7 @@ class Busser
           else
             callback data: data.replace(/sc_super\(\)/g, "arguments.callee.base.apply(this,arguments)")
 
-  # rewriteStatic is a static utility method, pardon the pun, that replaces sc_static or
+  # *rewriteStatic* is a static utility method, pardon the pun, that replaces sc_static or
   # static_url, and their file references, with references to files in the resources 
   # directory, per the format argument.
   #
@@ -686,15 +689,7 @@ class Busser
       resourceUrls = (file.url() for file in file.framework.resourceFiles)
       data = data.toString("utf8").gsub(re, (match) ->
         path = path_module.join(dirname, match[3])
-        #unless file.framework.resourceFiles[path]?
-          #[ "", "images" ].some (prefix) ->
-            #ResourceFile.resourceExtensions.some (extname) ->
-              #alternatePath = path_module.join(dirname, prefix, match[3] + extname)
-              #if file.framework.resourceFiles[alternatePath]
-                #path = alternatePath
-                #true
-              #else
-                #false
+
         if path in resourceUrls is false
           for prefix in [ "", "images" ]
             for extname in ResourceFile.resourceExtensions
@@ -703,13 +698,12 @@ class Busser
                 path = alternatePath
                 break
     
-          #unless file.framework.resourceFiles[path]?
           unless path in resourceUrls
             util.puts "WARNING: " + path + " referenced in " + file.path + " but was not found."
         format.replace "%@", path_module.join(@urlPrefix, path)
       )
 
-  # The rewriteStaticInStylesheet handler calls the rewriteStatic method with the
+  # The *rewriteStaticInStylesheet* handler calls the *rewriteStatic* method with the
   # format url('%@') for url references in stylesheets.
   #
   rewriteStaticInStylesheet:
@@ -725,7 +719,7 @@ class Busser
           else
             callback data: Busser.rewriteStatic "url('%@')", file, data
 
-  # The rewriteStaticInScript handler calls the rewriteStatic method with the
+  # The *rewriteStaticInScript* handler calls the *rewriteStatic* method with the
   # format '%@' for simple references in javascript.
   #
   rewriteStaticInScript:
@@ -741,7 +735,7 @@ class Busser
           else
             callback data: Busser.rewriteStatic "'%@'", file, data
 
-  # The rewriteFile handler replaces instances of direct file references, which
+  # The *rewriteFile* handler replaces instances of direct file references, which
   # are found via __FILE__, with the file url.
   #
   rewriteFile:
@@ -757,7 +751,7 @@ class Busser
           else
             callback data: data.replace(/__FILE__/g, file.url())
 
-  # The wrapTest handler wraps the downstream reponse in an SC.filename reference,
+  # The *wrapTest* handler wraps the downstream reponse in an SC.filename reference,
   # which is found via __FILE__.
   #
   wrapTest:
@@ -773,7 +767,7 @@ class Busser
           else
             callback data: [ "(function() {", "SC.filename = \"__FILE__\";", data, "})();" ].join("\n")
 
-  # The join handler joins any files coming through, and their children, into 
+  # The *join* handler joins any files coming through, and their children, into 
   # a cumulative data array, which is joined upon callback. The callback is fired
   # when the file count from downstream is met.
   #
@@ -813,14 +807,14 @@ class Busser
               count -= 1
               callback data: data.join("\n")  if count is 0
             
-  # The symlink handler can only be run by itself or at the tail end 
+  # The *symlink* handler can only be run by itself or at the tail end 
   # of a sequence of handlers.
   #
   symlink:
     exec: (file, request, callback) ->
       file.symlink.handlerSet.exec file.symlink, request, callback
 
-  # lessify is a static utility method that applies less to data.
+  # *lessify* is a static utility method that applies less to data.
   #
   @lessify: (path, data, callback) ->
     parser = new less.Parser(
@@ -837,7 +831,7 @@ class Busser
           util.puts "ERROR: " + e.message
       callback data
 
-  # The less handler applies the less parser to file data.
+  # The *less* handler applies the less parser to file data.
   #
   less:
     exec: (file, request, callback) ->
@@ -864,7 +858,7 @@ class Busser
             else
               callback data: data
 
-  # The handlebars handler treats handlebar template files by stringifying them
+  # The *handlebars* handler treats handlebar template files by stringifying them
   # to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
   # data in an SC.TEMPLATES directive.
   #
@@ -895,12 +889,12 @@ class Busser
             else
               callback data: data
 
-  # The file handler must be the only handler in a HandlerSet or it must come 
+  # The *file* handler must be the only handler in a **HandlerSet** or it must come 
   # at the end of a handler sequence where a file is read.
   #
-  # The file handler calls file.content() to read data from a file. Calls to
+  # The *file* handler calls file.content() to read data from a file. Calls to
   # file.content() are coordinated by a queue system to stay within a limit
-  # for simultaneously open files. (See the content method of the File class
+  # for simultaneously open files. (See the content method of the **File** class
   # and the global readFile() and related functions).
   #
   file:
@@ -911,13 +905,47 @@ class Busser
         else
           callback data: if data.length is 0 then "" else data
 
+# The global **Busser** instance is created.
+#
+busser = new Busser
+
+# *availableHandlerNames* is a utility method for use by developers in listing
+# handlers defined in the **Busser** class. The global instance of busser is queried
+# for its own properties, which will include variables and methods, and the
+# list returned is filtered for known non-handler properties and methods.
+#
+availableHandlerNames  = ->
+  (h for own h of busser when h in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ] is false)
+
+# **HandlerSet** singletons are used in the specialized File subclasses defined
+# below. The names of the handlerSets match the **File** subclasses, generally,
+# and there are several with descriptive names.
+#
+rootContentHtmlHandlerSet = busser.handlerSet("root content html", "/", [ "cache", "contentType", "file" ])
+rootSymlinkHandlerSet = busser.handlerSet("root symlink", "/", [ "symlink" ])
+
+stylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
+minifiedStylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
+virtualStylesheetHandlerSet = busser.handlerSet("virtual stylesheet", "/", [ "join" ])
+
+scriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+minifiedScriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+virtualScriptHandlerSet = busser.handlerSet("virtual script", "/", [ "join" ])
+
+testHandlerSet = busser.handlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
+resourceHandlerSet = busser.handlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
+uncombinedScriptHandlerSet = busser.handlerSet("uncombined script", "/", [ "contentType", "file" ])
+joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
+
+# -----
+
 # Main Classes
 # ============
 #
 # Framework
 # ---------
 #
-# The Framework class contains the build() method and related methods for
+# The **Framework** class contains the build() method and related methods for
 # processing files in an on-disk project framework, which is a directory with
 # javascript, css, and image files. Frameworks constitute different parts of
 # SproutCore itself, such as runtime, foundation, and desktop, as well as 
@@ -925,56 +953,55 @@ class Busser
 # frameworks, or it can have dependent frameworks, such as sproutcore-flot,
 # a graph-plotting library.
 #
-# Properties of Framework specify basic data and build parameters:
+# Properties of **Framework** specify basic data and build parameters:
 #
-#    name -- For SproutCore, e.g., runtime, foundation. Otherwise the name
+# *   *name* -- For SproutCore, e.g., runtime, foundation. Otherwise the name
 #            should be the name of the on-disk directory for the framework.
 #
-#    path -- The path of the framework from the project root directory. For
+# *   *path* -- The path of the framework from the project root directory. For
 #            example, if the project name is MyApp, we would expect that the
 #            MyApp directory contains an apps directory and a frameworks
 #            directory, and perhaps others, such as themes or design. For
 #            most projects, all frameworks are kept in frameworks. So,
 #            the path for the SproutCore runtime framework would be:
 #
-#                frameworks/sproutcore/frameworks/
+#   > frameworks/sproutcore/frameworks/
+#   > (And, the same for sproutcore-flot, if used in MyApp).
 #
-#            And, the same for sproutcore-flot, if used in MyApp.
-#
-#    combineStylesheets -- If true, a virtual file (one not on disk in the
+# *   *combineStylesheets* -- If true, a virtual file (one not on disk in the
 #                          original project) will be created during build to
 #                          hold all stylesheets in the framework, concatenated
 #                          as a single in-memory file. A save operation can
 #                          later write this out to disk for deployment.
 #
-#    combineScripts -- Same as combineStylesheets, but for javascript files.
+# *   *combineScripts* -- Same as combineStylesheets, but for javascript files.
 #
-#    minifyStylesheets -- If true, stylesheets will be minified with the
+# *   *minifyStylesheets* -- If true, stylesheets will be minified with the
 #                         yuicompressor utility, whether files are kept
 #                         as individual files or combined.
 #
-#    minifyScripts -- Same as minifyStylesheets, but for javascript files.
+# *   *minifyScripts* -- Same as *minifyStylesheets*, but for javascript files.
 #
-#    buildLanguage -- [TODO] When would you want to have a build language
+# *   *buildLanguage* -- [TODO] When would you want to have a build language
 #                     different for frameworks? If not, remove from here
 #                     and leave as an App class property.
 #
-# The Framework class contains arrays for basic types of files:
+# The **Framework** class contains arrays for basic types of files:
 #
-#    stylesheetFiles, scriptFiles, resourceFiles, testFiles
+#    > stylesheetFiles, scriptFiles, resourceFiles, testFiles
 #
 # and for the sorted arrays for stylesheets and scripts, where the sorting
 # is done during the build process to sort by dependencies:
 #
-#     orderedStylesheetFiles, orderedScriptFiles
+#    > orderedStylesheetFiles, orderedScriptFiles
 #
 # and for two possible virtual files containing combined stylesheets or
 # scripts, if the booleans for these are set:
 #
-#    virtualStylesheetReference -- These two are instances of Reference,
-#    virtualScriptReference        which is a simple url-to-file couplet.
+#    > *virtualStylesheetReference* -- These two are instances of Reference,
+#    > *virtualScriptReference*        which is a simple url-to-file couplet.
 #
-# And, finally, the Framework class has a pathsToExlude property, which is
+# And, finally, the **Framework** class has a *pathsToExlude* property, which is
 # and array of paths or regular expressions used to exclude directories. For
 # example, a "fixtures" path can be allowed for a development build, but
 # excluded for a production build.
@@ -1066,7 +1093,7 @@ class Framework
   urlFor: (path) ->
     path_module.join @buildVersion, @reducedPathFor(path)
   
-  # Same as reducedPathFor, as a convenience call for reducedPathFor(@path).
+  # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
   #
   reducedPath: ->
     @reducedPathFor(@path)
@@ -1076,8 +1103,8 @@ class Framework
   url: ->
     @urlFor(@reducedPath())
   
-  # shouldExcludeFile first operates on pathsToExclude, checking if the path 
-  # matches any exluded path. Then it checks if buildLanguage is in allowed
+  # *shouldExcludeFile* first operates on *pathsToExclude*, checking if the path 
+  # matches any exluded path. Then it checks if *buildLanguage* is in allowed
   # lists.
   #
   shouldExcludeFile: (path) ->
@@ -1102,7 +1129,7 @@ class Framework
       handlerSet: uncombinedScriptHandlerSet
     )
 
-  # computeDependencies uses a DependenciesComputer class and its compute
+  # *computeDependencies* uses a **DependenciesComputer** class and its compute
   # method to read a list of files, parsing each for require statements,
   # and making a list of urls, built from paths of dependencies, with .js 
   # added, in each file's new deps array.
@@ -1148,9 +1175,9 @@ class Framework
       dependencyComputer.addListener 'end', -> callback files
     dependencyComputer.compute()
   
-  # sortDependencies is a recursive method working on a list of javascript files
-  # received from computeDependencies, which has added a .deps array for each file.
-  # sortDependencies searches the dependency urls in deps, searching for the matching
+  # *sortDependencies* is a recursive method working on a list of javascript files
+  # received from *computeDependencies*, which has added a .deps array for each file.
+  # *sortDependencies* searches the dependency urls in deps, searching for the matching
   # file for each, recursively continuing until a file with no dependencies is found
   # and added to the sorted results. In this way, dependent files are added to the
   # orderedFiles array ahead of files requiring them.
@@ -1181,10 +1208,10 @@ class Framework
             util.puts "WARNING: " + url + " is required in " + file.url() + " but does not exist."
       orderedFiles.push file
   
-  # The orderScripts method calls computeDependencies on a list of javascript files,
+  # The *orderScripts* method calls *computeDependencies* on a list of javascript files,
   # receiving the resulting files, which have had a .deps array added for each, in a
   # callback function which first sorts alphabetically on path, then calls
-  # sortDependencies, layering the sorting calls based on dependencies of strings.js
+  # *sortDependencies*, layering the sorting calls based on dependencies of strings.js
   # and core.js, before generally adding the rest. This is to prioritize for i18n
   # definitions in strings.js and then focusing on the most important code, as should
   # be specified in each framework's core.js file.
@@ -1209,8 +1236,7 @@ class Framework
       if coreJs?
         @sortDependencies(coreJs, orderedScriptFiles, sortedScripts)
         for script in sortedScripts
-          #@sortDependencies(script, orderedScriptFiles, sortedScripts) if script.deps and script.deps.indexOf(coreJs.path) isnt -1
-          @sortDependencies(script, orderedScriptFiles, sortedScripts) if script.deps and coreJs.path in script.deps
+          @sortDependencies(script, orderedScriptFiles, sortedScripts) if script.deps? and coreJs.path in script.deps
 
       # Then do the rest.
       for script in sortedScripts
@@ -1220,7 +1246,7 @@ class Framework
       scripts.push i  while i = orderedScriptFiles.shift()
       callback()
  
-  # The bundleInfo method is unused in the martoche version of garcon, but bundle support was
+  # The *bundleInfo* method is unused in the martoche version of garcon, but bundle support was
   # support was added in a branch of the mauritslamers version. 
   #
   bundleInfo: ->
@@ -1230,7 +1256,7 @@ class Framework
       "'" + stylesheet.url() + "'"
     ).join(",") + "],", "};" ].join "\n"
 
-  # The sproutcoreFrameworks static method returns a default list of Framework instances, 
+  # The *sproutcoreFrameworks* static method returns a default list of Framework instances, 
   # either with or without jquery, testing for jquery in the project. This method is used
   # in testing, or when a build configuration file is not provided to the build process.
   #
@@ -1261,22 +1287,22 @@ class Framework
 
     @_sproutcoreFrameworks
   
-  # The build method for frameworks first scans for files, adding basic File
-  # objects into arrays, excluding files based on checks in shouldExcludeFile.
+  # The *build* method for frameworks first scans for files, adding basic File
+  # objects into arrays, excluding files based on checks in *shouldExcludeFile*.
   #
   # Separate arrays are created for stylesheets, scripts, tests, and resources.
   #
   # The finalization steps will order stylesheets and scripts, and prepare any
   # combined virtual files needed.
   #
-  # When done, callbackAfterBuild is called, if defined.
+  # When done, *callbackAfterBuild* is called, if defined.
   #
   build: (callbackAfterBuild) =>
-    # The createBasicFiles method scans the framework directory for all files,
-    # filtering by shouldExcludeFile, and creates basic File objects: stylesheets, 
+    # The *createBasicFiles* method scans the framework directory for all files,
+    # filtering by *shouldExcludeFile*, and creates basic File objects: stylesheets, 
     # scripts, tests, and resources. Each File instance is given its path and a 
-    # reference to the framework. Note that basic file classes, StylesheetFile, 
-    # ScriptFile, TestFile, and ResourceFile, have their own unique handlerSets, 
+    # reference to the framework. Note that basic file classes, **StylesheetFile**, 
+    # **ScriptFile**, **TestFile**, and **ResourceFile**, have their own unique handlerSets, 
     # which are given in class definitions.
     #
     createBasicFiles = (callbackAfterBuild) =>
@@ -1310,14 +1336,14 @@ class Framework
         finalizeBuild callbackAfterBuild
       scanner.scan @path
 
-    # The finalizeBuild method performs ordering and combining steps after
+    # The *finalizeBuild* method performs ordering and combining steps after
     # basic files have been created.
     #
     finalizeBuild = (callbackAfterBuild) =>
       # Create a virtual stylesheets file if combineStylesheets is set, or sort
       # individual stylesheet files alphabetically. 
       #
-      # orderedStylesheets will hold either the single virtual file or the sorted 
+      # *orderedStylesheets* will hold either the single virtual file or the sorted 
       # individual stylesheets.
       #
       @orderedStylesheetFiles = []
@@ -1336,10 +1362,10 @@ class Framework
             a.path.localeCompare b.path
           )
 
-      # Call orderScripts to sort scripts alphabetically then by dependencies.
-      # Then create a virtual scripts file if combineScripts is set.
+      # Call *orderScripts* to sort scripts alphabetically then by dependencies.
+      # Then create a virtual scripts file if *combineScripts* is set.
       #
-      # orderedScriptFiles will hold either the single virtual file or the ordered
+      # *orderedScriptFiles* will hold either the single virtual file or the ordered
       # individual script files.
       #
       # Ordering scripts is the last build task before firing the after-build
@@ -1369,46 +1395,14 @@ class Framework
 
         callbackAfterBuild() if callbackAfterBuild?
 
-    # Fire the build methods, passing the provided callbackAfterBuild.
+    # Fire the build methods, passing the provided *callbackAfterBuild*.
     #
     createBasicFiles callbackAfterBuild
-
-# The global Busser instance is created.
-#
-busser = new Busser
-
-# availableHandlerNames is a utility method for use by developers in listing
-# handlers defined in the Busser class. The global instance of busser is queried
-# for its own properties, which will include variables and methods, and the
-# list returned is filtered for known non-handler properties and methods.
-#
-availableHandlerNames  = ->
-  (h for own h of busser when h in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ] is false)
-
-# HandlerSet singletons are used in the specialized File subclasses defined
-# below. The names of the handlerSets match the File subclasses, generally,
-# and there are several with descriptive names.
-#
-rootContentHtmlHandlerSet = busser.handlerSet("root content html", "/", [ "cache", "contentType", "file" ])
-rootSymlinkHandlerSet = busser.handlerSet("root symlink", "/", [ "symlink" ])
-
-stylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
-minifiedStylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
-virtualStylesheetHandlerSet = busser.handlerSet("virtual stylesheet", "/", [ "join" ])
-
-scriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-minifiedScriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptHandlerSet = busser.handlerSet("virtual script", "/", [ "join" ])
-
-testHandlerSet = busser.handlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
-resourceHandlerSet = busser.handlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
-uncombinedScriptHandlerSet = busser.handlerSet("uncombined script", "/", [ "contentType", "file" ])
-joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
 # Reference
 # ---------
 #
-# The Reference class is a simple url/file couplet. It is used for html and symlink files, 
+# The **Reference** class is a simple url/file couplet. It is used for html and symlink files, 
 # and for the virtual stylesheet and script files.
 #
 class Reference
@@ -1419,12 +1413,12 @@ class Reference
 # File
 # ----
 #
-# The File class holds information about an on-disk file or a virtual file, which is
+# The **File** class holds information about an on-disk file or a virtual file, which is
 # an abstraction for a framework directory. The children array is used for virtual
-# files, either the VirtualStylesheetFile or VirtualScriptFile derived classes. The
-# handlerSet property has one of the HandlerSet singletons defined above, which
+# files, either the **VirtualStylesheetFile** or **VirtualScriptFile** derived classes. The
+# handlerSet property has one of the **HandlerSet** singletons defined above, which
 # controls the build process for a given file type. A file can be a symlink to the
-# root html file, which is only used in SymlinkFile.
+# root html file, which is only used in **SymlinkFile**.
 #
 class File
   constructor: (options={}) ->
@@ -1441,11 +1435,11 @@ class File
   url: ->
     @framework.urlFor(@path)
   
-  # pathForSave has logic for isHtml that is coordinated with the use of a symlink
+  # *pathForSave* has logic for isHtml that is coordinated with the use of a symlink
   # to the root html file. The url() by itself, for use in file lookup, will allow
   # http://localhost:8000/myapp instead of http://localhost:8000/myapp/myapp.html.
   # The use of the symlink handler, this check for isHtml to add the extension, and
-  # the use of an overridden content method in RootContentHtml are tied together.
+  # the use of an overridden content method in *RootContentHtmlFile* are tied together.
   #
   pathForSave: ->
     if @isHtml
@@ -1453,9 +1447,9 @@ class File
     else
       @url()
   
-  # The content method is coordinated with the queue system for managing the number
+  # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
-  # overridden in the RootContentHtmlFile subclass to return html content directly
+  # overridden in the **RootContentHtmlFile** subclass to return html content directly
   # (from memory), without reading a real on-disk file.
   #
   content: (callback) ->
@@ -1472,7 +1466,7 @@ class File
 # SymlinkFile
 # -----------
 #
-# SymlinkFile is used for the instance of a symlink to the root html file.
+# **SymlinkFile** is used for the instance of a symlink to the root html file.
 #
 class SymlinkFile extends File
   constructor: (options={}) ->
@@ -1483,9 +1477,9 @@ class SymlinkFile extends File
 # RootContentHtmlFile
 # -------------------
 #
-# The RootContentHtmlFile contains the html with main links to a project's stylesheets,
+# The **RootContentHtmlFile** contains the html with main links to a project's stylesheets,
 # scripts, and resources. Its rootContentHtmlHandlerSet has cache, contentType, and file
-# handlers, so that during serving it is read once, then cached. The RootContentHtmlFile
+# handlers, so that during serving it is read once, then cached. The **RootContentHtmlFile**
 # is created at the end of the build process, when links to files and resources are known.
 #
 class RootContentHtmlFile extends File
@@ -1502,7 +1496,7 @@ class RootContentHtmlFile extends File
   content: (callback) =>
     html = []
 
-    # Load html for document, head, and meta sections.
+    # Load html for document, head, and meta sections. [TODO] Fix the paths in apple-touch links.
     html.push """ <!DOCTYPE html>
                   <html lang=\"#{buildLanguageAbbreviation()}\">
                     <head>
@@ -1525,26 +1519,6 @@ class RootContentHtmlFile extends File
                       <link rel=\"shortcut icon\" href=\"/static/sproutcore/foundation/en/current/resources/images/favicon.ico?1317844275\" type=\"image/x-icon\" />
               """
 
-#<!DOCTYPE html>
-#<html>
-#  <head>
-#    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-#    
-#    <script>
-#    var SC_benchmarkPreloadEvents = { headStart: new Date().getTime() };
-#    </script>
-#    
-#    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-#    <meta http-equiv="Content-Script-Type" content="text/javascript" />
-#    <meta name="apple-mobile-web-app-capable" content="yes" />
-#    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-#    <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-#    
-#    <link rel="apple-touch-icon" href="/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-logo.png?1317844275" />
-#    <link rel="apple-touch-startup-image" media="screen and (orientation:portrait)" href="/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-startup-portrait.png?1317844275" /> 
-#    <link rel="apple-touch-startup-image" media="screen and (orientation:landscape)" href="/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-startup-landscape.png?1317844275" />
-#    <link rel="shortcut icon" href="/static/sproutcore/foundation/en/current/resources/images/favicon.ico?1317844275" type="image/x-icon" />
-    
     html.push "<title>#{@title}</title>" if @title?
 
     # Load references to the virtual stylesheet for each framework.
@@ -1576,7 +1550,7 @@ class RootContentHtmlFile extends File
 # StylesheetFile
 # --------------
 #
-# StylesheetFile is a class for .css and related file types.
+# **StylesheetFile* is a class for .css and related file types.
 #
 class StylesheetFile extends File
   constructor: (options={}) ->
@@ -1587,7 +1561,7 @@ class StylesheetFile extends File
 # MinifiedStylesheetFile 
 # ----------------------
 #
-# MinifiedStylesheetFile is a class for .css and related file types, minified.
+# **MinifiedStylesheetFile** is a class for .css and related file types, minified.
 #
 class MinifiedStylesheetFile extends File
   constructor: (options={}) ->
@@ -1598,7 +1572,7 @@ class MinifiedStylesheetFile extends File
 # ScriptFile
 # ----------
 #
-# ScriptFile is a class for .js files.
+# **ScriptFile** is a class for .js files.
 #
 class ScriptFile extends File
   constructor: (options={}) ->
@@ -1609,7 +1583,7 @@ class ScriptFile extends File
 # MinifiedScriptFile
 # ------------------
 #
-# MinifiedScriptFile is a class for .js files, minified.
+# **MinifiedScriptFile** is a class for .js files, minified.
 #
 class MinifiedScriptFile extends File
   constructor: (options={}) ->
@@ -1620,7 +1594,7 @@ class MinifiedScriptFile extends File
 # TestFile
 # --------
 #
-# TestFile is a class for .js files used in testing, and are idendified
+# **TestFile** is a class for .js files used in testing, and are idendified
 # as such by matching against a set of known directory names in paths.
 #
 class TestFile extends File
@@ -1632,7 +1606,7 @@ class TestFile extends File
 # ResourceFile
 # ------------
 #
-# ResourceFile is a class for a variety of image types used in a project,
+# **ResourceFile** is a class for a variety of image types used in a project,
 # defined in the static property resourceExtensions.
 #
 class ResourceFile extends File
@@ -1646,7 +1620,7 @@ class ResourceFile extends File
 # VirtualStylesheetFile
 # ---------------------
 #
-# The VirtualStylesheetFile class is an extension of StylesheetFile, for use in
+# The **VirtualStylesheetFile** class is an extension of StylesheetFile, for use in
 # handling framework directories that contain individual stylesheet files. So,
 # by virtual here, we refer to the fact that the file is not actually found on
 # disk in the original project, and exists either only in memory or also as a
@@ -1663,14 +1637,14 @@ class VirtualStylesheetFile extends StylesheetFile
 # VirtualScriptFile
 # -----------------
 #
-# The VirtualScriptFile extends ScriptFile, for use in handling script files in
-# a framework. It is identical in structure to VirtualStylesheetFile, with the
+# The **VirtualScriptFile** extends **ScriptFile**, for use in handling script files in
+# a framework. It is identical in structure to **VirtualStylesheetFile**, with the
 # addition of two methods, headFile and tailFile, which contain javascript to be
 # inserted at the head or tail of the children list of contained scripts. This
 # head and tail javascript covers such needs as defining variables and namespaces
 # before contained child scripts load and reporting after scripts have loaded.
 #
-# VirtualScriptFile only has tailFile defined, for inclusion of a did-load check.
+# **VirtualScriptFile** only has tailFile defined, for inclusion of a did-load check.
 #
 class VirtualScriptFile extends ScriptFile
   constructor: (options={}) ->
@@ -1683,7 +1657,7 @@ class VirtualScriptFile extends ScriptFile
 # BootstrapFramework
 # ------------------
 #
-# The BootstrapFramework class has headFile and tailFile methods that return
+# The **BootstrapFramework** class has headFile and tailFile methods that return
 # needed script fragments before and after child files in the bootstrap
 # framework, the files of which are read from disk in the build procedure.
 # headFile and tailFile override methods of the Framework superclass. The
@@ -1715,20 +1689,18 @@ class BootstrapFramework extends Framework
         callback null, "; if (SC.setupBodyClassNames) SC.setupBodyClassNames();"
       handlerSet: uncombinedScriptHandlerSet
 
-  #@virtualScriptFile = new BootstrapVirtualScriptFile()
-
 # App
 # ---
 #
-# The App class contains metadata properties for a single SproutCore application, along
-# with build-specific properties and their default values. An App is Framework-like, in
+# The **App** class contains metadata properties for a single SproutCore application, along
+# with build-specific properties and their default values. An **App** is **Framework**-like, in
 # the similarity of properties. It contains a list of frameworks and a files associative
 # array of urls to files, which is set up by a call to registerFiles after the build
 # processes complete. This files array is exposed to a server.
 #
-# htmlFileReference and htmlSymlinkReference hold links to the root html file.
+# *htmlFileReference* and *htmlSymlinkReference* hold links to the root html file.
 #
-# Principal methods are build and save.
+# Principal methods are *build* and *save*.
 #
 class App
   constructor: (options={}) ->
@@ -1756,21 +1728,21 @@ class App
 
   @buildVersion: 0
 
-  # The reducedPathFor, urlFor, and url methods are the same as those for
-  # the Framework class, tied here to the prototype definitions.
+  # The *reducedPathFor*, *urlFor*, and *url* methods are the same as those for
+  # the **Framework** class, tied here to the prototype definitions.
   #
   reducedPathFor: Framework::reducedPathFor
   reducedPath: Framework::reducedPath
   urlFor: Framework::urlFor
   url: -> Framework::urlFor(@name)
   
-  # The addSproutCore convenience method adds frameworks returned by the static function
-  # sproutcoreFrameworks defined in the Framework class.
+  # The *addSproutCore* convenience method adds frameworks returned by the static function
+  # *sproutcoreFrameworks* defined in the **Framework** class.
   #
   addSproutCore: (options={}) ->
     @frameworks.push framework for framework in Framework.sproutcoreFrameworks(options)
   
-  # buildRoot creates the root html file and a symlink to it.
+  # *buildRoot* creates the root html file and a symlink to it.
   #
   buildRoot: ->
     # Set a file for the root html content.
@@ -1789,14 +1761,14 @@ class App
       framework: this
     @htmlSymlinkReference = new Reference(@name, symlink)
 
-  # The build method uses the contained Builder class to build an app, first
+  # The *build* method uses the contained **FrameworksBuilder** class to build an app, first
   # calling the app's buildRoot method, then building frameworks in the app.
   # When finished, the callback is called if it is defined.
   #
+  # The **FrameworksBuilder** class for the app execs the build methods for the
+  # root html content and for the content of each framework.
+  # 
   build: (callbackAfterBuild) ->
-    # The Builder class for the app execs the build methods for the
-    # root html content and for the content of each framework.
-    # 
     class FrameworksBuilder extends process.EventEmitter
       constructor: (@frameworks) ->
         @count = @frameworks.length
@@ -1818,14 +1790,14 @@ class App
     console.log "Build for #{@path} has started."
     builder.build()
     
-  # registerFile sets the url of the file as the key in the files associative
+  # *registerFile* sets the url of the file as the key in the files associative
   # array, which is exposed to the server for file requests.
   #
   registerFile: (url, file) ->
     @files[url] = file
 
-  # registerFiles is called after the build process has completed. It resets the 
-  # files array, then calls registerFile to add back references for the root file
+  # *registerFiles* is called after the build process has completed. It resets the 
+  # files array, then calls *registerFile* to add back references for the root file
   # and symlink and for the files in child frameworks.
   #
   registerFiles: ->
@@ -1835,8 +1807,8 @@ class App
     for framework in @frameworks
       @registerFile(file.url(), file) for file in framework.allFiles()
 
-  # The save method first creates a fresh unique buildVersion as a long Date instance
-  # for the current time, then the contained Saver class is used to save child
+  # The *save* method first creates a fresh unique *buildVersion* as a long **Date** instance
+  # for the current time, then the contained **Saver** class is used to save child
   # frameworks and usually some combination of combined virtual files. The logic for
   # combining and bundling frameworks and application code flows in a series of if
   # else blocks until the main root html file is writen.
@@ -2021,6 +1993,8 @@ class Server
       console.log '  HOSTNAME:', @hostname
       console.log '  PORT:', @port
 
+# -----
+ 
 # Instantiation and Execution
 # ===========================
 #
