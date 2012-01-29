@@ -104,6 +104,14 @@
       "minifyScripts": false,
       "minifyStylesheets": false
     },
+    "formatters": {
+      "name": "foundation",
+      "path": "frameworks/sproutcore/frameworks/formatters",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": false,
+      "minifyStylesheets": false
+    },
     "foundation": {
       "name": "foundation",
       "path": "frameworks/sproutcore/frameworks/foundation",
@@ -281,6 +289,14 @@
       "combineStylesheets": true,
       "minifyScripts": true,
       "minifyStylesheets": true
+    },
+    "formatters": {
+      "name": "foundation",
+      "path": "frameworks/sproutcore/frameworks/formatters",
+      "combineScripts": true,
+      "combineStylesheets": true,
+      "minifyScripts": true,
+      "minifyStylesheets": true 
     },
     "foundation": {
       "name": "foundation",
