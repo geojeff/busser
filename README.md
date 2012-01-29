@@ -6,6 +6,9 @@ Prominent Note at the Top
 
 This program does not well work yet...
 
+UPDATE 2012-01-28: Addition of src/CoffeeScriptHelp.md, along with many
+improvements of formatting and use of idiomatic CoffeeScript in the code.
+
 UPDATE 2012-01-26b: Added use of prompt and color node.js modules.
 
 UPDATE 2012-01-26a: Thanks to Tyler Keating for fixing the index_set.js
