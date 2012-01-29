@@ -10,7 +10,7 @@ and idioms that reduce code lines, while actually *helping* comprehension usuall
 is more important for some things than others, but for usages such as forming objects
 or argument hashes with indentation, instead of with (), {}, and commas between items,
 the simplification is clear. And for other language features, such as the list
-comprehension, the "bang for the buck" is great, as shown below.
+comprehension, the "bang for the buck" is great, as shown in a section below.
 
 * **@**, the "this" operator:
 
@@ -43,7 +43,7 @@ comprehension, the "bang for the buck" is great, as shown below.
     > to use if next?, because you need an accompanying else clause, which is indeed the case
     > in the handlers code, from which this example comes.
 
-* **existential assignment** operator.
+* **existential assignment operator**.
 
     > After the existential assignment operator was discovered during coding of busser, 
 
@@ -104,7 +104,7 @@ list comprehensions, such as:
     > in Ruby and Python, so there is still the need for adopting a personal style and for 
     > being wise about when to break it up with a traditional *for* or *while* statement.
 
-* **function signature** syntax. Your eyes get used to it, but instead of writing a function like:
+* **function signature** syntax. Instead of writing a function with the familiar:
 
         scan: function() {
           ...
@@ -294,7 +294,6 @@ you don't want to. Contrast:
             return file if file?
           file
 
-    > No big deal you say, but but its just another little thing.
     > Of course, the last line of a function can be an assignment, or some other statement for
     > which the function doesn't return a value in the API. Or the last line can be another
     > function call, as we see in the build method of the Framework class:
@@ -333,7 +332,7 @@ you don't want to. Contrast:
     > In the list comprehension part, options[key] for own key of options, grabs the value of
     > the property in options going by the name key. We do not to use: for key *in* options,
     > because that would do the normal reference to the values in the options associative array.
-    > We want the keys here, so we use: for *own key of* options. This is a big deal, and a
+    > We want the keys here, so we use: for *own key of* options. This is useful, and a
     > big win for CoffeeScript, if you come from, say, Python, where dictionaries, and their
     > constant use, form the bread and butter of much programming.
 
@@ -357,9 +356,9 @@ you don't want to. Contrast:
     > Compare to the options idiom above, if we can call it that. There is flexibility for
     > using a style that best fits the situation. 
 
-    > Finally, on classes, just having classes is a big deal for some (avoiding futzing about
-    > over specific meanings of the term "class"). There continue to be astute debates about 
-    > human cognition, about identifying "optimal"ways that we write programs, but in the 
+    > Finally, on classes, just having classes is an important advantage for some (avoiding
+    > debate over specific meanings of the term "class"). There continue to be astute debates
+    > about human cognition, about identifying "optimal" ways that we write programs, but in the 
     > history of programming, the idea of the class as a prototypical definition of an object 
     > and all that it entails has been important. Important in the fundamental sense that we
     > usually work on problems for which understanding objects and their interactions.
