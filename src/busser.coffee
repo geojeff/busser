@@ -99,9 +99,9 @@ fileType = (path) ->
 # *isStylesheet* and the others in this set of functions are for shorthand reference.
 #
 isStylesheet = (file) -> fileType(file.path) is "stylesheet"
-isScript = (file) -> fileType(file.path) is "script"
-isTest = (file) -> fileType(file.path) is "test"
-isResource = (file) -> fileType(file.path) is "resource"
+isScript =     (file) -> fileType(file.path) is "script"
+isTest =       (file) -> fileType(file.path) is "test"
+isResource =   (file) -> fileType(file.path) is "resource"
 
 # *fileClassType* is a utility function for use on the **File** class and its
 # derivatives.
@@ -133,19 +133,19 @@ buildLanguage = "english"
 # and values are abbreviations.
 #
 buildLanguageAbbreviations =
-  english: "en"
-  french: "fr"
-  german: "de"
+  english:  "en"
+  french:   "fr"
+  german:   "de"
   japanese: "ja"
-  spanish: "es"
-  italian: "it"
+  spanish:  "es"
+  italian:  "it"
 
 # *buildLanguageAbbreviation* is a utility function for returning the abbreviation
 # matching the buildLanguage given in the configuration.
 #
 buildLanguageAbbreviation = (buildLanguage) ->
-  if buildLanguage and buildLanguage of buildLanguageAbbreviations
-    buildLanguageAbbreviations[buildLanguage]
+  if buildLanguage?
+    buildLanguageAbbreviations[buildLanguage] if buildLanguage of buildLanguageAbbreviations
   else
     "en"
 
@@ -155,7 +155,7 @@ buildLanguageAbbreviation = (buildLanguage) ->
 #
 languageInPath = (path) ->
   match = /([a-z]+)\.lproj\//.exec(path)
-  (if match is null then null else match[1])
+  match[1] if match?
 
 # File Reading Queue System
 # -------------------------
@@ -170,7 +170,7 @@ maxSimultaneouslyOpenedFileDescriptors = 32
 
 guessMaxSimultaneouslyOpenedFileDescriptors = ->
   exec "ulimit -n", (err, stdout, stderr) ->
-    if err is null
+    if not err?
       m = parseInt(stdout.trim(), 10)
       maxSimultaneouslyOpenedFileDescriptors = (if (m/16 >= 4) then m/16 else 4) if m > 0
 
@@ -396,8 +396,7 @@ class HandlerSet
   # *head* returns the first handler in the **HandlerSet** instance.
   #
   head: ->
-    if @handlers.length > 0
-      @handlers[0]
+    @handlers[0] if @handlers.length > 0
 
   # *exec* fires on the head handler in the **HandlerSet** instance. The file and
   # callback parameters are always used; request is used during server operations
@@ -451,22 +450,18 @@ class Busser
   # The completed **HandlerSet** instance is returned.
   #
   handlerSet: (name, urlPrefix, handlerNames) ->
-    urlPrefix = if urlPrefix? then urlPrefix else "/"
+    urlPrefix ?= "/"
 
     handlerSet = new HandlerSet name, urlPrefix
 
     for handlerName in handlerNames
-      handlerSet.handlers.push new Handler(
+      handlerSet.handlers.push new Handler
         name: handlerName
         next: null
         exec: @[handlerName].exec
-      )
 
-    for handler,index in handlerSet.handlers
-      if index < handlerSet.handlers.length-1
-        handler.next = handlerSet.handlers[index+1]
-      else
-        handler.next = null
+    # Set handler.next for all but the last handler, which will have the default next = null.
+    handler.next = handlerSet.handlers[i+1]  for handler,i in handlerSet.handlers[0...handlerSet.handlers.length-1]
 
     handlerSet
 
@@ -510,10 +505,7 @@ class Busser
   #
   ifModifiedSince:
     exec: (file, request, callback) ->
-      if file.children?
-        files = file.children
-      else
-        files = [ file ]
+      files = if file.children? then file.children else [ file ]
 
       if not request? or not request.headers? or not request.headers["if-modified-since"]?
         if @next?
@@ -591,11 +583,8 @@ class Busser
         min.stderr.on "data", (data) ->
           util.print data
         min.on "exit", (code) =>
-          if code isnt 0
-            util.puts "ERROR: Minifier exited with code " + code
-            @emit 'end'
-          else
-            @emit 'end'
+          util.puts "ERROR: Minifier exited with code #{code}" if code isnt 0
+          @emit 'end'
         min.stdin.write @incomingData
         min.stdin.end()
 
@@ -654,7 +643,7 @@ class Busser
       if @next?
         @next.exec file, request, (response) ->
           if /sc_super\(\s*[^\)\s]+\s*\)/.test(response.data)
-            util.puts "ERROR in " + file.path + ": sc_super() should not be called with arguments. Modify the arguments array instead."
+            util.puts "ERROR in #{file.path}: sc_super() should not be called with arguments. Modify the arguments array instead."
           response.data = response.data.replace(/sc_super\(\)/g, "arguments.callee.base.apply(this,arguments)")
           callback response
       else
@@ -674,11 +663,10 @@ class Busser
   @rewriteStatic: (format, file, data) ->
     re = new RegExp("(sc_static|static_url)\\(\\s*['\"](resources/){0,1}(.+?)['\"]\\s*\\)")
     dirname = file.framework.url()
-    if not data?
-      data
-    else
+
+    if data?
       resourceUrls = (file.url() for file in file.framework.resourceFiles)
-      data = data.toString("utf8").gsub(re, (match) ->
+      data = data.toString("utf8").gsub re, (match) ->
         path = path_module.join(dirname, match[3])
 
         if path not in resourceUrls
@@ -690,9 +678,8 @@ class Busser
                 break
     
           unless path in resourceUrls
-            util.puts "WARNING: " + path + " referenced in " + file.path + " but was not found."
+            util.puts "WARNING: #{path} referenced in #{file.path} but was not found."
         format.replace "%@", path_module.join(@urlPrefix, path)
-      )
 
   # The *rewriteStaticInStylesheet* handler calls the *rewriteStatic* method with the
   # format url('%@') for url references in stylesheets.
@@ -749,14 +736,24 @@ class Busser
     exec: (file, request, callback) ->
       if @next?
         @next.exec file, request, (response) ->
-          response.data = [ "(function() {", "SC.filename = \"__FILE__\";", response.data, "})();" ].join("\n")
+          response.data = """
+                          function() {
+                            SC.filename = \"__FILE__\";
+                            #{response.data}
+                          })();
+                          """
           callback response
       else
         file.content (err, data) ->
           if err
             throw err
           else
-            callback data: [ "(function() {", "SC.filename = \"__FILE__\";", data, "})();" ].join("\n")
+            callback data: """
+                           function() {
+                             SC.filename = \"__FILE__\";"
+                             #{data}
+                           })();
+                           """
 
   # The *join* handler joins any files coming through, and their children, into 
   # a cumulative data array, which is joined upon callback. The callback is fired
@@ -826,7 +823,7 @@ class Busser
   #
   less:
     exec: (file, request, callback) ->
-      if less and extname(file.path) is ".less"
+      if less? and extname(file.path) is ".less"
         if @next?
           @next.exec file, request, (response) ->
             Busser.lessify file.framework.path, response.data, (lessifiedData) ->
@@ -860,7 +857,7 @@ class Busser
           if extname(file.path) is ".handlebars"
             re = /[^\/]+\/templates\/(.+)\.handlebars/
             filename = re.exec(file.url())[1]
-            response.data = [ "SC.TEMPLATES['", filename, "'] =", "SC.Handlebars.compile(", JSON.stringify(response.data.toString("utf8")), ");" ].join("")
+            response.data = "SC.TEMPLATES['#{filename}'] = SC.Handlebars.compile(#{JSON.stringify(response.data.toString("utf8"))});"
             callback response
           else
             callback response
@@ -872,7 +869,7 @@ class Busser
             if err
               throw err
             else
-              callback data: [ "SC.TEMPLATES['", filename, "'] =", "SC.Handlebars.compile(", JSON.stringify(data.toString("utf8")), ");" ].join("")
+              callback data: "SC.TEMPLATES['#{filename}'] = SC.Handlebars.compile(#{JSON.stringify(data.toString("utf8"))});"
         else
           file.content (err, data) ->
             if err
@@ -1116,7 +1113,7 @@ class Framework
       path: path_module.join(@path, "after.js")
       framework: this
       content: (callback) =>
-        callback null, "; if ((typeof SC !== \"undefined\") && SC && SC.bundleDidLoad) SC.bundleDidLoad(\"" + @reducedPath() + "\");\n"
+        callback null, "; if ((typeof SC !== \"undefined\") && SC && SC.bundleDidLoad) SC.bundleDidLoad(\"#{@reducedPath()}\");\n"
       handlerSet: uncombinedScriptHandlerSet
     )
 
@@ -1174,10 +1171,7 @@ class Framework
   sortDependencies: (file, orderedFiles, files, recursionHistory) ->
     recursionHistory = []  if not recursionHistory?
 
-    if file in recursionHistory
-      return
-    else
-      recursionHistory.push file
+    return if file in recursionHistory else recursionHistory.push file
 
     if file not in orderedFiles
       if file.deps?
@@ -1192,7 +1186,7 @@ class Framework
               break
             ++i
           if not found
-            util.puts "WARNING: " + url + " is required in " + file.url() + " but does not exist."
+            util.puts "WARNING: #{url} is required in #{file.url()} but does not exist."
       orderedFiles.push file
   
   # The *orderScripts* method calls *computeDependencies* on a list of javascript files,
@@ -1226,8 +1220,7 @@ class Framework
           @sortDependencies(script, orderedScriptFiles, sortedScripts) if script.deps? and coreJs.path in script.deps
 
       # Then do the rest.
-      for script in sortedScripts
-        @sortDependencies(script, orderedScriptFiles, sortedScripts)
+      @sortDependencies(script, orderedScriptFiles, sortedScripts) for script in sortedScripts
   
       continue  while scripts.shift()
       scripts.push i  while i = orderedScriptFiles.shift()
@@ -1237,7 +1230,7 @@ class Framework
   # support was added in a branch of the mauritslamers version. 
   #
   bundleInfo: ->
-    [ ";SC.BUNDLE_INFO['" + @reducedPath() + "'] = {", "requires: [],", "scripts: [" + @orderedScriptFiles.map((script) ->
+    [ ";SC.BUNDLE_INFO['#{@reducedPath()}'] = {", "requires: [],", "scripts: [" + @orderedScriptFiles.map((script) ->
       "'" + script.url() + "'"
     ).join(",") + "],", "styles: [" + @orderedStylesheetFiles.map((stylesheet) ->
       "'" + stylesheet.url() + "'"
@@ -1269,7 +1262,7 @@ class Framework
       @_sproutcoreFrameworks = [ new BootstrapFramework() ]
       for frameworkName in frameworkNames
         opts.name = frameworkName
-        opts.path = "frameworks/sproutcore/frameworks/" + frameworkName
+        opts.path = "frameworks/sproutcore/frameworks/#{frameworkName}"
         @_sproutcoreFrameworks.push(new Framework(opts))
 
     @_sproutcoreFrameworks
@@ -1337,17 +1330,14 @@ class Framework
 
       if @stylesheetFiles.length > 0
         if @combineStylesheets is true
-          virtualStylesheetFile = new VirtualStylesheetFile(
-            path: @path + ".css"
+          virtualStylesheetFile = new VirtualStylesheetFile
+            path: "#{@path}.css"
             framework: this
             children: @stylesheetFiles
-          )
           @virtualStylesheetReference = new Reference(virtualStylesheetFile.url(), virtualStylesheetFile)
           @orderedStylesheetFiles = [ virtualStylesheetFile ]
         else
-          @orderedStylesheetFiles = @stylesheetFiles.sort((a, b) ->
-            a.path.localeCompare b.path
-          )
+          @orderedStylesheetFiles = @stylesheetFiles.sort((a, b) -> a.path.localeCompare b.path)
 
       # Call *orderScripts* to sort scripts alphabetically then by dependencies.
       # Then create a virtual scripts file if *combineScripts* is set.
@@ -1363,12 +1353,11 @@ class Framework
       if @scriptFiles.length > 0
         @orderScripts @scriptFiles, =>
           if @combineScripts is true
-            virtualScriptFile = new VirtualScriptFile(
+            virtualScriptFile = new VirtualScriptFile
               #path: @path + ".js"
               path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
               framework: this
               children: (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
-            )
             @virtualScriptReference = new Reference(virtualScriptFile.url(), virtualScriptFile)
             @orderedScriptFiles = [ virtualScriptFile ]
           else
@@ -1427,10 +1416,7 @@ class File
   # the use of an overridden content method in *RootContentHtmlFile* are tied together.
   #
   pathForSave: ->
-    if @isHtml
-      @url() + '.html'
-    else
-      @url()
+    "#{@url()}.html" if @isHtml else @url()
   
   # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
@@ -1476,7 +1462,7 @@ class RootContentHtmlFile extends File
     @[key] = options[key] for own key of options
 
   pathForSave: ->
-    @app.url() + ".html"
+    "#{@app.url()}.html"
 
   content: (callback) =>
     html = []
@@ -1510,19 +1496,20 @@ class RootContentHtmlFile extends File
     for framework in @app.frameworks
       for stylesheet in framework.orderedStylesheetFiles
         if stylesheet.framework is framework
-          html.push "<link href=\"" + @app.urlPrefix + stylesheet.url() + "\" rel=\"stylesheet\" type=\"text/css\">"
+          html.push "<link href=\"#{@app.urlPrefix + stylesheet.url()}\" rel=\"stylesheet\" type=\"text/css\">"
 
     # Close the head and begin the body.
-    html.push "</head>", "<body class=\"" + @app.theme + " focus\">"
-    html.push "<script type=\"text/javascript\">String.preferredLanguage = \"" + buildLanguage + "\";</script>"
+    html.push "</head>", "<body class=\"#{@app.theme} focus\">"
+    html.push "<script type=\"text/javascript\">String.preferredLanguage = \"#{buildLanguage}\";</script>"
       
     # Load references to the virtual scripts for each framework.
     for framework in @app.frameworks
       for script in framework.orderedScriptFiles
-        html.push "<script type=\"text/javascript\" src=\"" + @app.urlPrefix + script.url() + "\"></script>"
+        html.push "<script type=\"text/javascript\" src=\"#{@app.urlPrefix + script.url()}\"></script>"
       
     # Close the body and page.
-    html.push """ <script>
+    html.push """ 
+                  <script>
                     SC.benchmarkPreloadEvents['bodyEnd'] = new Date().getTime();
                   </script>
                 </body>
@@ -1663,7 +1650,10 @@ class BootstrapFramework extends Framework
       path: path_module.join(@path, "before.js")
       framework: this
       content: (callback) ->
-        callback null, [ "var SC = SC || { BUNDLE_INFO: {}, LAZY_INSTANTIATION: {} };", "var require = require || function require() {};" ].join("\n")
+        callback null, """
+                       var SC = SC || { BUNDLE_INFO: {}, LAZY_INSTANTIATION: {} };
+                       var require = require || function require() {};
+                       """
       handlerSet: uncombinedScriptHandlerSet
   
   tailFile: =>
@@ -1731,11 +1721,10 @@ class App
   #
   buildRoot: ->
     # Set a file for the root html content.
-    file = new RootContentHtmlFile(
+    file = new RootContentHtmlFile
       path: @name
       app: this
       framework: this
-    )
     @htmlFileReference = new Reference(file.url(), file)
 
     # Set a file for a symlink to the root html file.
@@ -1826,7 +1815,7 @@ class App
 
     if @combineStylesheets
       virtualStylesheetFile = new VirtualStylesheetFile
-        path: @name + ".css"
+        path: "#{@name}.css"
         framework: this
         handlerSet: joinHandlerSet
         children: (fw.virtualStylesheetReference.file for fw in @frameworks when fw.virtualStylesheetReference?)
@@ -1838,7 +1827,7 @@ class App
 
     if @combineScripts
       virtualScriptFile = new VirtualScriptFile
-        path: @name + ".js"
+        path: "{@name}.js"
         framework: this
         handlerSet: joinHandlerSet
         children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
@@ -1849,21 +1838,21 @@ class App
           new Saver(@buildVersion, this, file).save()
 
     if virtualStylesheetFile?
-      htmlStylesheetLinks = "<link href=\"" + @urlPrefix + virtualStylesheetFile.url() + "\" rel=\"stylesheet\" type=\"text/css\">"
+      htmlStylesheetLinks = "<link href=\"#{@urlPrefix + virtualStylesheetFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
     else
       htmlStylesheetLinks = []
       for fw in @frameworks
         for file in fw.orderedStylesheetFiles
-          htmlStylesheetLinks.push "<link href=\"" + @urlPrefix + file.url() + "\" rel=\"stylesheet\" type=\"text/css\">"
+          htmlStylesheetLinks.push "<link href=\"#{@urlPrefix + file.url()}\" rel=\"stylesheet\" type=\"text/css\">"
       htmlStylesheetLinks.join('\n')
 
     if virtualScriptFile?
-      htmlScriptLinks = "<script type=\"text/javascript\" src=\"" + @urlPrefix + virtualScriptFile.url() + "\"></script>"
+      htmlScriptLinks = "<script type=\"text/javascript\" src=\"#{@urlPrefix + virtualScriptFile.url()}\"></script>"
     else
       htmlScriptLinks = []
       for fw in @frameworks
         if fw.virtualScriptFile?
-          htmlScriptLinks.push "<link href=\"" + @urlPrefix + fw.virtualScriptFile.url() + "\" rel=\"stylesheet\" type=\"text/css\">"
+          htmlScriptLinks.push "<link href=\"#{@urlPrefix + fw.virtualScriptFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
       htmlScriptLinks.join('\n')
 
     htmlFile = new RootContentHtmlFile
@@ -1924,12 +1913,12 @@ class Server
     proxy_url = @proxyPrefix + proxy_url  if @proxyPrefix.length > 0 and proxy_url.indexOf(@proxyPrefix) < 0
     proxyClient = http.createClient(@proxyPort, @proxyHost)
     proxyClient.on "error", (err) ->
-      util.puts "ERROR: \"" + err.message + "\" for proxy request on " + @proxyHost + ":" + @proxyPort
+      util.puts "ERROR: \"#{err.message}\" for proxy request on #{@proxyHost}:#{@proxyPort}"
       response.writeHead 404
       response.end()
 
     request.headers.host = @proxyHost
-    request.headers.host += ":" + @proxyPort  unless @proxyPort is 80
+    request.headers.host += ":#{@proxyPort}"  unless @proxyPort is 80
     proxyRequest = proxyClient.request(request.method, url, request.headers)
     request.on "data", (chunk) ->
       proxyRequest.write chunk
@@ -1959,7 +1948,7 @@ class Server
         file = @file(path)
         if not file?
           if @shouldProxy()
-            util.puts "Proxying " + request.url
+            util.puts "Proxying #{request.url}"
             @proxy request, response
           else
             response.writeHead 404
@@ -2021,7 +2010,7 @@ exec = (appTargets, actionsSet) ->
     
       myApp.frameworks.push new Framework
         name: myApp.name
-        path: "apps/" + myApp.name
+        path: "apps/#{myApp.name}"
         combineScripts: true
         combineStylesheets: true
         minifyScripts: false

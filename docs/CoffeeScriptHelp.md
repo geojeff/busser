@@ -1,9 +1,8 @@
 CoffeeScript Help
 -----------------
 
-Here are several things that may make CoffeeScript *worth it* for the learning
-and adjustment required for its use, instead of using straight javascript, whether
-in the context of busser/busboy or in general:
+Here are features that may make CoffeeScript *worth it* for the learning and adjustment
+required for its use, whether in the context of busser/busboy or in general:
 
 * **less code**. After all the conventions offered by CoffeeScript are used, there are 
 fewer lines of code, not just by the omission of {} and () but by the language features
@@ -15,20 +14,76 @@ comprehension, the "bang for the buck" is great, as shown below.
 
 * **@**, the "this" operator:
 
-    @next
+        @next
 
     > is the same as
 
-    this.next
+        this.next
 
     > You really get the hang of this after a while, but it does take getting used to.
     > These little conveniences add up.
+
+* simple **existential operator**:
+
+        if next?
+          next.exec file
+
+    > The ? operator tacked on to the end of a property checks for null or undefined. It can
+    > also be written with the if in postfix position, as in:
+
+        next.exec file if next?
+
+    > Or can be be "embedded," so to speak, in method or property references, with the **?.**
+    > variant, as in: 
+
+        next?.exec file
+
+    > In learning CoffeeScript, the explicit use of if next? is more traditional, but you get
+    > the hang of taking advantage of **?.** after becoming comfortable. Still, you often need
+    > to use if next?, because you need an accompanying else clause, which is indeed the case
+    > in the handlers code, from which this example comes.
+
+* **existential assignment** operator.
+
+    > After the existential assignment operator was discovered during coding of busser, 
+
+        urlPrefix = urlPrefix if urlPrefix? else "/"
+ 
+    > became
+
+        urlPrefix ?= "/"
+
+    > See also, the or= operator, which is useful for setting defaults.
+
+* **string interpolation** and **heredocs**.
+
+    > CoffeeScript has a simple, but powerful, method for string interpolation:
+
+        util.puts "WARNING: #{path} referenced in #{file.path} but was not found."
+
+    > All you have to do is embed the property name or function call or expression within #{} tags.
+    > NOTE: string interpolation works only in double-quoted or heredoc strings. Use single quotes
+    > for plain strings, or double quotes. For blocks of code in a string, or for other similar 
+    > uses, the triple-quoted heredoc is very convenient:
+
+        response.data = """
+                        function() {
+                          SC.filename = \"__FILE__\";
+                          #{response.data}
+                        })();
+                        """
+
+    > This is a boon for readability of such emitted code blocks. As you might guess from the way 
+    > the heredoc is formatted, indentation is honored, relative to the left margin of the triple
+    > quotes. Also, string interpolation works in heredocs. As you might imagine, heredoc strings
+    > are very handy for large html blocks, because you not only have interpolation available, but
+    > the visual ease afforded by indentation and no requirement for per line quoting or commas.
 
 * **list comprehension**. The list comprehension is important -- in the normal course 
 of programming, you need loops over data all the time. In busser code, you will find simple 
 list comprehensions, such as:
 
-    resourceUrls = (file.url() for file in file.framework.resourceFiles)
+        resourceUrls = (file.url() for file in file.framework.resourceFiles)
 
     > In this case, we iterate, as we would normally write with a simple for loop, over
     > file.framework.resourceFiles, stuffing file.url() into a new array. But you don't have
@@ -36,7 +91,7 @@ list comprehensions, such as:
 
     > There are more advanced examples, such as:
 
-    children = (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
+        children = (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
 
     > In this more advanced case, several nice features of CoffeeScript are combined in a list
     > comprehension. We are still iterating over an array, but we are constructing the array by
@@ -49,169 +104,145 @@ list comprehensions, such as:
     > in Ruby and Python, so there is still the need for adopting a personal style and for 
     > being wise about when to break it up with a traditional *for* or *while* statement.
 
-* nifty **function signature** syntax. Your eyes get used to it, but instead of writing a function like:
+* **function signature** syntax. Your eyes get used to it, but instead of writing a function like:
 
-    scan: function() {
-      ...
-    }
+        scan: function() {
+          ...
+        }
 
     > you write
 
-    scan: ->
-      ...
+        scan: ->
+          ...
 
     > That's it, nothing to it. But what is the following?:
 
-    scan: =>
-      ...
+        scan: =>
+          ...
 
     > This is the "fat arrow" variant of ->. Appreciating it requires digging deeper into the realm 
     > of scope and closures and such. You would use the "fat arrow" variant when you want to
     > have the **this** reference set to the specific context of the calling line. Search the busser
     > code for => and for each line where you find it, think "this (and the handy @ reference) in this
-    > function will have the value of this on the calling line".
+    > function will have the value of this on the calling line". (Or, think, "the function is bound to
+    > the context of the calling line").
 
     > If a function takes arguments, use the familiar parentheses to mark them off in a function
     > definition:
 
-    exec: (file, request, callback) ->
-      ...
+        exec: (file, request, callback) ->
+          ...
 
     > If your code involves callbacks, you have to pay attention to careful use of commas, as in:
 
-    @next.exec file, request, (response) ->
-      ...
+        @next.exec file, request, (response) ->
+          ...
 
     > Here, @next.exec is called with three arguments: file, request, and an anonymous callback that
     > takes a response argument. 
 
 * **optional parentheses**. You've already seen it, in the examples above. Consider the following clause:
 
-    ...
-    else
-      file.content((err, data) ->
-        if err
-          throw err
+        ...
         else
-          callback data: data
-      )
+          file.content((err, data) ->
+            if err
+              throw err
+            else
+              callback data: data
+          )
 
     > The parentheses in many cases may be omitted, after you get comfortable seeing when and
     > when not to use them, to some degree for style choice and preference for visual appeal.
     > Earlier versions of busser had use of parentheses as above, but later such code was
     > changed to:
 
-    ...
-    else
-      file.content (err, data) ->
-        if err
-          throw err
+        ...
         else
-          callback data: data
+          file.content (err, data) ->
+            if err
+              throw err
+            else
+              callback data: data
 
     > In many situations, after starting to omit parentheses in code blocks, you have
     > to watch out for forgetting them when you want to call a function as a bare call on a
     > single line, as with:
 
-    exec() 
+        exec() 
 
     > Don't leave off the () on exec here, otherwise you would be referring to the exec
     > function, instead of invoking it, with exec(). You can also trip up by omitting
     > parentheses on lines like:
 
-    callbackAfterBuild() if callbackAfterBuild?
+        callbackAfterBuild() if callbackAfterBuild?
 
     > If you leave off () here, you'll refer to the function, and will not make the call.
 
 * **clean hash syntax**, for object creation and function argument passing. Compare:
 
-    app_url = url.format({
-      protocol: "http",
-      hostname: @hostname,
-      port: @port
-    });
+        app_url = url.format({
+          protocol: "http",
+          hostname: @hostname,
+          port: @port
+        });
 
     > to
 
-    app_url = url.format
-      protocol: "http"
-      hostname: @hostname
-      port: @port
+        app_url = url.format
+          protocol: "http"
+          hostname: @hostname
+          port: @port
 
     > Not only do you get to leave off () and {}, but you don't have to worry about commas. The
     > indenting -- the use of "significant whitespace" -- takes care of it. Here is another
     > example:
 
-    prompts = []
-    prompts.push
-      name: "configPath"
-      message: "Config path?".magenta
-    prompts.push
-      name: "appTargets"
-      validator: appTargetsValidator
-      warning: 'Target names have letters, numbers, or dashes, and are comma-delimited. No quotes are needed.'
-      message: "Target(s)?".magenta
+        prompts = []
+        prompts.push
+          name: "configPath"
+          message: "Config path?".magenta
+        prompts.push
+          name: "appTargets"
+          validator: appTargetsValidator
+          warning: 'Target names have letters, numbers, or dashes, and are comma-delimited. No quotes are needed.'
+          message: "Target(s)?".magenta
 
     > Compare that with:
 
-    prompts = []
-    prompts.push({
-      name: "configPath",
-      message: "Config path?".magenta
-    });
-    prompts.push({
-      name: "appTargets",
-      validator: appTargetsValidator,
-      warning: 'Target names have letters, numbers, or dashes, and are comma-delimited. No quotes are needed.',
-      message: "Target(s)?".magenta
-    });
+        prompts = []
+        prompts.push({
+          name: "configPath",
+          message: "Config path?".magenta
+        });
+        prompts.push({
+          name: "appTargets",
+          validator: appTargetsValidator,
+          warning: 'Target names have letters, numbers, or dashes, and are comma-delimited. No quotes are needed.',
+          message: "Target(s)?".magenta
+        });
 
     > No big deal? Well, again, little things like this add up to make a difference, not just for visual
-    > simplicity, but for ease of typing and elimination of "nuisance programming."
+    > simplicity, but for ease of typing and elimination of "nuisance programming." Of course, in some cases,
+    > we want to use {}, instead of indentation, for creating hashes, as in short statements like:
+
+        @stylesheetFiles.push(new MinifiedStylesheetFile({ path: path, framework: this }))
 
 * **switch statement**. For example:
 
-    switch fileType(path)
-        when "stylesheet" then @framework.addStylesheetFile(path)
-        when "script" then @framework.addScriptFile(path)
-        when "test" then @framework.addTestFile(path)
-        when "resource" then @framework.addResourceFile(path)
+        switch fileType(path)
+            when "stylesheet" then @framework.addStylesheetFile(path)
+            when "script" then @framework.addScriptFile(path)
+            when "test" then @framework.addTestFile(path)
+            when "resource" then @framework.addResourceFile(path)
 
     > The ease of comprehension is helped not just by the usual uncluttered, "no squigglies"
     > appearance, but by the combination of *when* and *then*. Color-coding in a good editor
     > tips the balance, because your eyes naturally key on *when* and *then*.
 
-* simple **existential* operator:
-
-    if next?
-      next.exec file
-
-    > The ? operator tacked on to the end of a property checks for null or undefined. It can
-    > also be "embedded," so to speak, in method or property references, with the **?.** variant,
-    > as in: 
-
-    next?.exec file
-
-    > In learning CoffeeScript, the explicit use of if next? is more traditional, but you get
-    > the hang of taking advantage of **?.** after becoming comfortable. Still, you often need
-    > to use if next?, because you need an accompanying else clause, which is indeed the case
-    > in the handlers code, from which this example comes.
-
-* **existential assignment** operator, where
-
-    if match is null then null else match[1]
-
-    > in early versions of busser, became
-
-    match ?= match[1]
-
-    > after the existential assignment operator was discovered.
-
-    > See also, the or= operator.
-
 * available **postfix position** of an if, when it reads well, as in:
 
-    response.write r.data, "utf8"  if r.data?
+        response.write r.data, "utf8"  if r.data?
 
     > This one does read well and is more succinct as a one-liner, than putting the if one
     > one line, followed by the response.write line. Use of this option largely depends on
@@ -223,13 +254,13 @@ list comprehensions, such as:
 * **fluidity / ease of cognition**. For example, consider the fluidity of typing and ease of 
 reading typical conditional lines, such as those in the fileType function:
 
-    fileType = (path) ->
-      ext = extname(path)
-      return "stylesheet" if /^\.(css|less)$/.test ext
-      return "script"     if (ext is ".js") or (ext is ".handlebars") and not /tests\//.test(path)
-      return "test"       if ext is ".js" and /tests\//.test(path)
-      return "resource"   if ext in ResourceFile.resourceExtensions
-      return "unknown"
+        fileType = (path) ->
+          ext = extname(path)
+          return "stylesheet" if /^\.(css|less)$/.test ext
+          return "script"     if (ext is ".js") or (ext is ".handlebars") and not /tests\//.test(path)
+          return "test"       if ext is ".js" and /tests\//.test(path)
+          return "resource"   if ext in ResourceFile.resourceExtensions
+          return "unknown"
 
     > The "script" line stands out, even if it involves a regular expression. Consider the
     > visual appeal of the usage here, over the syntactical alternative, where we would use ||, 
@@ -246,34 +277,34 @@ reading typical conditional lines, such as those in the fileType function:
 * **implied return** in functions. Translation: you don't have to use the return statement if
 you don't want to. Contrast:
 
-    file: (path) ->
-      file = null
-      for app in @apps
-        file = app.files[path]
-        return file if file?
-      return file
+        file: (path) ->
+          file = null
+          for app in @apps
+            file = app.files[path]
+            return file if file?
+          return file
 
     > with this, emphasis that the last line of a function matters -- whatever that evaluates
     > to is the return:
 
-    file: (path) ->
-      file = null
-      for app in @apps
-        file = app.files[path]
-        return file if file?
-      file
+        file: (path) ->
+          file = null
+          for app in @apps
+            file = app.files[path]
+            return file if file?
+          file
 
     > No big deal you say, but but its just another little thing.
     > Of course, the last line of a function can be an assignment, or some other statement for
     > which the function doesn't return a value in the API. Or the last line can be another
     > function call, as we see in the build method of the Framework class:
 
-    build: ->
-      ...
-      code that includes definition of the createBasicFiles function
-      ...
+        build: ->
+          ...
+          code that includes definition of the createBasicFiles function
+          ...
 
-      createBasicFiles callbackAfterBuild
+          createBasicFiles callbackAfterBuild
 
     > Here we are calling the createBasicFiles function, passing callbackAfterBuild.
 
@@ -283,17 +314,16 @@ you don't want to. Contrast:
 
 * **classes** and especially the great choice for the name of the **constructor** function:
 
-    class File
-      constructor: (options={}) ->
-        @path = null
-        @framework = null
-        @children = null
-        @handlerSet = null
-        @isHtml = false
-        @isVirtual = false
-        @symlink = null
-    
-        @[key] = options[key] for own key of options
+        class File
+          constructor: (options={}) ->
+            @path = null
+            @framework = null
+            @children = null
+            @handlerSet = null
+            @isHtml = false
+            @isVirtual = false
+            @symlink = null
+            @[key] = options[key] for own key of options
 
     > This is the routine adopted in busser for class constructor code: pass in an options
     > object, set defaults for properties for which defaults are needed, then "step on"
@@ -314,15 +344,15 @@ you don't want to. Contrast:
     > options coming in is defined. You will also want to learn, for another typical way of
     > constructing a class, the shorthand style:
 
-    class FileDependenciesComputer
-      constructor: (@file, @framework) ->
+        class FileDependenciesComputer
+          constructor: (@file, @framework) ->
 
     > instead of:
 
-    class FileDependenciesComputer
-      constructor: (file, framework) ->
-        @file = file
-        @framework = framework
+        class FileDependenciesComputer
+          constructor: (file, framework) ->
+            @file = file
+            @framework = framework
 
     > Compare to the options idiom above, if we can call it that. There is flexibility for
     > using a style that best fits the situation. 
@@ -335,3 +365,4 @@ you don't want to. Contrast:
     > usually work on problems for which understanding objects and their interactions.
     > CoffeeScript adds an explicit coverage of this important concept.
 
+* And there will be more items like these to share, as programming for busser and busboy continues...
