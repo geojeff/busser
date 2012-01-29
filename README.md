@@ -316,12 +316,16 @@ A very nice video for background and "top ten" favorites is by Sam Stephenson:
 
 [Better JS with CoffeeScript](http://vimeo.com/35258313)
 
-and another by Trevor Burnham:
+and another video, by Trevor Burnham:
 
-(Introduction to CoffeeScript)[http://screencasts.org/episodes/introduction-to-coffeescript], which is related
+[Introduction to CoffeeScript](http://screencasts.org/episodes/introduction-to-coffeescript), which is related
 to his book on CoffeeScript: [*CoffeeScript: Accelerated JavaScript Development*](http://pragprog.com/book/tbcoffee/coffeescript).
+Note that the instructions in the README file suggest using npm to install modules, including coffee-script,
+although you may, for some reason, prefer using something like homebrew for a general install. There is also
+a description of how to use plugins for TextMate, if you want.
 
-Color-coding for coffeescript code is really nice to use.  There are many [editor plugins](https://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins).
+Color-coding for CoffeeScript code is really nice to use.  There are many [editor plugins](https://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins).
+MacVim with the CoffeeScript plugin works great.
 
 See also the file CoffeeScriptHelp.md in the docs directory for help in learning
 CoffeeScript in the context of busser.
