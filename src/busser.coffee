@@ -42,7 +42,7 @@ appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
 
 # The *appTargets* input, having passed the validator above, is simply split
-# on comma, then the items are trimmed.
+# on comma, then the items are trimmed. Commas don't have to be present.
 #
 parseAppTargetsArgument = (appTargetsResult) ->
   (target.trim() for target in appTargetsResult.split(','))
@@ -51,9 +51,9 @@ parseAppTargetsArgument = (appTargetsResult) ->
 # 'build' or 'build, save' or 'build, save, run', or 'build, run', or any of
 # the same combinations without commas, e.g. 'build save run'. The user
 # could also enter a compound word, such as buildsaverun, or any manner of
-# incorrect order, jambed up words without commas and the like. So, here we
-# simply check for presence of build, save, run and construct one of several
-# possible actionsSets.
+# incorrect order, jambed up words without commas and the like. We do a string
+# match for presence of build, save, run words and construct one of several
+# possible actionItems.
 #
 parseActionsArgument = (actionsResult) ->
   actionsResult = actionsResult.toLowerCase()
@@ -63,20 +63,19 @@ parseActionsArgument = (actionsResult) ->
   actions.push 'save' if actionsResult.indexOf('save') isnt -1
   actions.push 'run' if actionsResult.indexOf('run') isnt -1
        
-  # The possible combinations for actions are these four compound actionsSets, 
-  # as used internally. These could be exposed for a user API, but the freeform
-  # allowance for typing build, save, and run in any order as csv input may
-  # preferrable than the direct typing of these compounds, which could be harder
-  # to remember and harder to type compound words with no blanks.
+  # The possible combinations for actions are these four compound actionItems, 
+  # as used internally. As noted above, the user has the freedom to type build,
+  # save, run in any manner, as csv input, as blank-delimited, or as a compound
+  # word with no blanks.
   #
-  actionsSet = 'build'        if actions.length is 1 and 'build' in actions
-  actionsSet = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
-  actionsSet = "buildsave"    if actions.length is 1 and 'save' in actions
-  actionsSet = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
-  actionsSet = "buildrun"     if actions.length is 1 and 'run' in actions
-  actionsSet = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
+  actionItems = 'build'        if actions.length is 1 and 'build' in actions
+  actionItems = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
+  actionItems = "buildsave"    if actions.length is 1 and 'save' in actions
+  actionItems = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
+  actionItems = "buildrun"     if actions.length is 1 and 'run' in actions
+  actionItems = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
 
-  actionsSet
+  actionItems
 
 # File Extension and Type Functions
 # ---------------------------------
@@ -150,7 +149,7 @@ buildLanguageAbbreviation = (buildLanguage) ->
     "en"
 
 # *languageInPath* returns null or the language abbreviation in the path, where
-# the path "apps/myapp/en.lproj/main.js" would evaluate to "en". A language
+# the path "apps/myapp/en.lproj/main.js" would evaluate to "en". Use of a language
 # fullname, e.g., "english.lproj", is also possible.
 #
 languageInPath = (path) ->
@@ -341,13 +340,15 @@ String::gsub = (re, callback) ->
 #
 #   Parameters:
 #
-#     @exec -- the method to do the work, perhaps via other functions or classes.
+#     @name -- the name of the one of the properties in the Busser class for handlers,
+#              e.g., ifModifiedSince, contentType, minify, join.
+#
+#     @exec -- the method to do the work, perhaps involving other functions or classes.
 #
 #     @next -- a link to the next handler.
 #     
-#   **Handler** specifications are given in the **Busser** class. **HandlerSet** instances are 
-#   created by calls to **Busser**, with a subset of intantiated available handlers.
-#
+#   **Handler** exec functions are held in the **Busser** class. **HandlerSet** instances are 
+#   created by calls to **Busser**, with a subset of available handlers.
 #   
 class Handler
   constructor: (options) ->
@@ -365,42 +366,38 @@ class Handler
 #   **HandlerSet** is a container for handlers which work on files and content in a 
 #   SproutCore project to build an system for development or deployment. A **HandlerSet**
 #   consists of a linked-list of handlers built from the available set. A **HandlerSet**
-#   instance is fired with exec().
+#   instance is fired with exec(). A HandlerSet contains one or more handlers.
 #
 # Constructor:
 #
 #   Parameters:
 #
-#     @name -- for handy reference, and for keys.
+#     @name -- for reference in labeling each HandlerSet singleton instance, e.g.
+#              stylesheetHandlerSet or joinHandlerSet.
 #
 #     @urlPrefix -- to be prepended to resulting paths.
-#                   Used within the class, so set with @.
 #
-#   **Handlers** are referenced by name, as they are part of the **HandlerSet**
-#   class, with: @[handlerName]. Each **Handler** instance has exec and next, 
-#   which are called during traversal from an initial exec call.
+#   Each **Handler** instance has exec and next, which are called during traversal
+#   from a HandlerSet exec call.
 #
 #   The exec() method fires on the head handler, beginning an "async waterfall,"
-#   wherein the sequence of handlers is called in succession, passing along
-#   a callback function. This is a "two-way" operation, however, in the sense
-#   that when the final "tail" handler executes, there is a return of callbacks 
-#   back up to the head handler. For the usage here, we may think of starting 
-#   with a call to exec at the head of a waterfall, then the water pours over 
-#   the waterfall, through the sequence of handlers, only to flow back up to 
-#   the head, via the return sequence of callbacks.
+#   wherein the sequence of handlers is called in succession, each one passing along
+#   a callback function. It is different than a one-way flow, as we see in an async
+#   waterfall, because when the final "tail" handler executes, there is a return 
+#   through callbacks back up to the head handler. In the end, the handler has 
+#   performed one or more operations, finally returning the data via the head callback.
 #
 class HandlerSet
   constructor: (@name, @urlPrefix="/") ->
     @handlers  = []
 
-  # *head* returns the first handler in the **HandlerSet** instance.
+  # *head* returns the first handler.
   #
   head: ->
     @handlers[0] if @handlers.length > 0
 
-  # *exec* fires on the head handler in the **HandlerSet** instance. The file and
-  # callback parameters are always used; request is used during server operations
-  # for passing a modification time, but could otherwise be useful.
+  # *exec* fires on the head handler. The file and callback parameters are always used;
+  # request is used during server operations for passing a modification time.
   #
   exec: (file, request, callback) ->
     headHandler = @head()
@@ -409,17 +406,17 @@ class HandlerSet
 # Busser
 # ------
 #
-# The **Busser** class is the main workhorse for the build system. It contains the
+# The **Busser** class is the workhorse for the build system. It contains the
 # code for available handlers and related utility functions. The handlerSet
 # method is used to create **HandlerSet** instances with a subset of available
 # handlers, instantiated and returned as a singly-linked-list.
 #
-# A single **Busser** instance is created for a build session with a simple call as
+# A single **Busser** instance is created for a build session with:
 #
 #   busser = Busser()
 #
-# This **Busser** instance is used for creating **HandlerSets** and for their use during 
-# a call to build and/or save an app.
+# This **Busser** instance is used for creating **HandlerSets** and for providing
+# utility methods for their use during a call to build an app.
 #
 class Busser
   constructor ->
@@ -429,25 +426,24 @@ class Busser
   #
   # Parameters:
   #
-  #    name -- for handy reference.
+  #    name -- handlerSet instance label.
   #
   #    urlPrefix -- default is "/"... [TODO] should be customizable for apps? 
   #                                          Also, check when this should be used...
   #
   #    handlerNames -- an array of handler names from the list of those available.
+  #                    These are the names of handlers, keys to properties of the Busser
+  #                    class.
   #
-  # A new **HandlerSet** instance is first created, with the name and urlPrefix. Then
-  # a list of handlers is created from handlerNames, setting handlerSet.handlers.
-  # The @[handlerName] parameter, passed in new Handler @[handlerName] calls, is a
-  # lookup to the data for a given handler held herein. If you examine, for example, 
-  # the ifModifiedSince method, you will see that it consists of name, next, and exec 
-  # arguments for creating a new Handler. ifModifiedSince() returns a hash of name, 
-  # next (null), and exec (a function) for a new **Handler** instance.
+  # First, a new **HandlerSet** instance is created with the name and urlPrefix. Then
+  # a list of handlers is created from handlerNames, setting handlerSet.handlers, the
+  # linked-list of handlers. All but the last handler have their next property set.
+  # The @[handlerName].exec reference, seen in Handler creation calls, is a lookup to the
+  # given handler property definition in the Busser class. If you examine, for example,
+  # the ifModifiedSince property in the Busser class, you will see an exec function,
+  # which is given a parameter in creating a new Handler instance of that type.
   # 
-  # The last loop in handlerSet() sets the next property of each handler to transform
-  # the handlers list into a singly-linked-list.
-  #
-  # The completed **HandlerSet** instance is returned.
+  # The completed **HandlerSet** instance, with linked-list of handlers, is returned.
   #
   handlerSet: (name, urlPrefix, handlerNames) ->
     urlPrefix ?= "/"
@@ -1969,7 +1965,7 @@ class Server
 # Instantiation and Execution
 # ===========================
 #
-exec = (appTargets, actionsSet) ->
+exec = (appTargets, actionItems) ->
   defaultAppDevConf = nconf.get("default-app-dev")
   defaultAppProdConf = nconf.get("default-app-prod")
   defaultFrameworksDevConf = nconf.get("default-sc-frameworks-dev")
@@ -2016,7 +2012,7 @@ exec = (appTargets, actionsSet) ->
         minifyScripts: false
         minifyStylesheets: false
         
-      switch actionsSet
+      switch actionItems
         when "build" then myApp.build()
         when "buildsave" then myApp.build(myApp.save)
         when "buildrun" then myApp.build ->
@@ -2071,11 +2067,11 @@ if process.argv.length is 2
     
     if result.appTargets? and result.actions?
       appTargets = parseAppTargetsArgument result.appTargets
-      actionsSet = parseActionsArgument result.actions
+      actionItems = parseActionsArgument result.actions
 
-      console.log "Performing: #{actionsSet}".cyan
+      console.log "Performing: #{actionItems}".cyan
       
-      exec appTargets, actionsSet
+      exec appTargets, actionItems
     else
       console.log "Valid target(s) and action are needed... Please try again... Aborting."
 else
@@ -2114,7 +2110,7 @@ else
   #
   if nconf.get('actions')?
     if actionsValidator.exec(nconf.get('actions'))
-      actionsSet = parseActionsArgument nconf.get('actions')
+      actionItems = parseActionsArgument nconf.get('actions')
     else
       errors.push "actions did not parse."
   else
@@ -2125,5 +2121,5 @@ else
   if errors.length > 0
     console.log errors
   else
-    exec appTargets, actionsSet
+    exec appTargets, actionItems
 

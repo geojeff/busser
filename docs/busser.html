@@ -30,32 +30,31 @@ expression, which allows any combination of the action verbs build, save, and ru
 any order, and even jambed-up, as buildsave or buildsaverun. But the preferred, and
 documented input style is one of 'build', 'build, run', 'build, save', and 'build,
 save, run', and the shortcuts 'run' and 'save' which will also trigger build, first.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">actionsValidator = </span><span class="sr">/^([\s*\&lt;build\&gt;*\s*]*[\s*\&lt;save\&gt;*\s*]*[\s*\&lt;run\&gt;*\s*]*)+(,[\s*\&lt;build\&gt;*\s*]*[\s*\&lt;save\&gt;*\s*]*[\s*\&lt;run\&gt;*\s*]*)*$/</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The <em>appTargets</em> input, having passed the validator above, is simply split
-on comma, then the items are trimmed.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseAppTargetsArgument = </span><span class="nf">(appTargetsResult) -&gt;</span>
+on comma, then the items are trimmed. Commas don't have to be present.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseAppTargetsArgument = </span><span class="nf">(appTargetsResult) -&gt;</span>
   <span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span> <span class="k">for</span> <span class="nx">target</span> <span class="k">in</span> <span class="nx">appTargetsResult</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>For the actions argument, the preferred style of input is to simply type
 'build' or 'build, save' or 'build, save, run', or 'build, run', or any of
 the same combinations without commas, e.g. 'build save run'. The user
 could also enter a compound word, such as buildsaverun, or any manner of
-incorrect order, jambed up words without commas and the like. So, here we
-simply check for presence of build, save, run and construct one of several
-possible actionsSets.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseActionsArgument = </span><span class="nf">(actionsResult) -&gt;</span>
+incorrect order, jambed up words without commas and the like. We do a string
+match for presence of build, save, run words and construct one of several
+possible actionItems.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseActionsArgument = </span><span class="nf">(actionsResult) -&gt;</span>
   <span class="nv">actionsResult = </span><span class="nx">actionsResult</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
 
   <span class="nv">actions = </span><span class="p">[]</span>
   <span class="nx">actions</span><span class="p">.</span><span class="nx">push</span> <span class="s1">&#39;build&#39;</span> <span class="k">if</span> <span class="nx">actionsResult</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">)</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
   <span class="nx">actions</span><span class="p">.</span><span class="nx">push</span> <span class="s1">&#39;save&#39;</span> <span class="k">if</span> <span class="nx">actionsResult</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;save&#39;</span><span class="p">)</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
   <span class="nx">actions</span><span class="p">.</span><span class="nx">push</span> <span class="s1">&#39;run&#39;</span> <span class="k">if</span> <span class="nx">actionsResult</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;run&#39;</span><span class="p">)</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
-       </pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>The possible combinations for actions are these four compound actionsSets, 
-as used internally. These could be exposed for a user API, but the freeform
-allowance for typing build, save, and run in any order as csv input may
-preferrable than the direct typing of these compounds, which could be harder
-to remember and harder to type compound words with no blanks.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">actionsSet = </span><span class="s1">&#39;build&#39;</span>        <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">1</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
-  <span class="nv">actionsSet = </span><span class="s2">&quot;buildsave&quot;</span>    <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;save&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
-  <span class="nv">actionsSet = </span><span class="s2">&quot;buildsave&quot;</span>    <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">1</span> <span class="o">and</span> <span class="s1">&#39;save&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
-  <span class="nv">actionsSet = </span><span class="s2">&quot;buildrun&quot;</span>     <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;run&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
-  <span class="nv">actionsSet = </span><span class="s2">&quot;buildrun&quot;</span>     <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">1</span> <span class="o">and</span> <span class="s1">&#39;run&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
-  <span class="nv">actionsSet = </span><span class="s2">&quot;buildsaverun&quot;</span> <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">3</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;save&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;run&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
+       </pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>The possible combinations for actions are these four compound actionItems, 
+as used internally. As noted above, the user has the freedom to type build,
+save, run in any manner, as csv input, as blank-delimited, or as a compound
+word with no blanks.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">actionItems = </span><span class="s1">&#39;build&#39;</span>        <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">1</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
+  <span class="nv">actionItems = </span><span class="s2">&quot;buildsave&quot;</span>    <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;save&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
+  <span class="nv">actionItems = </span><span class="s2">&quot;buildsave&quot;</span>    <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">1</span> <span class="o">and</span> <span class="s1">&#39;save&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
+  <span class="nv">actionItems = </span><span class="s2">&quot;buildrun&quot;</span>     <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;run&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
+  <span class="nv">actionItems = </span><span class="s2">&quot;buildrun&quot;</span>     <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">1</span> <span class="o">and</span> <span class="s1">&#39;run&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
+  <span class="nv">actionItems = </span><span class="s2">&quot;buildsaverun&quot;</span> <span class="k">if</span> <span class="nx">actions</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">3</span> <span class="o">and</span> <span class="s1">&#39;build&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;save&#39;</span> <span class="k">in</span> <span class="nx">actions</span> <span class="o">and</span> <span class="s1">&#39;run&#39;</span> <span class="k">in</span> <span class="nx">actions</span>
 
-  <span class="nx">actionsSet</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <h2>File Extension and Type Functions</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Use the node.js path module to pull the file extension from the path.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">extname = </span><span class="nf">(path) -&gt;</span>
+  <span class="nx">actionItems</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <h2>File Extension and Type Functions</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Use the node.js path module to pull the file extension from the path.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">extname = </span><span class="nf">(path) -&gt;</span>
   <span class="nx">path_module</span><span class="p">.</span><span class="nx">extname</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>The <em>fileType</em> function is used to identify paths by their file extension.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">fileType = </span><span class="nf">(path) -&gt;</span>
   <span class="nv">ext = </span><span class="nx">extname</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
   <span class="k">return</span> <span class="s2">&quot;stylesheet&quot;</span> <span class="k">if</span> <span class="sr">/^\.(css|less)$/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">ext</span>
@@ -95,7 +94,7 @@ matching the buildLanguage given in the configuration.</p>             </td>    
     <span class="nx">buildLanguageAbbreviations</span><span class="p">[</span><span class="nx">buildLanguage</span><span class="p">]</span> <span class="k">if</span> <span class="nx">buildLanguage</span> <span class="k">of</span> <span class="nx">buildLanguageAbbreviations</span>
   <span class="k">else</span>
     <span class="s2">&quot;en&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p><em>languageInPath</em> returns null or the language abbreviation in the path, where
-the path "apps/myapp/en.lproj/main.js" would evaluate to "en". A language
+the path "apps/myapp/en.lproj/main.js" would evaluate to "en". Use of a language
 fullname, e.g., "english.lproj", is also possible.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">languageInPath = </span><span class="nf">(path) -&gt;</span>
   <span class="nv">match = </span><span class="sr">/([a-z]+)\.lproj\//</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
   <span class="nx">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nx">match</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <h2>File Reading Queue System</h2>
@@ -256,13 +255,16 @@ http://flochip.com/2011/09/06/rubys-string-gsub-in-javascript/</p>
 
 <p>Parameters:</p>
 
-<pre><code>@exec -- the method to do the work, perhaps via other functions or classes.
+<pre><code>@name -- the name of the one of the properties in the Busser class for handlers,
+         e.g., ifModifiedSince, contentType, minify, join.
+
+@exec -- the method to do the work, perhaps involving other functions or classes.
 
 @next -- a link to the next handler.
 </code></pre>
 
-<p><strong>Handler</strong> specifications are given in the <strong>Busser</strong> class. <strong>HandlerSet</strong> instances are 
-  created by calls to <strong>Busser</strong>, with a subset of intantiated available handlers.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Handler</span>
+<p><strong>Handler</strong> exec functions are held in the <strong>Busser</strong> class. <strong>HandlerSet</strong> instances are 
+  created by calls to <strong>Busser</strong>, with a subset of available handlers.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Handler</span>
   <span class="nv">constructor: </span><span class="nf">(options) -&gt;</span>
     <span class="vi">@name = </span><span class="s2">&quot;&quot;</span>
     <span class="vi">@next = </span><span class="kc">null</span>
@@ -275,73 +277,68 @@ http://flochip.com/2011/09/06/rubys-string-gsub-in-javascript/</p>
 <p><strong>HandlerSet</strong> is a container for handlers which work on files and content in a 
   SproutCore project to build an system for development or deployment. A <strong>HandlerSet</strong>
   consists of a linked-list of handlers built from the available set. A <strong>HandlerSet</strong>
-  instance is fired with exec().</p>
+  instance is fired with exec(). A HandlerSet contains one or more handlers.</p>
 
 <p>Constructor:</p>
 
 <p>Parameters:</p>
 
-<pre><code>@name -- for handy reference, and for keys.
+<pre><code>@name -- for reference in labeling each HandlerSet singleton instance, e.g.
+         stylesheetHandlerSet or joinHandlerSet.
 
 @urlPrefix -- to be prepended to resulting paths.
-              Used within the class, so set with @.
 </code></pre>
 
-<p><strong>Handlers</strong> are referenced by name, as they are part of the <strong>HandlerSet</strong>
-  class, with: @[handlerName]. Each <strong>Handler</strong> instance has exec and next, 
-  which are called during traversal from an initial exec call.</p>
+<p>Each <strong>Handler</strong> instance has exec and next, which are called during traversal
+  from a HandlerSet exec call.</p>
 
 <p>The exec() method fires on the head handler, beginning an "async waterfall,"
-  wherein the sequence of handlers is called in succession, passing along
-  a callback function. This is a "two-way" operation, however, in the sense
-  that when the final "tail" handler executes, there is a return of callbacks 
-  back up to the head handler. For the usage here, we may think of starting 
-  with a call to exec at the head of a waterfall, then the water pours over 
-  the waterfall, through the sequence of handlers, only to flow back up to 
-  the head, via the return sequence of callbacks.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">HandlerSet</span>
+  wherein the sequence of handlers is called in succession, each one passing along
+  a callback function. It is different than a one-way flow, as we see in an async
+  waterfall, because when the final "tail" handler executes, there is a return 
+  through callbacks back up to the head handler. In the end, the handler has 
+  performed one or more operations, finally returning the data via the head callback.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">HandlerSet</span>
   <span class="nv">constructor: </span><span class="nf">(@name, @urlPrefix=&quot;/&quot;) -&gt;</span>
-    <span class="vi">@handlers  = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p><em>head</em> returns the first handler in the <strong>HandlerSet</strong> instance.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">head: </span><span class="o">-&gt;</span>
-    <span class="nx">@handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nx">@handlers</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p><em>exec</em> fires on the head handler in the <strong>HandlerSet</strong> instance. The file and
-callback parameters are always used; request is used during server operations
-for passing a modification time, but could otherwise be useful.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
+    <span class="vi">@handlers  = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p><em>head</em> returns the first handler.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">head: </span><span class="o">-&gt;</span>
+    <span class="nx">@handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nx">@handlers</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p><em>exec</em> fires on the head handler. The file and callback parameters are always used;
+request is used during server operations for passing a modification time.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
     <span class="nv">headHandler = </span><span class="nx">@head</span><span class="p">()</span>
     <span class="nx">headHandler</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <h2>Busser</h2>
 
-<p>The <strong>Busser</strong> class is the main workhorse for the build system. It contains the
+<p>The <strong>Busser</strong> class is the workhorse for the build system. It contains the
 code for available handlers and related utility functions. The handlerSet
 method is used to create <strong>HandlerSet</strong> instances with a subset of available
 handlers, instantiated and returned as a singly-linked-list.</p>
 
-<p>A single <strong>Busser</strong> instance is created for a build session with a simple call as</p>
+<p>A single <strong>Busser</strong> instance is created for a build session with:</p>
 
 <p>busser = Busser()</p>
 
-<p>This <strong>Busser</strong> instance is used for creating <strong>HandlerSets</strong> and for their use during 
-a call to build and/or save an app.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Busser</span>
+<p>This <strong>Busser</strong> instance is used for creating <strong>HandlerSets</strong> and for providing
+utility methods for their use during a call to build an app.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Busser</span>
   <span class="nx">constructor</span> <span class="o">-&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>The handlerSet method returns a HandlerSet instance that contains a linked-list
 of Handler objects, instantiated and ready for processing.</p>
 
 <p>Parameters:</p>
 
-<p>name -- for handy reference.</p>
+<p>name -- handlerSet instance label.</p>
 
 <p>urlPrefix -- default is "/"... [TODO] should be customizable for apps? 
                                          Also, check when this should be used...</p>
 
-<p>handlerNames -- an array of handler names from the list of those available.</p>
+<p>handlerNames -- an array of handler names from the list of those available.
+                   These are the names of handlers, keys to properties of the Busser
+                   class.</p>
 
-<p>A new <strong>HandlerSet</strong> instance is first created, with the name and urlPrefix. Then
-a list of handlers is created from handlerNames, setting handlerSet.handlers.
-The @[handlerName] parameter, passed in new Handler @[handlerName] calls, is a
-lookup to the data for a given handler held herein. If you examine, for example, 
-the ifModifiedSince method, you will see that it consists of name, next, and exec 
-arguments for creating a new Handler. ifModifiedSince() returns a hash of name, 
-next (null), and exec (a function) for a new <strong>Handler</strong> instance.</p>
+<p>First, a new <strong>HandlerSet</strong> instance is created with the name and urlPrefix. Then
+a list of handlers is created from handlerNames, setting handlerSet.handlers, the
+linked-list of handlers. All but the last handler have their next property set.
+The @[handlerName].exec reference, seen in Handler creation calls, is a lookup to the
+given handler property definition in the Busser class. If you examine, for example,
+the ifModifiedSince property in the Busser class, you will see an exec function,
+which is given a parameter in creating a new Handler instance of that type.</p>
 
-<p>The last loop in handlerSet() sets the next property of each handler to transform
-the handlers list into a singly-linked-list.</p>
-
-<p>The completed <strong>HandlerSet</strong> instance is returned.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">handlerSet: </span><span class="nf">(name, urlPrefix, handlerNames) -&gt;</span>
+<p>The completed <strong>HandlerSet</strong> instance, with linked-list of handlers, is returned.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">handlerSet: </span><span class="nf">(name, urlPrefix, handlerNames) -&gt;</span>
     <span class="nx">urlPrefix</span> <span class="o">?=</span> <span class="s2">&quot;/&quot;</span>
 
     <span class="nv">handlerSet = </span><span class="k">new</span> <span class="nx">HandlerSet</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">urlPrefix</span>
@@ -1576,7 +1573,7 @@ When finished, the callback is called if it is defined.</p>
 
 <p>The <strong>FrameworksBuilder</strong> class for the app execs the build methods for the
 root html content and for the content of each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre> </pre></div>             </td>           </tr>                               <tr id="section-103">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-103">&#182;</a>               </div>               <p><em>registerFile</em> sets the url of the file as the key in the files associative
-array, which is exposed to the server for file requests.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exec = </span><span class="nf">(appTargets, actionsSet) -&gt;</span>
+array, which is exposed to the server for file requests.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exec = </span><span class="nf">(appTargets, actionItems) -&gt;</span>
   <span class="nv">defaultAppDevConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-app-dev&quot;</span><span class="p">)</span>
   <span class="nv">defaultAppProdConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-app-prod&quot;</span><span class="p">)</span>
   <span class="nv">defaultFrameworksDevConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-sc-frameworks-dev&quot;</span><span class="p">)</span>
@@ -1623,7 +1620,7 @@ array, which is exposed to the server for file requests.</p>             </td>  
         <span class="nv">minifyScripts: </span><span class="kc">false</span>
         <span class="nv">minifyStylesheets: </span><span class="kc">false</span>
         
-      <span class="k">switch</span> <span class="nx">actionsSet</span>
+      <span class="k">switch</span> <span class="nx">actionItems</span>
         <span class="k">when</span> <span class="s2">&quot;build&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span><span class="p">()</span>
         <span class="k">when</span> <span class="s2">&quot;buildsave&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span><span class="p">(</span><span class="nx">myApp</span><span class="p">.</span><span class="nx">save</span><span class="p">)</span>
         <span class="k">when</span> <span class="s2">&quot;buildrun&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span> <span class="o">-&gt;</span>
@@ -1673,11 +1670,11 @@ else blocks until the main root html file is writen.</p>             </td>      
     
     <span class="k">if</span> <span class="nx">result</span><span class="p">.</span><span class="nx">appTargets</span><span class="o">?</span> <span class="o">and</span> <span class="nx">result</span><span class="p">.</span><span class="nx">actions</span><span class="o">?</span>
       <span class="nv">appTargets = </span><span class="nx">parseAppTargetsArgument</span> <span class="nx">result</span><span class="p">.</span><span class="nx">appTargets</span>
-      <span class="nv">actionsSet = </span><span class="nx">parseActionsArgument</span> <span class="nx">result</span><span class="p">.</span><span class="nx">actions</span>
+      <span class="nv">actionItems = </span><span class="nx">parseActionsArgument</span> <span class="nx">result</span><span class="p">.</span><span class="nx">actions</span>
 
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Performing: #{actionsSet}&quot;</span><span class="p">.</span><span class="nx">cyan</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Performing: #{actionItems}&quot;</span><span class="p">.</span><span class="nx">cyan</span>
       
-      <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionsSet</span>
+      <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionItems</span>
     <span class="k">else</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Valid target(s) and action are needed... Please try again... Aborting.&quot;</span>
 <span class="k">else</span></pre></div>             </td>           </tr>                               <tr id="section-106">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-106">&#182;</a>               </div>               <h1>Server</h1>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">)</span><span class="o">?</span>
@@ -1696,7 +1693,7 @@ else blocks until the main root html file is writen.</p>             </td>      
     <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;appTargets argument is missing.&quot;</span>
       </pre></div>             </td>           </tr>                               <tr id="section-109">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-109">&#182;</a>               </div>               <p>Initialize nconf for command line arguments and for environmental settings</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span><span class="o">?</span>
     <span class="k">if</span> <span class="nx">actionsValidator</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">))</span>
-      <span class="nv">actionsSet = </span><span class="nx">parseActionsArgument</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span>
+      <span class="nv">actionItems = </span><span class="nx">parseActionsArgument</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions did not parse.&quot;</span>
   <span class="k">else</span>
@@ -1706,7 +1703,7 @@ in the else below, startup will initialize from command line arguments and/or
 environment settings.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">errors</span>
   <span class="k">else</span>
-    <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionsSet</span>
+    <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionItems</span>
 
 </pre></div>             </td>           </tr>                               <tr id="section-111">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-111">&#182;</a>               </div>               <p>All info is provided as command line arguments, or from environment settings. nconf
 will be initialized with these, and will also be given the config file specified in
