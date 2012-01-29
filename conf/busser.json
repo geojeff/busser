@@ -128,14 +128,6 @@
       "minifyScripts": false,
       "minifyStylesheets": false
     },
-    "mini": {
-      "name": "mini",
-      "path": "frameworks/sproutcore/frameworks/mini",
-      "combineScripts": true,
-      "combineStylesheets": true,
-      "minifyScripts": false,
-      "minifyStylesheets": false
-    },
     "qunit": {
       "name": "qunit",
       "path": "frameworks/sproutcore/frameworks/qunit",
@@ -309,14 +301,6 @@
     "media": {
       "name": "media",
       "path": "frameworks/sproutcore/frameworks/media",
-      "combineScripts": true,
-      "combineStylesheets": true,
-      "minifyScripts": true,
-      "minifyStylesheets": true
-    },
-    "mini": {
-      "name": "mini",
-      "path": "frameworks/sproutcore/frameworks/mini",
       "combineScripts": true,
       "combineStylesheets": true,
       "minifyScripts": true,
