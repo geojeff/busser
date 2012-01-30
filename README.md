@@ -234,8 +234,11 @@ Running
 -------
 
 busser and busboy use the node.js prompt module, along with the colors module,
-to prompt for and validate user input. After validation and parsing, user input
-is fed to nconf. So, busser is invoked with no arguments as:
+to prompt for and validate user input, if the run mode is interactive. If the
+run mode is command-line-only, the same arguments are validated and parsed with
+the same code, after which, accepted user input is fed to nconf. 
+
+busser is invoked with no arguments as:
 
     node bin/busser.js
 
@@ -250,9 +253,9 @@ one app at a time works.
 * actions -- Use a combination of build, save, and run, comma-delimited, blank-delimited,
 or even all jammed up, as buildsaverun.
 
-Power users will want command line-only functionality, something like:
+Power users will want command-line-only functionality, something like:
 
-    node bin/busser.js --appTargets=myapp-dev --actions=build,run
+    node bin/busser.js --appTargets=HelloWorld-dev --actions=build,run
 
 Because this is command line input, when providing multiples for either argument, use
 comma-delimited style with no blanks, certainly for appTargets, with no blanks, or use
@@ -261,14 +264,28 @@ also use compound words for actions, e.g. --actions=buildsaverun. For actions, t
 order of input doesn't matter -- build will always be first, then save, if required,
 then run.
 
-You should see a colorized report to the console after executing.
+You should see colorized prompts for input, and you should see a colorized report to 
+the console during executing.
 
 For build, save, run, you will see the same output, finishing with a message that 
-the server is now running on localhost, port 8000. In that event, visit
-localhost:8000/HelloWorld to show the app, which, as of 2012-01-23, will
-show the first window and pane skewed far left, unusable (Ace problems, probably...).
+the server is now running on localhost, port 8000. If using the run action, visit
+localhost:8000/HelloWorld to show the app, which, as of 2012-01-23, for HelloWorld
+will show the first window and pane skewed far left, unusable (Ace problems, probably...).
 
 It is not necessary to save -- during development, you will commonly use build, run.
+
+Running with an Existing Project
+--------------------------------
+
+Go into your existing project directory, then git clone busser, then cd busser, and 
+follow the instructions above to npm install dependencies locally into your busser 
+directory (this will add node_modules directory). Then compile src/busser.coffee with
+the coffee command, as explained in the directions above. Then cd .. up to your project
+directory. cp busser/conf/busser.conf to, say, myproject.json, or wherever you wish to
+put it. Edit this conf file, changing HelloWorld, etc. to your app's info. Then you 
+should be able to run node busser/bin/busser.js either interactively or via the
+command line, per instructions above. As of 2012-01-30, an app would not be expected
+to serve up correctly.
 
 Contributors
 ============
