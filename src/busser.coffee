@@ -403,13 +403,6 @@ class HandlerSet
 # method is used to create **HandlerSet** instances with a subset of available
 # handlers, instantiated and returned as a singly-linked-list.
 #
-# A single **Busser** instance is created for a build session with:
-#
-#   busser = Busser()
-#
-# This **Busser** instance is used for creating **HandlerSets** and for providing
-# utility methods for their use during a call to build an app.
-#
 class Busser
   constructor ->
 
@@ -427,7 +420,7 @@ class Busser
   #                    These are the names of handlers, keys to properties of the Busser
   #                    class.
   #
-  # First, a new **HandlerSet** instance is created with the name and urlPrefix. Then
+  # A new **HandlerSet** instance is created with the name and urlPrefix. Then
   # a list of handlers is created from handlerNames, setting handlerSet.handlers, the
   # linked-list of handlers. All but the last handler have their next property set.
   # The @[handlerName].exec reference, seen in Handler creation calls, is a lookup to the
@@ -745,22 +738,16 @@ class Busser
 
   # The *join* handler joins any files coming through, and their children, into 
   # a cumulative data array, which is joined upon callback. The callback is fired
-  # when the file count from downstream is met.
+  # when the file count from downstream processing is met.
   #
   # If the file has no children, the file's handlerSet is called to process and
   # return data. 
   #
-  # If the file has children (It is a virtual file, so to speak, not present on
+  # If the file has children (It is a virtual file, not present on
   # disk in the original project), handlerSets for the children, which may in
   # turn also have children, are called, perhaps to return data resulting from
   # a large recursive sequence.
   # 
-  # [TODO] Note that this section was substantially retooled, along with the
-  # addition of new file types (the file class and its derivatives), and also
-  # along with rearrangement and interpretation of HandlerSet singleton objects
-  # used in processing. A good set of test for the handlers section is needed, 
-  # especially for the join handler and related handlers.
-  #
   join:
     exec: (file, request, callback) ->
       data = []
@@ -885,7 +872,7 @@ class Busser
 #
 busser = new Busser
 
-# *availableHandlerNames* is a utility method for use by developers in listing
+# *availableHandlerNames* is a convenience method for use by developers in listing
 # handlers defined in the **Busser** class. The global instance of busser is queried
 # for its own properties, which will include variables and methods, and the
 # list returned is filtered for known non-handler properties and methods.
@@ -977,14 +964,10 @@ joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPre
 #    > *virtualStylesheetReference* -- These two are instances of Reference,
 #    > *virtualScriptReference*        which is a url-to-file couplet.
 #
-# And, finally, the **Framework** class has a *pathsToExlude* property, which is
-# and array of paths or regular expressions used to exclude directories. For
+# The **Framework** class has a *pathsToExlude* property, which is
+# an array of paths or regular expressions used to exclude directories. For
 # example, a "fixtures" path can be allowed for a development build, but
 # excluded for a production build.
-#
-# Default values for these build configuration properties and arrays are set
-# in the constructor before any values passed in for them as options are set
-# on top of the defaults.
 #
 class Framework
   constructor: (options={}) ->
@@ -1149,7 +1132,7 @@ class Framework
   
   # *sortDependencies* is a recursive method working on a list of javascript files
   # received from *computeDependencies*, which has added a .deps array for each file.
-  # *sortDependencies* searches the dependency urls in deps, searching for the matching
+  # *sortDependencies* searches the dependency urls in deps for the matching
   # file for each, recursively continuing until a file with no dependencies is found
   # and added to the sorted results. In this way, dependent files are added to the
   # orderedFiles array ahead of files requiring them.
@@ -1218,11 +1201,13 @@ class Framework
   # support was added in a branch of the mauritslamers version. 
   #
   bundleInfo: ->
-    [ ";SC.BUNDLE_INFO['#{@reducedPath()}'] = {", "requires: [],", "scripts: [" + @orderedScriptFiles.map((script) ->
-      "'" + script.url() + "'"
-    ).join(",") + "],", "styles: [" + @orderedStylesheetFiles.map((stylesheet) ->
-      "'" + stylesheet.url() + "'"
-    ).join(",") + "],", "};" ].join "\n"
+    """
+    ;SC.BUNDLE_INFO['#{@reducedPath()}'] = {
+      requires: [],
+      scripts: [#{(script.url() for script in @orderedScriptFiles)}],
+      styles: [#{(stylesheet.url() for stylesheet in @orderedStylesheetFiles)}]
+    };
+    """
 
   # The *sproutcoreFrameworks* static method returns a default list of Framework instances, 
   # either with or without jquery, testing for jquery in the project. This method is used
