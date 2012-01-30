@@ -4,7 +4,9 @@ B U S S E R
 Prominent Note at the Top
 =========================
 
-This program does not well work yet...
+**_This program does not well work yet..._**
+
+UPDATE 2012-01-29: Documentation and comments improvements.
 
 UPDATE 2012-01-28: Addition of src/CoffeeScriptHelp.md, along with many
 improvements of formatting and use of idiomatic CoffeeScript in the code.
@@ -62,16 +64,19 @@ releases, focus will be on getting Busser to work with SproutCore master,
 the development target, for running and building the "test controls"
 SproutCore app in the SproutCore 1.8 release, using an Ace theme. 
 
-A longer-term goal is to match the feature set of the Abbot/Chance build 
-tools in Ruby for the next release of SproutCore (1.9?), if not to be 
-incorporated as an official build tools option, to begin a life as a 
-separately maintained project as an unofficial build tools option. The 
-progression of development of official SproutCore build tools may be 
-followed at https://github.com/sproutcore/sproutcore/issues/639.
+A longer-term goal is to match the feature set of the very capable
+Abbot/Chance build tools in Ruby for the next release of SproutCore (1.9?),
+if not to be incorporated as an official build tools option, to begin a
+life as a separately maintained project as an unofficial build tools 
+option. The progression of development of official SproutCore build tools
+may be followed at https://github.com/sproutcore/sproutcore/issues/639.
 
 Busser will be developed with a fresh look at new tools available, such 
 as browserify, stylus, stitch, and the like, to see where use of these 
 tools can replace code or enhance the program.
+
+Review the merit of using express.js for the server part of busser,
+instead of the straight node.js-based server.
 
 Async programming style in Busser will be reviewed by comparison to
 examples found on the web and to the build tools called ember-runner, 
@@ -83,6 +88,10 @@ Also, the design and operation of ember-runner will be reviewed. One aspect
 to be considered is the way the system of handlers works, compared to the
 modifications done in Busser.
 
+Evaluate IcedCoffeeScript, with its addition of *await* and *defer*, for
+replacing code in busser's handler exec methods, for cases where counts
+are used to wait for overall completion. See [IcedCoffeeScript](http://maxtaco.github.com/coffee-script/).
+
 Another build tools treatment to be considered is that in Blossom, released 
 by Erich Ocean (erichocean), https://github.com/fohr/blossom.  Blossom's 
 build tools take a fresh approach to the way SproutCore frameworks are 
@@ -91,12 +100,10 @@ specific to Blossom. An abstraction like this might be a good fit for
 implementation in CoffeeScript, but must be compared to the merits of the 
 fine-grained simple json configuration files, via nconf, now in Busser.
 
-The design and operation of Abbot, the very capable Ruby-based development
-tools for SproutCore will be studied and evaluated for bringing Busser
-features up to par, including code in Abbot and in the theme-building
-helper program called Chance. Graphics production and handling may be
-enhanced, by using node.js modules such as node-canvas, to add screen
-capturing for SproutCore testing and software release tasks.
+For coming up to par with Chance, and for adding new features, graphics
+production and handling may be enhanced by using node.js modules such as
+node-canvas, to add screen capturing for SproutCore testing and software
+release tasks.
 
 The latest mauritslamers version of garçon includes a start for handling
 of bundles and also includes use of special components from SproutCore 
@@ -152,7 +159,7 @@ Install with:
 
 This would install the dependencies and busser, but that doesn't work yet.
 Significant note: CoffeeScript, nor the testing framework, will not be required
-in a normal user installation. This will simply be a node.js tool installable
+in a normal user installation. This will be a node.js tool installable
 via npm.
 
 Development Installation

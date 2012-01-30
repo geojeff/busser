@@ -1493,7 +1493,7 @@ class RootContentHtmlFile extends File
 # StylesheetFile
 # --------------
 #
-# **StylesheetFile* is a class for .css and related file types.
+# **StylesheetFile** is a class for .css and related file types.
 #
 class StylesheetFile extends File
   constructor: (options={}) ->
