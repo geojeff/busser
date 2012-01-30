@@ -256,7 +256,7 @@ This is designed to take multiple targets in comma-delimited format, but for now
 one app at a time works.
 
 * actions -- Use a combination of build, save, and run, comma-delimited, blank-delimited,
-or even all jambed up, as buildsaverun.
+or even all jammed up, as buildsaverun.
 
 Power users will want command line-only functionality, something like:
 

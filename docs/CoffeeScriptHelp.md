@@ -366,7 +366,7 @@ you don't want to. Contrast:
 
 * **heregexes**, which are like heredocs, but for regular expressions.
 
-    > Compare an original all-jambed-together regex:
+    > Compare an original all-jammed-together regex:
 
         actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
 
