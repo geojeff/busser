@@ -27,16 +27,9 @@ distinguish between another configuration of theirs, say HelloWorld-prod, as you
 see in the default conf/busser.json file. So, the regular expression here allows any
 alphanumeric characters with numbers, dashes, or underscores.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">appTargetsValidator = </span><span class="sr">/^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>See the user input-handling method, <em>parseActionsArgument</em>, for design of this regular
 expression, which allows any combination of the action verbs build, save, and run, in
-any order, and even jambed-up, as buildsave or buildsaverun. But the preferred, and
-documented input style is one of 'build', 'build, run', 'build, save', and 'build,
-save, run', and the shortcuts 'run' and 'save' which will also trigger build, first.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">actionsValidator = </span><span class="sr">/^([\s*\&lt;build\&gt;*\s*]*[\s*\&lt;save\&gt;*\s*]*[\s*\&lt;run\&gt;*\s*]*)+(,[\s*\&lt;build\&gt;*\s*]*[\s*\&lt;save\&gt;*\s*]*[\s*\&lt;run\&gt;*\s*]*)*$/</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The <em>appTargets</em> input, having passed the validator above, is simply split
+any order, and even jambed-up, as buildsave or buildsaverun.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">actionsValidator = </span><span class="sr">/^([\s*\&lt;build\&gt;*\s*]*[\s*\&lt;save\&gt;*\s*]*[\s*\&lt;run\&gt;*\s*]*)+(,[\s*\&lt;build\&gt;*\s*]*[\s*\&lt;save\&gt;*\s*]*[\s*\&lt;run\&gt;*\s*]*)*$/</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The <em>appTargets</em> input, having passed the validator above, is split
 on comma, then the items are trimmed. Commas don't have to be present.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseAppTargetsArgument = </span><span class="nf">(appTargetsResult) -&gt;</span>
-  <span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span> <span class="k">for</span> <span class="nx">target</span> <span class="k">in</span> <span class="nx">appTargetsResult</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>For the actions argument, the preferred style of input is to simply type
-'build' or 'build, save' or 'build, save, run', or 'build, run', or any of
-the same combinations without commas, e.g. 'build save run'. The user
-could also enter a compound word, such as buildsaverun, or any manner of
-incorrect order, jambed up words without commas and the like. We do a string
-match for presence of build, save, run words and construct one of several
+  <span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span> <span class="k">for</span> <span class="nx">target</span> <span class="k">in</span> <span class="nx">appTargetsResult</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Match for presence of build, save, run words and construct one of several
 possible actionItems.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseActionsArgument = </span><span class="nf">(actionsResult) -&gt;</span>
   <span class="nv">actionsResult = </span><span class="nx">actionsResult</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
 
@@ -294,8 +287,7 @@ http://flochip.com/2011/09/06/rubys-string-gsub-in-javascript/</p>
 
 <p>The exec() method fires on the head handler, beginning an "async waterfall,"
   wherein the sequence of handlers is called in succession, each one passing along
-  a callback function. It is different than a one-way flow, as we see in an async
-  waterfall, because when the final "tail" handler executes, there is a return 
+  a callback function. When the final "tail" handler executes, there is a return 
   through callbacks back up to the head handler. In the end, the handler has 
   performed one or more operations, finally returning the data via the head callback.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">HandlerSet</span>
   <span class="nv">constructor: </span><span class="nf">(@name, @urlPrefix=&quot;/&quot;) -&gt;</span>
@@ -308,14 +300,7 @@ request is used during server operations for passing a modification time.</p>   
 <p>The <strong>Busser</strong> class is the workhorse for the build system. It contains the
 code for available handlers and related utility functions. The handlerSet
 method is used to create <strong>HandlerSet</strong> instances with a subset of available
-handlers, instantiated and returned as a singly-linked-list.</p>
-
-<p>A single <strong>Busser</strong> instance is created for a build session with:</p>
-
-<p>busser = Busser()</p>
-
-<p>This <strong>Busser</strong> instance is used for creating <strong>HandlerSets</strong> and for providing
-utility methods for their use during a call to build an app.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Busser</span>
+handlers, instantiated and returned as a singly-linked-list.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Busser</span>
   <span class="nx">constructor</span> <span class="o">-&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>The handlerSet method returns a HandlerSet instance that contains a linked-list
 of Handler objects, instantiated and ready for processing.</p>
 
@@ -330,7 +315,7 @@ of Handler objects, instantiated and ready for processing.</p>
                    These are the names of handlers, keys to properties of the Busser
                    class.</p>
 
-<p>First, a new <strong>HandlerSet</strong> instance is created with the name and urlPrefix. Then
+<p>A new <strong>HandlerSet</strong> instance is created with the name and urlPrefix. Then
 a list of handlers is created from handlerNames, setting handlerSet.handlers, the
 linked-list of handlers. All but the last handler have their next property set.
 The @[handlerName].exec reference, seen in Handler creation calls, is a lookup to the
@@ -538,7 +523,7 @@ format url('%@') for url references in stylesheets.</p>             </td>       
             <span class="k">throw</span> <span class="nx">err</span>
           <span class="k">else</span>
             <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">Busser</span><span class="p">.</span><span class="nx">rewriteStatic</span> <span class="s2">&quot;url(&#39;%@&#39;)&quot;</span><span class="p">,</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-40">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-40">&#182;</a>               </div>               <p>The <em>rewriteStaticInScript</em> handler calls the <em>rewriteStatic</em> method with the
-format '%@' for simple references in javascript.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">rewriteStaticInScript:</span>
+format '%@' for references in javascript.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">rewriteStaticInScript:</span>
     <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
       <span class="k">if</span> <span class="nx">@next</span><span class="o">?</span>
         <span class="nx">@next</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nf">(response) -&gt;</span>
@@ -578,97 +563,92 @@ which is found via <strong>FILE</strong>.</p>             </td>             <td 
           <span class="k">if</span> <span class="nx">err</span>
             <span class="k">throw</span> <span class="nx">err</span>
           <span class="k">else</span>
-            <span class="nx">callback</span> <span class="nv">data: </span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">                           function() {</span>
-<span class="s2">                             SC.filename = \&quot;__FILE__\&quot;;&quot;</span>
-                             <span class="c1">#{data}</span>
-                           <span class="p">})();</span>
-                           <span class="s2">&quot;&quot;&quot;</span>
+            <span class="nv">data = </span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                   function() {</span>
+<span class="s2">                     SC.filename = \&quot;__FILE__\&quot;;</span>
+<span class="s2">                     #{data}</span>
+<span class="s2">                   })();</span>
+<span class="s2">                   &quot;&quot;&quot;</span>
+            <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-43">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-43">&#182;</a>               </div>               <p>The <em>join</em> handler joins any files coming through, and their children, into 
+a cumulative data array, which is joined upon callback. The callback is fired
+when the file count from downstream processing is met.</p>
 
+<p>If the file has no children, the file's handlerSet is called to process and
+return data. </p>
 
-<span class="s2">#DIVIDER</span>
-<span class="s2">  join:</span>
-<span class="s2">    exec: (file, request, callback) -&gt;</span>
-<span class="s2">      data = []</span>
+<p>If the file has children (It is a virtual file, not present on
+disk in the original project), handlerSets for the children, which may in
+turn also have children, are called, perhaps to return data resulting from
+a large recursive sequence.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">join:</span>
+    <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
+      <span class="nv">data = </span><span class="p">[]</span>
 
-<span class="s2">      if not file.children? or file.children.length is 0</span>
-<span class="s2">        file.handlerSet.exec file, request, (response) -&gt;</span>
-<span class="s2">          callback data: response.data</span>
-<span class="s2">      else</span>
-<span class="s2">        filesForJoin = file.children</span>
+      <span class="k">if</span> <span class="o">not</span> <span class="nx">file</span><span class="p">.</span><span class="nx">children</span><span class="o">?</span> <span class="o">or</span> <span class="nx">file</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">0</span>
+        <span class="nx">file</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nf">(response) -&gt;</span>
+          <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span>
+      <span class="k">else</span>
+        <span class="nv">filesForJoin = </span><span class="nx">file</span><span class="p">.</span><span class="nx">children</span>
 
-<span class="s2">        count = filesForJoin.length</span>
+        <span class="nv">count = </span><span class="nx">filesForJoin</span><span class="p">.</span><span class="nx">length</span>
 
-<span class="s2">        if count is 0</span>
-<span class="s2">          callback data: &#39;&#39;</span>
-<span class="s2">        else</span>
-<span class="s2">          filesForJoin.forEach (file, i) -&gt;</span>
-<span class="s2">            next = (if @next then @next else file.handlerSet)</span>
-<span class="s2">            next.exec file, request, (d) -&gt;</span>
-<span class="s2">              data[i] = d.data</span>
-<span class="s2">              count -= 1</span>
-<span class="s2">              callback data: data.join(&quot;</span><span class="err">\</span><span class="nx">n</span><span class="s2">&quot;)  if count is 0</span>
-<span class="s2">            </span>
-
-<span class="s2">#DIVIDER</span>
-<span class="s2">  symlink:</span>
-<span class="s2">    exec: (file, request, callback) -&gt;</span>
-<span class="s2">      file.symlink.handlerSet.exec file.symlink, request, callback</span>
-
-
-<span class="s2">#DIVIDER</span>
-<span class="s2">  @lessify: (path, data, callback) -&gt;</span>
-<span class="s2">    parser = new less.Parser(</span>
-<span class="s2">      optimization: 0</span>
-<span class="s2">      paths: [ path ]</span>
-<span class="s2">    )</span>
-<span class="s2">    parser.parse data, (err, tree) -&gt;</span>
-<span class="s2">      if err</span>
-<span class="s2">        util.puts &quot;</span><span class="nv">ERROR: </span><span class="s2">&quot; + err.message</span>
-<span class="s2">      else</span>
-<span class="s2">        try</span>
-<span class="s2">          data = tree.toCSS()</span>
-<span class="s2">        catch e</span>
-<span class="s2">          util.puts &quot;</span><span class="nv">ERROR: </span><span class="s2">&quot; + e.message</span>
-<span class="s2">      callback data</span>
-
-
-<span class="s2">#DIVIDER</span>
-<span class="s2">  less:</span>
-<span class="s2">    exec: (file, request, callback) -&gt;</span>
-<span class="s2">      if less? and extname(file.path) is &quot;</span><span class="p">.</span><span class="nx">less</span><span class="s2">&quot;</span>
-<span class="s2">        if @next?</span>
-<span class="s2">          @next.exec file, request, (response) -&gt;</span>
-<span class="s2">            Busser.lessify file.framework.path, response.data, (lessifiedData) -&gt;</span>
-<span class="s2">              callback data: lessifiedData</span>
-<span class="s2">        else</span>
-<span class="s2">          file.content (err, data) -&gt;</span>
-<span class="s2">            if err</span>
-<span class="s2">              throw err</span>
-<span class="s2">            else</span>
-<span class="s2">              Busser.lessify file.framework.path, data, (lessifiedData) -&gt;</span>
-<span class="s2">                callback data: lessifiedData</span>
-<span class="s2">      else</span>
-<span class="s2">        if @next?</span>
-<span class="s2">          @next.exec file, request, (response) -&gt;</span>
-<span class="s2">            callback response</span>
-<span class="s2">        else</span>
-<span class="s2">          file.content (err, data) -&gt;</span>
-<span class="s2">            if err</span>
-<span class="s2">              throw err</span>
-<span class="s2">            else</span>
-<span class="s2">              callback data: data</span>
-
-
-<span class="s2">#DIVIDER</span>
-<span class="s2">  handlebars:</span>
-<span class="s2">    exec: (file, request, callback) -&gt;</span>
-<span class="s2">      if @next?</span>
-<span class="s2">        @next.exec file, request, (response) -&gt;</span>
-<span class="s2">          if extname(file.path) is &quot;</span><span class="p">.</span><span class="nx">handlebars</span><span class="s2">&quot;</span>
-<span class="s2">            re = /[^\/]+\/templates\/(.+)\.handlebars/</span>
-<span class="s2">            filename = re.exec(file.url())[1]</span>
-<span class="s2">            response.data = &quot;</span><span class="nx">SC</span><span class="p">.</span><span class="nx">TEMPLATES</span><span class="p">[</span><span class="s1">&#39;#{filename}&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">SC</span><span class="p">.</span><span class="nx">Handlebars</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="c1">#{JSON.stringify(response.data.toString(&quot;utf8&quot;))});&quot;</span>
+        <span class="k">if</span> <span class="nx">count</span> <span class="o">is</span> <span class="mi">0</span>
+          <span class="nx">callback</span> <span class="nv">data: </span><span class="s1">&#39;&#39;</span>
+        <span class="k">else</span>
+          <span class="nx">filesForJoin</span><span class="p">.</span><span class="nx">forEach</span> <span class="nf">(file, i) -&gt;</span>
+            <span class="nv">next = </span><span class="p">(</span><span class="k">if</span> <span class="nx">@next</span> <span class="k">then</span> <span class="nx">@next</span> <span class="k">else</span> <span class="nx">file</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">)</span>
+            <span class="nx">next</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nf">(d) -&gt;</span>
+              <span class="nx">data</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">data</span>
+              <span class="nx">count</span> <span class="o">-=</span> <span class="mi">1</span>
+              <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">data</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot;\n&quot;</span><span class="p">)</span>  <span class="k">if</span> <span class="nx">count</span> <span class="o">is</span> <span class="mi">0</span>
+            </pre></div>             </td>           </tr>                               <tr id="section-44">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-44">&#182;</a>               </div>               <p>The <em>symlink</em> handler can only be run by itself or at the tail end 
+of a sequence of handlers.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">symlink:</span>
+    <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
+      <span class="nx">file</span><span class="p">.</span><span class="nx">symlink</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">.</span><span class="nx">symlink</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">callback</span></pre></div>             </td>           </tr>                               <tr id="section-45">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-45">&#182;</a>               </div>               <p><em>lessify</em> is a static utility method that applies less to data.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="vi">@lessify: </span><span class="nf">(path, data, callback) -&gt;</span>
+    <span class="nv">parser = </span><span class="k">new</span> <span class="nx">less</span><span class="p">.</span><span class="nx">Parser</span><span class="p">(</span>
+      <span class="nv">optimization: </span><span class="mi">0</span>
+      <span class="nv">paths: </span><span class="p">[</span> <span class="nx">path</span> <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="nx">parser</span><span class="p">.</span><span class="nx">parse</span> <span class="nx">data</span><span class="p">,</span> <span class="nf">(err, tree) -&gt;</span>
+      <span class="k">if</span> <span class="nx">err</span>
+        <span class="nx">util</span><span class="p">.</span><span class="nx">puts</span> <span class="s2">&quot;ERROR: &quot;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span>
+      <span class="k">else</span>
+        <span class="k">try</span>
+          <span class="nv">data = </span><span class="nx">tree</span><span class="p">.</span><span class="nx">toCSS</span><span class="p">()</span>
+        <span class="k">catch</span> <span class="nx">e</span>
+          <span class="nx">util</span><span class="p">.</span><span class="nx">puts</span> <span class="s2">&quot;ERROR: &quot;</span> <span class="o">+</span> <span class="nx">e</span><span class="p">.</span><span class="nx">message</span>
+      <span class="nx">callback</span> <span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-46">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-46">&#182;</a>               </div>               <p>The <em>less</em> handler applies the less parser to file data.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">less:</span>
+    <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
+      <span class="k">if</span> <span class="nx">less</span><span class="o">?</span> <span class="o">and</span> <span class="nx">extname</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span> <span class="o">is</span> <span class="s2">&quot;.less&quot;</span>
+        <span class="k">if</span> <span class="nx">@next</span><span class="o">?</span>
+          <span class="nx">@next</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nf">(response) -&gt;</span>
+            <span class="nx">Busser</span><span class="p">.</span><span class="nx">lessify</span> <span class="nx">file</span><span class="p">.</span><span class="nx">framework</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nf">(lessifiedData) -&gt;</span>
+              <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">lessifiedData</span>
+        <span class="k">else</span>
+          <span class="nx">file</span><span class="p">.</span><span class="nx">content</span> <span class="nf">(err, data) -&gt;</span>
+            <span class="k">if</span> <span class="nx">err</span>
+              <span class="k">throw</span> <span class="nx">err</span>
+            <span class="k">else</span>
+              <span class="nx">Busser</span><span class="p">.</span><span class="nx">lessify</span> <span class="nx">file</span><span class="p">.</span><span class="nx">framework</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nf">(lessifiedData) -&gt;</span>
+                <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">lessifiedData</span>
+      <span class="k">else</span>
+        <span class="k">if</span> <span class="nx">@next</span><span class="o">?</span>
+          <span class="nx">@next</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nf">(response) -&gt;</span>
+            <span class="nx">callback</span> <span class="nx">response</span>
+        <span class="k">else</span>
+          <span class="nx">file</span><span class="p">.</span><span class="nx">content</span> <span class="nf">(err, data) -&gt;</span>
+            <span class="k">if</span> <span class="nx">err</span>
+              <span class="k">throw</span> <span class="nx">err</span>
+            <span class="k">else</span>
+              <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-47">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-47">&#182;</a>               </div>               <p>The <em>handlebars</em> handler treats handlebar template files by stringifying them
+to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
+data in an SC.TEMPLATES directive.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">handlebars:</span>
+    <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
+      <span class="k">if</span> <span class="nx">@next</span><span class="o">?</span>
+        <span class="nx">@next</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nf">(response) -&gt;</span>
+          <span class="k">if</span> <span class="nx">extname</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span> <span class="o">is</span> <span class="s2">&quot;.handlebars&quot;</span>
+            <span class="nv">re = </span><span class="sr">/[^\/]+\/templates\/(.+)\.handlebars/</span>
+            <span class="nv">filename = </span><span class="nx">re</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">url</span><span class="p">())[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="nv">response.data = </span><span class="s2">&quot;SC.TEMPLATES[&#39;#{filename}&#39;] = SC.Handlebars.compile(#{JSON.stringify(response.data.toString(&quot;</span><span class="nx">utf8</span><span class="s2">&quot;))});&quot;</span>
             <span class="nx">callback</span> <span class="nx">response</span>
           <span class="k">else</span>
             <span class="nx">callback</span> <span class="nx">response</span>
@@ -686,31 +666,25 @@ which is found via <strong>FILE</strong>.</p>             </td>             <td 
             <span class="k">if</span> <span class="nx">err</span>
               <span class="k">throw</span> <span class="nx">err</span>
             <span class="k">else</span>
-              <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-43">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-43">&#182;</a>               </div>               <p>The <em>join</em> handler joins any files coming through, and their children, into 
-a cumulative data array, which is joined upon callback. The callback is fired
-when the file count from downstream is met.</p>
+              <span class="nx">callback</span> <span class="nv">data: </span><span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-48">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-48">&#182;</a>               </div>               <p>The <em>file</em> handler must be the only handler in a <strong>HandlerSet</strong> or it must come 
+at the end of a handler sequence where a file is read.</p>
 
-<p>If the file has no children, the file's handlerSet is called to process and
-return data. </p>
-
-<p>If the file has children (It is a virtual file, so to speak, not present on
-disk in the original project), handlerSets for the children, which may in
-turn also have children, are called, perhaps to return data resulting from
-a large recursive sequence.</p>
-
-<p>[TODO] Note that this section was substantially retooled, along with the
-addition of new file types (the file class and its derivatives), and also
-along with rearrangement and interpretation of HandlerSet singleton objects
-used in processing. A good set of test for the handlers section is needed, 
-especially for the join handler and related handlers.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">file:</span>
+<p>The <em>file</em> handler calls file.content() to read data from a file. Calls to
+file.content() are coordinated by a queue system to stay within a limit
+for simultaneously open files. (See the content method of the <strong>File</strong> class
+and the global readFile() and related functions).</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">file:</span>
     <span class="nv">exec: </span><span class="nf">(file, request, callback) -&gt;</span>
       <span class="nx">file</span><span class="p">.</span><span class="nx">content</span> <span class="nf">(err, data) -&gt;</span>
         <span class="k">if</span> <span class="nx">err</span>
           <span class="k">throw</span> <span class="nx">err</span>
         <span class="k">else</span>
-          <span class="nx">callback</span> <span class="nv">data: </span><span class="k">if</span> <span class="nx">data</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">0</span> <span class="k">then</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-44">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-44">&#182;</a>               </div>               <p>The <em>symlink</em> handler can only be run by itself or at the tail end 
-of a sequence of handlers.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">busser = </span><span class="k">new</span> <span class="nx">Busser</span></pre></div>             </td>           </tr>                               <tr id="section-45">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-45">&#182;</a>               </div>               <p><em>lessify</em> is a static utility method that applies less to data.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">availableHandlerNames  = </span><span class="o">-&gt;</span>
-  <span class="p">(</span><span class="nx">h</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">h</span> <span class="k">of</span> <span class="nx">busser</span> <span class="k">when</span> <span class="nx">h</span> <span class="o">not</span> <span class="k">in</span> <span class="p">[</span> <span class="s2">&quot;constructor&quot;</span><span class="p">,</span> <span class="s2">&quot;handlerSet&quot;</span><span class="p">,</span> <span class="s2">&quot;mtimeScanner&quot;</span><span class="p">,</span> <span class="s2">&quot;minifyStylesheet&quot;</span><span class="p">,</span> <span class="s2">&quot;minifyScript&quot;</span><span class="p">,</span> <span class="s2">&quot;rewriteStatic&quot;</span><span class="p">,</span> <span class="s2">&quot;lessify&quot;</span> <span class="p">])</span></pre></div>             </td>           </tr>                               <tr id="section-46">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-46">&#182;</a>               </div>               <p>The <em>less</em> handler applies the less parser to file data.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">rootContentHtmlHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;root content html&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;cache&quot;</span><span class="p">,</span> <span class="s2">&quot;contentType&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span> <span class="p">])</span>
+          <span class="nx">callback</span> <span class="nv">data: </span><span class="k">if</span> <span class="nx">data</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">0</span> <span class="k">then</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="nx">data</span></pre></div>             </td>           </tr>                               <tr id="section-49">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-49">&#182;</a>               </div>               <p>The global <strong>Busser</strong> instance is created.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">busser = </span><span class="k">new</span> <span class="nx">Busser</span></pre></div>             </td>           </tr>                               <tr id="section-50">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-50">&#182;</a>               </div>               <p><em>availableHandlerNames</em> is a convenience method for use by developers in listing
+handlers defined in the <strong>Busser</strong> class. The global instance of busser is queried
+for its own properties, which will include variables and methods, and the
+list returned is filtered for known non-handler properties and methods.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">availableHandlerNames  = </span><span class="o">-&gt;</span>
+  <span class="p">(</span><span class="nx">h</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">h</span> <span class="k">of</span> <span class="nx">busser</span> <span class="k">when</span> <span class="nx">h</span> <span class="o">not</span> <span class="k">in</span> <span class="p">[</span> <span class="s2">&quot;constructor&quot;</span><span class="p">,</span> <span class="s2">&quot;handlerSet&quot;</span><span class="p">,</span> <span class="s2">&quot;mtimeScanner&quot;</span><span class="p">,</span> <span class="s2">&quot;minifyStylesheet&quot;</span><span class="p">,</span> <span class="s2">&quot;minifyScript&quot;</span><span class="p">,</span> <span class="s2">&quot;rewriteStatic&quot;</span><span class="p">,</span> <span class="s2">&quot;lessify&quot;</span> <span class="p">])</span></pre></div>             </td>           </tr>                               <tr id="section-51">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-51">&#182;</a>               </div>               <p><strong>HandlerSet</strong> singletons are used in the specialized File subclasses defined
+below. The names of the handlerSets match the <strong>File</strong> subclasses, generally,
+and there are several with descriptive names.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">rootContentHtmlHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;root content html&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;cache&quot;</span><span class="p">,</span> <span class="s2">&quot;contentType&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span> <span class="p">])</span>
 <span class="nv">rootSymlinkHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;root symlink&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;symlink&quot;</span> <span class="p">])</span>
 
 <span class="nv">stylesheetHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;stylesheet&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ifModifiedSince&quot;</span><span class="p">,</span> <span class="s2">&quot;contentType&quot;</span><span class="p">,</span> <span class="s2">&quot;less&quot;</span><span class="p">,</span> <span class="s2">&quot;rewriteStaticInStylesheet&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">])</span>
@@ -724,83 +698,7 @@ of a sequence of handlers.</p>             </td>             <td class="code">  
 <span class="nv">testHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;contentType&quot;</span><span class="p">,</span> <span class="s2">&quot;rewriteFile&quot;</span><span class="p">,</span> <span class="s2">&quot;wrapTest&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span> <span class="p">])</span>
 <span class="nv">resourceHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;ifModifiedSince&quot;</span><span class="p">,</span> <span class="s2">&quot;contentType&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span> <span class="p">])</span>
 <span class="nv">uncombinedScriptHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;uncombined script&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;contentType&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span> <span class="p">])</span>
-<span class="nv">joinHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;join only&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;join&quot;</span> <span class="p">])</span> <span class="c1"># [TODO] urlPrefix needs to be custom for app?</span></pre></div>             </td>           </tr>                               <tr id="section-47">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-47">&#182;</a>               </div>               <p>The <em>handlebars</em> handler treats handlebar template files by stringifying them
-to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
-data in an SC.TEMPLATES directive.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-48">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-48">&#182;</a>               </div>               <p>The <em>file</em> handler must be the only handler in a <strong>HandlerSet</strong> or it must come 
-at the end of a handler sequence where a file is read.</p>
-
-<p>The <em>file</em> handler calls file.content() to read data from a file. Calls to
-file.content() are coordinated by a queue system to stay within a limit
-for simultaneously open files. (See the content method of the <strong>File</strong> class
-and the global readFile() and related functions).</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Framework</span>
-  <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
-    <span class="vi">@name = </span><span class="kc">null</span>
-    <span class="vi">@path = </span><span class="kc">null</span>
-
-    <span class="vi">@combineStylesheets = </span><span class="kc">false</span>
-    <span class="vi">@combineScripts = </span><span class="kc">false</span>
-    <span class="vi">@minifyStylesheets = </span><span class="kc">false</span>
-    <span class="vi">@minifyScripts = </span><span class="kc">false</span>
-
-    <span class="vi">@buildLanguage = </span><span class="s2">&quot;english&quot;</span>
-
-    <span class="vi">@stylesheetFiles = </span><span class="p">[]</span>
-    <span class="vi">@scriptFiles = </span><span class="p">[]</span>
-    <span class="vi">@resourceFiles = </span><span class="p">[]</span>
-    <span class="vi">@testFiles = </span><span class="p">[]</span>
-
-    <span class="vi">@orderedStylesheetFiles = </span><span class="p">[]</span>
-    <span class="vi">@orderedScriptFiles = </span><span class="p">[]</span>
-
-    <span class="vi">@virtualStylesheetReference = </span><span class="kc">null</span>
-    <span class="vi">@virtualScriptReference = </span><span class="kc">null</span>
-
-    <span class="vi">@pathsToExclude = </span><span class="p">[</span> <span class="sr">/(^\.|\/\.|tmp\/|debug\/|tests\/|test_suites\/|setup_body_class_names)/</span> <span class="p">]</span>
-
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span>
-
-    <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span><span class="o">?</span>
-      <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span> <span class="k">instanceof</span> <span class="nb">Array</span>
-        <span class="vi">@pathsToExclude = </span><span class="nx">@pathsToExclude</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span><span class="p">)</span>
-      <span class="k">else</span>
-        <span class="nx">@pathsToExclude</span><span class="p">.</span><span class="nx">push</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span> <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span> <span class="k">instanceof</span> <span class="nb">RegExp</span>
-
-  <span class="nv">addStylesheetFile: </span><span class="nf">(path) -&gt;</span>
-    <span class="k">if</span> <span class="nx">@minifyStylesheets</span>
-      <span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">MinifiedStylesheetFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
-    <span class="k">else</span>
-      <span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">StylesheetFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
-
-  <span class="nv">addScriptFile: </span><span class="nf">(path) -&gt;</span>
-    <span class="k">if</span> <span class="nx">@minifyScripts</span>
-      <span class="nx">@scriptFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">MinifiedScriptFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
-    <span class="k">else</span>
-      <span class="nx">@scriptFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">ScriptFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
-
-  <span class="nv">addTestFile: </span><span class="nf">(path) -&gt;</span>
-    <span class="nx">@testFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">TestFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
-
-  <span class="nv">addResourceFile: </span><span class="nf">(path) -&gt;</span>
-    <span class="nx">@resourceFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">ResourceFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span></pre></div>             </td>           </tr>                               <tr id="section-49">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-49">&#182;</a>               </div>               <p>The global <strong>Busser</strong> instance is created.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">allFiles: </span><span class="o">-&gt;</span>
-    <span class="nv">all = </span><span class="p">[]</span>
-    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@virtualStylesheetReference</span><span class="p">.</span><span class="nx">file</span> <span class="k">if</span> <span class="nx">@virtualStylesheetReference</span><span class="o">?</span>
-    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@virtualScriptReference</span><span class="p">.</span><span class="nx">file</span> <span class="k">if</span> <span class="nx">@virtualScriptReference</span><span class="o">?</span>
-    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@stylesheetFiles</span> <span class="c1"># [TODO] Should this be ordered?</span>
-    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@scriptFiles</span>
-    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@testFiles</span>
-    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@resourceFiles</span>
-    <span class="nx">all</span></pre></div>             </td>           </tr>                               <tr id="section-50">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-50">&#182;</a>               </div>               <p><em>availableHandlerNames</em> is a utility method for use by developers in listing
-handlers defined in the <strong>Busser</strong> class. The global instance of busser is queried
-for its own properties, which will include variables and methods, and the
-list returned is filtered for known non-handler properties and methods.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">reducedPathFor: </span><span class="nf">(path) -&gt;</span>
-    <span class="nx">path</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-51">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-51">&#182;</a>               </div>               <p><strong>HandlerSet</strong> singletons are used in the specialized File subclasses defined
-below. The names of the handlerSets match the <strong>File</strong> subclasses, generally,
-and there are several with descriptive names.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">urlFor: </span><span class="nf">(path) -&gt;</span>
-    <span class="nx">path_module</span><span class="p">.</span><span class="nx">join</span> <span class="nx">@buildVersion</span><span class="p">,</span> <span class="nx">@reducedPathFor</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-52">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-52">&#182;</a>               </div>               <hr />             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">reducedPath: </span><span class="o">-&gt;</span>
-    <span class="nx">@reducedPathFor</span><span class="p">(</span><span class="nx">@path</span><span class="p">)</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-53">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-53">&#182;</a>               </div>               <h1>Main Classes</h1>
+<span class="nv">joinHandlerSet = </span><span class="nx">busser</span><span class="p">.</span><span class="nx">handlerSet</span><span class="p">(</span><span class="s2">&quot;join only&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;join&quot;</span> <span class="p">])</span> <span class="c1"># [TODO] urlPrefix needs to be custom for app?</span></pre></div>             </td>           </tr>                               <tr id="section-52">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-52">&#182;</a>               </div>               <hr />             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-53">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-53">&#182;</a>               </div>               <h1>Main Classes</h1>
 
 <h2>Framework</h2>
 
@@ -861,21 +759,92 @@ scripts, if the booleans for these are set:</p>
 
 <blockquote>
   <p><em>virtualStylesheetReference</em> -- These two are instances of Reference,
-  <em>virtualScriptReference</em>        which is a simple url-to-file couplet.</p>
+  <em>virtualScriptReference</em>        which is a url-to-file couplet.</p>
 </blockquote>
 
-<p>And, finally, the <strong>Framework</strong> class has a <em>pathsToExlude</em> property, which is
-and array of paths or regular expressions used to exclude directories. For
+<p>The <strong>Framework</strong> class has a <em>pathsToExlude</em> property, which is
+an array of paths or regular expressions used to exclude directories. For
 example, a "fixtures" path can be allowed for a development build, but
-excluded for a production build.</p>
+excluded for a production build.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Framework</span>
+  <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
+    <span class="vi">@name = </span><span class="kc">null</span>
+    <span class="vi">@path = </span><span class="kc">null</span>
 
-<p>Default values for these build configuration properties and arrays are set
-in the constructor before any values passed in for them as options are set
-on top of the defaults.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">url: </span><span class="o">-&gt;</span>
-    <span class="nx">@urlFor</span><span class="p">(</span><span class="nx">@reducedPath</span><span class="p">())</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-54">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-54">&#182;</a>               </div>               <p>The allFiles method returns virtual (combined) files, if defined, and also
+    <span class="vi">@combineStylesheets = </span><span class="kc">false</span>
+    <span class="vi">@combineScripts = </span><span class="kc">false</span>
+    <span class="vi">@minifyStylesheets = </span><span class="kc">false</span>
+    <span class="vi">@minifyScripts = </span><span class="kc">false</span>
+
+    <span class="vi">@buildLanguage = </span><span class="s2">&quot;english&quot;</span>
+
+    <span class="vi">@stylesheetFiles = </span><span class="p">[]</span>
+    <span class="vi">@scriptFiles = </span><span class="p">[]</span>
+    <span class="vi">@resourceFiles = </span><span class="p">[]</span>
+    <span class="vi">@testFiles = </span><span class="p">[]</span>
+
+    <span class="vi">@orderedStylesheetFiles = </span><span class="p">[]</span>
+    <span class="vi">@orderedScriptFiles = </span><span class="p">[]</span>
+
+    <span class="vi">@virtualStylesheetReference = </span><span class="kc">null</span>
+    <span class="vi">@virtualScriptReference = </span><span class="kc">null</span>
+
+    <span class="vi">@pathsToExclude = </span><span class="p">[</span> <span class="sr">/(^\.|\/\.|tmp\/|debug\/|tests\/|test_suites\/|setup_body_class_names)/</span> <span class="p">]</span>
+
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span>
+
+    <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span><span class="o">?</span>
+      <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span> <span class="k">instanceof</span> <span class="nb">Array</span>
+        <span class="vi">@pathsToExclude = </span><span class="nx">@pathsToExclude</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="nx">@pathsToExclude</span><span class="p">.</span><span class="nx">push</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span> <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">pathsToExclude</span> <span class="k">instanceof</span> <span class="nb">RegExp</span>
+
+  <span class="nv">addStylesheetFile: </span><span class="nf">(path) -&gt;</span>
+    <span class="k">if</span> <span class="nx">@minifyStylesheets</span>
+      <span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">MinifiedStylesheetFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
+    <span class="k">else</span>
+      <span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">StylesheetFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
+
+  <span class="nv">addScriptFile: </span><span class="nf">(path) -&gt;</span>
+    <span class="k">if</span> <span class="nx">@minifyScripts</span>
+      <span class="nx">@scriptFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">MinifiedScriptFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
+    <span class="k">else</span>
+      <span class="nx">@scriptFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">ScriptFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
+
+  <span class="nv">addTestFile: </span><span class="nf">(path) -&gt;</span>
+    <span class="nx">@testFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">TestFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span>
+
+  <span class="nv">addResourceFile: </span><span class="nf">(path) -&gt;</span>
+    <span class="nx">@resourceFiles</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">ResourceFile</span><span class="p">({</span> <span class="nv">path: </span><span class="nx">path</span><span class="p">,</span> <span class="nv">framework: </span><span class="k">this</span> <span class="p">}))</span></pre></div>             </td>           </tr>                               <tr id="section-54">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-54">&#182;</a>               </div>               <p>The allFiles method returns virtual (combined) files, if defined, and also
 the individual stylesheet, script, test, and resource files, as a concatenated
-list.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">shouldExcludeFile: </span><span class="nf">(path) -&gt;</span>
+list.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">allFiles: </span><span class="o">-&gt;</span>
+    <span class="nv">all = </span><span class="p">[]</span>
+    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@virtualStylesheetReference</span><span class="p">.</span><span class="nx">file</span> <span class="k">if</span> <span class="nx">@virtualStylesheetReference</span><span class="o">?</span>
+    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@virtualScriptReference</span><span class="p">.</span><span class="nx">file</span> <span class="k">if</span> <span class="nx">@virtualScriptReference</span><span class="o">?</span>
+    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@stylesheetFiles</span> <span class="c1"># [TODO] Should this be ordered?</span>
+    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@scriptFiles</span>
+    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@testFiles</span>
+    <span class="nx">all</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">@resourceFiles</span>
+    <span class="nx">all</span></pre></div>             </td>           </tr>                               <tr id="section-55">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-55">&#182;</a>               </div>               <p>Frameworks are known in a built or deployed project by their names and are
+referred to with file urls, so the paths in the original project can be
+simplified by omitting common path elements. For example,</p>
+
+<pre><code>'/frameworks/sproutcore/frameworks/runtime/system/index_set.js'
+</code></pre>
+
+<p>becomes</p>
+
+<pre><code>'/sproutcore/runtime/system/index_set.js'
+</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">reducedPathFor: </span><span class="nf">(path) -&gt;</span>
+    <span class="nx">path</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-56">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-56">&#182;</a>               </div>               <p>A url consists of the joined buildVersion and reducedPath.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">urlFor: </span><span class="nf">(path) -&gt;</span>
+    <span class="nx">path_module</span><span class="p">.</span><span class="nx">join</span> <span class="nx">@buildVersion</span><span class="p">,</span> <span class="nx">@reducedPathFor</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-57">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-57">&#182;</a>               </div>               <p>Same as <em>reducedPathFor</em>, as a convenience call for reducedPathFor(@path).</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">reducedPath: </span><span class="o">-&gt;</span>
+    <span class="nx">@reducedPathFor</span><span class="p">(</span><span class="nx">@path</span><span class="p">)</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-58">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-58">&#182;</a>               </div>               <p>The url for this framework is made by urlFor @path, reduced.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">url: </span><span class="o">-&gt;</span>
+    <span class="nx">@urlFor</span><span class="p">(</span><span class="nx">@reducedPath</span><span class="p">())</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-59">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-59">&#182;</a>               </div>               <p><em>shouldExcludeFile</em> first operates on <em>pathsToExclude</em>, checking if the path 
+matches any exluded path. Then it checks if <em>buildLanguage</em> is in allowed
+lists.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">shouldExcludeFile: </span><span class="nf">(path) -&gt;</span>
     <span class="k">for</span> <span class="nx">re</span> <span class="k">in</span> <span class="nx">@pathsToExclude</span>
       <span class="k">return</span> <span class="kc">true</span> <span class="k">if</span> <span class="nx">re</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
     <span class="nv">lang = </span><span class="nx">languageInPath</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
@@ -895,17 +864,13 @@ list.</p>             </td>             <td class="code">               <div cla
       <span class="nv">content: </span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span>
         <span class="nx">callback</span> <span class="kc">null</span><span class="p">,</span> <span class="s2">&quot;; if ((typeof SC !== \&quot;undefined\&quot;) &amp;&amp; SC &amp;&amp; SC.bundleDidLoad) SC.bundleDidLoad(\&quot;#{@reducedPath()}\&quot;);\n&quot;</span>
       <span class="nv">handlerSet: </span><span class="nx">uncombinedScriptHandlerSet</span>
-    <span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-55">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-55">&#182;</a>               </div>               <p>Frameworks are known in a built or deployed project by their names and are
-referred to with file urls, so the paths in the original project can be
-simplified by omitting common path elements. For example,</p>
+    <span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-60">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-60">&#182;</a>               </div>               <p><em>computeDependencies</em> uses a <strong>DependenciesComputer</strong> class and its compute
+method to read a list of files, parsing each for require statements,
+and making a list of urls, built from paths of dependencies, with .js 
+added, in each file's new deps array.</p>
 
-<pre><code>'/frameworks/sproutcore/frameworks/runtime/system/index_set.js'
-</code></pre>
-
-<p>becomes</p>
-
-<pre><code>'/sproutcore/runtime/system/index_set.js'
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">computeDependencies: </span><span class="nf">(files, callback) -&gt;</span>
+<p>When finished, the callback is fired with the list of files, which then
+have their .deps arrays added.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">computeDependencies: </span><span class="nf">(files, callback) -&gt;</span>
     <span class="k">class</span> <span class="nx">FileDependenciesComputer</span>
       <span class="nv">constructor: </span><span class="nf">(@file, @framework) -&gt;</span>
 
@@ -938,7 +903,14 @@ simplified by omitting common path elements. For example,</p>
     <span class="k">if</span> <span class="nx">callback</span><span class="o">?</span>
       <span class="nx">dependencyComputer</span><span class="p">.</span><span class="nx">addListener</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="nx">callback</span> <span class="nx">files</span>
     <span class="nx">dependencyComputer</span><span class="p">.</span><span class="nx">compute</span><span class="p">()</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-56">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-56">&#182;</a>               </div>               <p>A url consists of the joined buildVersion and reducedPath.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">sortDependencies: </span><span class="nf">(file, orderedFiles, files, recursionHistory) -&gt;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-61">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-61">&#182;</a>               </div>               <p><em>sortDependencies</em> is a recursive method working on a list of javascript files
+received from <em>computeDependencies</em>, which has added a .deps array for each file.
+<em>sortDependencies</em> searches the dependency urls in deps for the matching
+file for each, recursively continuing until a file with no dependencies is found
+and added to the sorted results. In this way, dependent files are added to the
+orderedFiles array ahead of files requiring them.</p>
+
+<p>In the event of a failed find, a console warning is issued for the dependency.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">sortDependencies: </span><span class="nf">(file, orderedFiles, files, recursionHistory) -&gt;</span>
     <span class="nv">recursionHistory = </span><span class="p">[]</span>  <span class="k">if</span> <span class="o">not</span> <span class="nx">recursionHistory</span><span class="o">?</span>
 
     <span class="k">return</span> <span class="k">if</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">recursionHistory</span> <span class="k">else</span> <span class="nx">recursionHistory</span><span class="p">.</span><span class="nx">push</span> <span class="nx">file</span>
@@ -958,50 +930,40 @@ simplified by omitting common path elements. For example,</p>
           <span class="k">if</span> <span class="o">not</span> <span class="nx">found</span>
             <span class="nx">util</span><span class="p">.</span><span class="nx">puts</span> <span class="s2">&quot;WARNING: #{url} is required in #{file.url()} but does not exist.&quot;</span>
       <span class="nx">orderedFiles</span><span class="p">.</span><span class="nx">push</span> <span class="nx">file</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-57">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-57">&#182;</a>               </div>               <p>Same as <em>reducedPathFor</em>, as a convenience call for reducedPathFor(@path).</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">orderScripts: </span><span class="nf">(scripts, callback) -&gt;</span>
-    <span class="nx">@computeDependencies</span> <span class="nx">scripts</span><span class="p">,</span> <span class="p">(</span><span class="nx">scripts</span><span class="p">)</span> <span class="o">=&gt;</span>
-      <span class="nv">orderedScriptFiles = </span><span class="p">[]</span>
-      <span class="nv">coreJs = </span><span class="kc">null</span>
-      <span class="nv">coreJsPath = </span><span class="nx">path_module</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">@path</span><span class="p">,</span> <span class="s2">&quot;core.js&quot;</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-58">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-58">&#182;</a>               </div>               <p>The url for this framework is made by urlFor @path, reduced.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nv">sortedScripts = </span><span class="nx">scripts</span><span class="p">.</span><span class="nx">sort</span><span class="p">(</span><span class="nf">(a, b) -&gt;</span>
-        <span class="nx">a</span><span class="p">.</span><span class="nx">path</span><span class="p">.</span><span class="nx">localeCompare</span> <span class="nx">b</span><span class="p">.</span><span class="nx">path</span>
-      <span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-59">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-59">&#182;</a>               </div>               <p><em>shouldExcludeFile</em> first operates on <em>pathsToExclude</em>, checking if the path 
-matches any exluded path. Then it checks if <em>buildLanguage</em> is in allowed
-lists.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">sortedScripts</span>
-        <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">script</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span> <span class="k">if</span> <span class="sr">/strings\.js$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">script</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span>
-        <span class="nv">coreJs = </span><span class="nx">script</span>  <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">path</span> <span class="o">is</span> <span class="nx">coreJsPath</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-60">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-60">&#182;</a>               </div>               <p><em>computeDependencies</em> uses a <strong>DependenciesComputer</strong> class and its compute
-method to read a list of files, parsing each for require statements,
-and making a list of urls, built from paths of dependencies, with .js 
-added, in each file's new deps array.</p>
-
-<p>When finished, the callback is fired with the list of files, which then
-have their .deps arrays added.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">coreJs</span><span class="o">?</span>
-        <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">coreJs</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span>
-        <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">sortedScripts</span>
-          <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">script</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span> <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">deps</span><span class="o">?</span> <span class="o">and</span> <span class="nx">coreJs</span><span class="p">.</span><span class="nx">path</span> <span class="k">in</span> <span class="nx">script</span><span class="p">.</span><span class="nx">deps</span></pre></div>             </td>           </tr>                               <tr id="section-61">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-61">&#182;</a>               </div>               <p><em>sortDependencies</em> is a recursive method working on a list of javascript files
-received from <em>computeDependencies</em>, which has added a .deps array for each file.
-<em>sortDependencies</em> searches the dependency urls in deps, searching for the matching
-file for each, recursively continuing until a file with no dependencies is found
-and added to the sorted results. In this way, dependent files are added to the
-orderedFiles array ahead of files requiring them.</p>
-
-<p>In the event of a failed find, a console warning is issued for the dependency.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">script</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span> <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">sortedScripts</span>
-  
-      <span class="k">continue</span>  <span class="k">while</span> <span class="nx">scripts</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span>
-      <span class="nx">scripts</span><span class="p">.</span><span class="nx">push</span> <span class="nx">i</span>  <span class="k">while</span> <span class="nv">i = </span><span class="nx">orderedScriptFiles</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span>
-      <span class="nx">callback</span><span class="p">()</span>
- </pre></div>             </td>           </tr>                               <tr id="section-62">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-62">&#182;</a>               </div>               <p>The <em>orderScripts</em> method calls <em>computeDependencies</em> on a list of javascript files,
+  </pre></div>             </td>           </tr>                               <tr id="section-62">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-62">&#182;</a>               </div>               <p>The <em>orderScripts</em> method calls <em>computeDependencies</em> on a list of javascript files,
 receiving the resulting files, which have had a .deps array added for each, in a
 callback function which first sorts alphabetically on path, then calls
 <em>sortDependencies</em>, layering the sorting calls based on dependencies of strings.js
 and core.js, before generally adding the rest. This is to prioritize for i18n
 definitions in strings.js and then focusing on the most important code, as should
-be specified in each framework's core.js file.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">bundleInfo: </span><span class="o">-&gt;</span>
-    <span class="p">[</span> <span class="s2">&quot;;SC.BUNDLE_INFO[&#39;#{@reducedPath()}&#39;] = {&quot;</span><span class="p">,</span> <span class="s2">&quot;requires: [],&quot;</span><span class="p">,</span> <span class="s2">&quot;scripts: [&quot;</span> <span class="o">+</span> <span class="nx">@orderedScriptFiles</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nf">(script) -&gt;</span>
-      <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="nx">script</span><span class="p">.</span><span class="nx">url</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
-    <span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;],&quot;</span><span class="p">,</span> <span class="s2">&quot;styles: [&quot;</span> <span class="o">+</span> <span class="nx">@orderedStylesheetFiles</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nf">(stylesheet) -&gt;</span>
-      <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="nx">stylesheet</span><span class="p">.</span><span class="nx">url</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
-    <span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;],&quot;</span><span class="p">,</span> <span class="s2">&quot;};&quot;</span> <span class="p">].</span><span class="nx">join</span> <span class="s2">&quot;\n&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-63">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-63">&#182;</a>               </div>               <p>Order scripts alphabetically by path.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="vi">@sproutcoreFrameworks: </span><span class="nf">(options) -&gt;</span>
+be specified in each framework's core.js file.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">orderScripts: </span><span class="nf">(scripts, callback) -&gt;</span>
+    <span class="nx">@computeDependencies</span> <span class="nx">scripts</span><span class="p">,</span> <span class="p">(</span><span class="nx">scripts</span><span class="p">)</span> <span class="o">=&gt;</span>
+      <span class="nv">orderedScriptFiles = </span><span class="p">[]</span>
+      <span class="nv">coreJs = </span><span class="kc">null</span>
+      <span class="nv">coreJsPath = </span><span class="nx">path_module</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">@path</span><span class="p">,</span> <span class="s2">&quot;core.js&quot;</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-63">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-63">&#182;</a>               </div>               <p>Order scripts alphabetically by path.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nv">sortedScripts = </span><span class="nx">scripts</span><span class="p">.</span><span class="nx">sort</span><span class="p">(</span><span class="nf">(a, b) -&gt;</span>
+        <span class="nx">a</span><span class="p">.</span><span class="nx">path</span><span class="p">.</span><span class="nx">localeCompare</span> <span class="nx">b</span><span class="p">.</span><span class="nx">path</span>
+      <span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-64">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-64">&#182;</a>               </div>               <p>Do strings.js first.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">sortedScripts</span>
+        <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">script</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span> <span class="k">if</span> <span class="sr">/strings\.js$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">script</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span>
+        <span class="nv">coreJs = </span><span class="nx">script</span>  <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">path</span> <span class="o">is</span> <span class="nx">coreJsPath</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-65">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-65">&#182;</a>               </div>               <p>Then do core.js and its dependencies.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">coreJs</span><span class="o">?</span>
+        <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">coreJs</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">sortedScripts</span>
+          <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">script</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span> <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">deps</span><span class="o">?</span> <span class="o">and</span> <span class="nx">coreJs</span><span class="p">.</span><span class="nx">path</span> <span class="k">in</span> <span class="nx">script</span><span class="p">.</span><span class="nx">deps</span></pre></div>             </td>           </tr>                               <tr id="section-66">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-66">&#182;</a>               </div>               <p>Then do the rest.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">@sortDependencies</span><span class="p">(</span><span class="nx">script</span><span class="p">,</span> <span class="nx">orderedScriptFiles</span><span class="p">,</span> <span class="nx">sortedScripts</span><span class="p">)</span> <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">sortedScripts</span>
+  
+      <span class="k">continue</span>  <span class="k">while</span> <span class="nx">scripts</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span>
+      <span class="nx">scripts</span><span class="p">.</span><span class="nx">push</span> <span class="nx">i</span>  <span class="k">while</span> <span class="nv">i = </span><span class="nx">orderedScriptFiles</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span>
+      <span class="nx">callback</span><span class="p">()</span>
+ </pre></div>             </td>           </tr>                               <tr id="section-67">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-67">&#182;</a>               </div>               <p>The <em>bundleInfo</em> method is unused in the martoche version of garcon, but bundle support was
+support was added in a branch of the mauritslamers version. </p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">bundleInfo: </span><span class="o">-&gt;</span>
+    <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    ;SC.BUNDLE_INFO[&#39;#{@reducedPath()}&#39;] = {</span>
+<span class="s2">      requires: [],</span>
+<span class="s2">      scripts: [#{(script.url() for script in @orderedScriptFiles)}],</span>
+<span class="s2">      styles: [#{(stylesheet.url() for stylesheet in @orderedStylesheetFiles)}]</span>
+<span class="s2">    };</span>
+<span class="s2">    &quot;&quot;&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-68">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-68">&#182;</a>               </div>               <p>The <em>sproutcoreFrameworks</em> static method returns a default list of Framework instances, 
+either with or without jquery, testing for jquery in the project. This method is used
+in testing, or when a build configuration file is not provided to the build process.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="vi">@sproutcoreFrameworks: </span><span class="nf">(options) -&gt;</span>
     <span class="k">if</span> <span class="o">not</span> <span class="nx">@_sproutcoreFrameworks</span><span class="o">?</span>
       <span class="nv">opts =</span>
         <span class="nv">combineScripts: </span><span class="kc">true</span>
@@ -1027,7 +989,17 @@ be specified in each framework's core.js file.</p>             </td>            
         <span class="nx">@_sproutcoreFrameworks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">new</span> <span class="nx">Framework</span><span class="p">(</span><span class="nx">opts</span><span class="p">))</span>
 
     <span class="nx">@_sproutcoreFrameworks</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-64">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-64">&#182;</a>               </div>               <p>Do strings.js first.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">build: </span><span class="p">(</span><span class="nx">callbackAfterBuild</span><span class="p">)</span> <span class="o">=&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-65">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-65">&#182;</a>               </div>               <p>Then do core.js and its dependencies.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">createBasicFiles = </span><span class="p">(</span><span class="nx">callbackAfterBuild</span><span class="p">)</span> <span class="o">=&gt;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-69">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-69">&#182;</a>               </div>               <p>The <em>build</em> method for frameworks first scans for files, adding basic File
+objects into arrays, excluding files based on checks in <em>shouldExcludeFile</em>.</p>
+
+<p>Separate arrays are created for stylesheets, scripts, tests, and resources.</p>
+
+<p>The finalization steps will order stylesheets and scripts, and prepare any
+combined virtual files needed.</p>
+
+<p>When done, <em>callbackAfterBuild</em> is called, if defined.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">build: </span><span class="p">(</span><span class="nx">callbackAfterBuild</span><span class="p">)</span> <span class="o">=&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-70">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-70">&#182;</a>               </div>               <p>The <em>createBasicFiles</em> method scans the framework directory for all files,
+filtering by <em>shouldExcludeFile</em>, and creates basic File objects: stylesheets, 
+scripts, tests, and resources.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">createBasicFiles = </span><span class="p">(</span><span class="nx">callbackAfterBuild</span><span class="p">)</span> <span class="o">=&gt;</span>
       <span class="k">class</span> <span class="nx">Scanner</span> <span class="k">extends</span> <span class="nx">process</span><span class="p">.</span><span class="nx">EventEmitter</span>
         <span class="nv">constructor: </span><span class="nf">(@framework) -&gt;</span>
           <span class="vi">@count = </span><span class="mi">0</span>
@@ -1056,8 +1028,12 @@ be specified in each framework's core.js file.</p>             </td>            
       <span class="nv">scanner = </span><span class="k">new</span> <span class="nx">Scanner</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
       <span class="nx">scanner</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="o">=&gt;</span>
         <span class="nx">finalizeBuild</span> <span class="nx">callbackAfterBuild</span>
-      <span class="nx">scanner</span><span class="p">.</span><span class="nx">scan</span> <span class="nx">@path</span></pre></div>             </td>           </tr>                               <tr id="section-66">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-66">&#182;</a>               </div>               <p>Then do the rest.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">finalizeBuild = </span><span class="p">(</span><span class="nx">callbackAfterBuild</span><span class="p">)</span> <span class="o">=&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-67">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-67">&#182;</a>               </div>               <p>The <em>bundleInfo</em> method is unused in the martoche version of garcon, but bundle support was
-support was added in a branch of the mauritslamers version. </p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="vi">@orderedStylesheetFiles = </span><span class="p">[]</span>
+      <span class="nx">scanner</span><span class="p">.</span><span class="nx">scan</span> <span class="nx">@path</span></pre></div>             </td>           </tr>                               <tr id="section-71">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-71">&#182;</a>               </div>               <p>The <em>finalizeBuild</em> method performs ordering and combining steps after
+basic files have been created.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">finalizeBuild = </span><span class="p">(</span><span class="nx">callbackAfterBuild</span><span class="p">)</span> <span class="o">=&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-72">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-72">&#182;</a>               </div>               <p>Create a virtual stylesheets file if combineStylesheets is set, or sort
+individual stylesheet files alphabetically. </p>
+
+<p><em>orderedStylesheets</em> will hold either the single virtual file or the sorted 
+individual stylesheets.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="vi">@orderedStylesheetFiles = </span><span class="p">[]</span>
 
       <span class="k">if</span> <span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="nx">@combineStylesheets</span> <span class="o">is</span> <span class="kc">true</span>
@@ -1068,22 +1044,19 @@ support was added in a branch of the mauritslamers version. </p>             </t
           <span class="vi">@virtualStylesheetReference = </span><span class="k">new</span> <span class="nx">Reference</span><span class="p">(</span><span class="nx">virtualStylesheetFile</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">virtualStylesheetFile</span><span class="p">)</span>
           <span class="vi">@orderedStylesheetFiles = </span><span class="p">[</span> <span class="nx">virtualStylesheetFile</span> <span class="p">]</span>
         <span class="k">else</span>
-          <span class="vi">@orderedStylesheetFiles = </span><span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">sort</span><span class="p">(</span><span class="nf">(a, b) -&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">path</span><span class="p">.</span><span class="nx">localeCompare</span> <span class="nx">b</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-68">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-68">&#182;</a>               </div>               <p>The <em>sproutcoreFrameworks</em> static method returns a default list of Framework instances, 
-either with or without jquery, testing for jquery in the project. This method is used
-in testing, or when a build configuration file is not provided to the build process.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="vi">@orderedScriptFiles = </span><span class="p">[]</span>
+          <span class="vi">@orderedStylesheetFiles = </span><span class="nx">@stylesheetFiles</span><span class="p">.</span><span class="nx">sort</span><span class="p">(</span><span class="nf">(a, b) -&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">path</span><span class="p">.</span><span class="nx">localeCompare</span> <span class="nx">b</span><span class="p">.</span><span class="nx">path</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-73">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-73">&#182;</a>               </div>               <p>Call <em>orderScripts</em> to sort scripts alphabetically then by dependencies.
+Then create a virtual scripts file if <em>combineScripts</em> is set.</p>
+
+<p><em>orderedScriptFiles</em> will hold either the single virtual file or the ordered
+individual script files.</p>
+
+<p>Ordering scripts is the last build task before firing the after-build
+callback, if defined.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="vi">@orderedScriptFiles = </span><span class="p">[]</span>
 
       <span class="k">if</span> <span class="nx">@scriptFiles</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="nx">@orderScripts</span> <span class="nx">@scriptFiles</span><span class="p">,</span> <span class="o">=&gt;</span>
           <span class="k">if</span> <span class="nx">@combineScripts</span> <span class="o">is</span> <span class="kc">true</span>
-            <span class="nv">virtualScriptFile = </span><span class="k">new</span> <span class="nx">VirtualScriptFile</span></pre></div>             </td>           </tr>                               <tr id="section-69">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-69">&#182;</a>               </div>               <p>The <em>build</em> method for frameworks first scans for files, adding basic File
-objects into arrays, excluding files based on checks in <em>shouldExcludeFile</em>.</p>
-
-<p>Separate arrays are created for stylesheets, scripts, tests, and resources.</p>
-
-<p>The finalization steps will order stylesheets and scripts, and prepare any
-combined virtual files needed.</p>
-
-<p>When done, <em>callbackAfterBuild</em> is called, if defined.</p>             </td>             <td class="code">               <div class="highlight"><pre>              <span class="nv">path: </span><span class="k">if</span> <span class="sr">/\.js$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">@path</span><span class="p">)</span> <span class="k">then</span> <span class="nx">@path</span> <span class="k">else</span> <span class="s2">&quot;#{@path}.js&quot;</span> <span class="c1"># added for temporary special theme.js case [TODO] keep or delete.</span>
+            <span class="nv">virtualScriptFile = </span><span class="k">new</span> <span class="nx">VirtualScriptFile</span></pre></div>             </td>           </tr>                               <tr id="section-74">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-74">&#182;</a>               </div>               <p>path: @path + ".js"</p>             </td>             <td class="code">               <div class="highlight"><pre>              <span class="nv">path: </span><span class="k">if</span> <span class="sr">/\.js$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">@path</span><span class="p">)</span> <span class="k">then</span> <span class="nx">@path</span> <span class="k">else</span> <span class="s2">&quot;#{@path}.js&quot;</span> <span class="c1"># added for temporary special theme.js case [TODO] keep or delete.</span>
               <span class="nv">framework: </span><span class="k">this</span>
               <span class="nv">children: </span><span class="p">(</span><span class="nx">child</span> <span class="k">for</span> <span class="nx">child</span> <span class="k">in</span> <span class="p">[</span><span class="nx">@headFile</span><span class="p">(),</span> <span class="nx">@scriptFiles</span><span class="p">...,</span> <span class="nx">@tailFile</span><span class="p">()]</span> <span class="k">when</span> <span class="nx">child</span><span class="o">?</span><span class="p">)</span>
             <span class="vi">@virtualScriptReference = </span><span class="k">new</span> <span class="nx">Reference</span><span class="p">(</span><span class="nx">virtualScriptFile</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">virtualScriptFile</span><span class="p">)</span>
@@ -1097,18 +1070,18 @@ combined virtual files needed.</p>
       <span class="k">else</span>
         <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;  #{@name} &quot;</span><span class="p">,</span> <span class="s2">&quot;built.&quot;</span><span class="p">.</span><span class="nx">red</span>
 
-        <span class="nx">callbackAfterBuild</span><span class="p">()</span> <span class="k">if</span> <span class="nx">callbackAfterBuild</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-70">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-70">&#182;</a>               </div>               <p>The <em>createBasicFiles</em> method scans the framework directory for all files,
-filtering by <em>shouldExcludeFile</em>, and creates basic File objects: stylesheets, 
-scripts, tests, and resources. Each File instance is given its path and a 
-reference to the framework. Note that basic file classes, <strong>StylesheetFile</strong>, 
-<strong>ScriptFile</strong>, <strong>TestFile</strong>, and <strong>ResourceFile</strong>, have their own unique handlerSets, 
-which are given in class definitions.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">createBasicFiles</span> <span class="nx">callbackAfterBuild</span></pre></div>             </td>           </tr>                               <tr id="section-71">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-71">&#182;</a>               </div>               <p>The <em>finalizeBuild</em> method performs ordering and combining steps after
-basic files have been created.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Reference</span>
-  <span class="nv">constructor: </span><span class="nf">(@url, @file) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-72">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-72">&#182;</a>               </div>               <p>Create a virtual stylesheets file if combineStylesheets is set, or sort
-individual stylesheet files alphabetically. </p>
+        <span class="nx">callbackAfterBuild</span><span class="p">()</span> <span class="k">if</span> <span class="nx">callbackAfterBuild</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-75">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-75">&#182;</a>               </div>               <p>Fire the build methods, passing the provided <em>callbackAfterBuild</em>.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">createBasicFiles</span> <span class="nx">callbackAfterBuild</span></pre></div>             </td>           </tr>                               <tr id="section-76">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-76">&#182;</a>               </div>               <h2>Reference</h2>
 
-<p><em>orderedStylesheets</em> will hold either the single virtual file or the sorted 
-individual stylesheets.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">File</span>
+<p>The <strong>Reference</strong> class is a url/file couplet. It is used for html and symlink files, 
+and for the virtual stylesheet and script files.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Reference</span>
+  <span class="nv">constructor: </span><span class="nf">(@url, @file) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-77">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-77">&#182;</a>               </div>               <h2>File</h2>
+
+<p>The <strong>File</strong> class holds information about an on-disk file or a virtual file, which is
+an abstraction for a framework directory. The children array is used for virtual
+files, either the <strong>VirtualStylesheetFile</strong> or <strong>VirtualScriptFile</strong> derived classes. The
+handlerSet property has one of the <strong>HandlerSet</strong> singletons defined above, which
+controls the build process for a given file type. A file can be a symlink to the
+root html file, which is only used in <strong>SymlinkFile</strong>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="vi">@path = </span><span class="kc">null</span>
     <span class="vi">@framework = </span><span class="kc">null</span>
@@ -1122,32 +1095,33 @@ individual stylesheets.</p>             </td>             <td class="code">     
 
   <span class="nv">url: </span><span class="o">-&gt;</span>
     <span class="nx">@framework</span><span class="p">.</span><span class="nx">urlFor</span><span class="p">(</span><span class="nx">@path</span><span class="p">)</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-73">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-73">&#182;</a>               </div>               <p>Call <em>orderScripts</em> to sort scripts alphabetically then by dependencies.
-Then create a virtual scripts file if <em>combineScripts</em> is set.</p>
-
-<p><em>orderedScriptFiles</em> will hold either the single virtual file or the ordered
-individual script files.</p>
-
-<p>Ordering scripts is the last build task before firing the after-build
-callback, if defined.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">pathForSave: </span><span class="o">-&gt;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-78">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-78">&#182;</a>               </div>               <p>In <em>pathForSave</em>, we see the use of url(), which by itself is used in file lookup,
+but the file that is saved for <em>RootContentHtmlFile</em> needs a ".html" extension to allow
+http://localhost:8000/myapp instead of http://localhost:8000/myapp/myapp.html.
+The symlink handler is involved in linking to the root content.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">pathForSave: </span><span class="o">-&gt;</span>
     <span class="s2">&quot;#{@url()}.html&quot;</span> <span class="k">if</span> <span class="nx">@isHtml</span> <span class="k">else</span> <span class="nx">@url</span><span class="p">()</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-74">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-74">&#182;</a>               </div>               <p>path: @path + ".js"</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">content: </span><span class="nf">(callback) -&gt;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-79">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-79">&#182;</a>               </div>               <p>The <em>content</em> method is coordinated with the queue system for managing the number
+of open files, via the call to readFile to read an on-disk file. This method is 
+overridden in the <strong>RootContentHtmlFile</strong> subclass to return html content.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">content: </span><span class="nf">(callback) -&gt;</span>
     <span class="nx">readFile</span> <span class="nx">@path</span><span class="p">,</span> <span class="nx">callback</span>
-  
-  <span class="vi">@createDirectory: </span><span class="nf">(path) -&gt;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-80">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-80">&#182;</a>               </div>               <p>Create a directory, checking the prefix of the path for "." and "/".</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="vi">@createDirectory: </span><span class="nf">(path) -&gt;</span>
     <span class="nv">prefix = </span><span class="nx">path_module</span><span class="p">.</span><span class="nx">dirname</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
     <span class="nx">File</span><span class="p">.</span><span class="nx">createDirectory</span> <span class="nx">prefix</span>  <span class="k">if</span> <span class="nx">prefix</span> <span class="o">isnt</span> <span class="s2">&quot;.&quot;</span> <span class="o">and</span> <span class="nx">prefix</span> <span class="o">isnt</span> <span class="s2">&quot;/&quot;</span>
     <span class="k">try</span>
       <span class="nx">fs</span><span class="p">.</span><span class="nx">mkdirSync</span> <span class="nx">path</span><span class="p">,</span> <span class="nb">parseInt</span><span class="p">(</span><span class="s2">&quot;0755&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
     <span class="k">catch</span> <span class="nx">e</span>
-      <span class="k">throw</span> <span class="nx">e</span>  <span class="k">if</span> <span class="nx">e</span><span class="p">.</span><span class="nx">code</span> <span class="o">isnt</span> <span class="s2">&quot;EEXIST&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-75">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-75">&#182;</a>               </div>               <p>Fire the build methods, passing the provided <em>callbackAfterBuild</em>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">SymlinkFile</span> <span class="k">extends</span> <span class="nx">File</span>
+      <span class="k">throw</span> <span class="nx">e</span>  <span class="k">if</span> <span class="nx">e</span><span class="p">.</span><span class="nx">code</span> <span class="o">isnt</span> <span class="s2">&quot;EEXIST&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-81">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-81">&#182;</a>               </div>               <h2>SymlinkFile</h2>
+
+<p><strong>SymlinkFile</strong> is used for the instance of a symlink to the root html file.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">SymlinkFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">rootSymlinkHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-76">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-76">&#182;</a>               </div>               <h2>Reference</h2>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-82">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-82">&#182;</a>               </div>               <h2>RootContentHtmlFile</h2>
 
-<p>The <strong>Reference</strong> class is a simple url/file couplet. It is used for html and symlink files, 
-and for the virtual stylesheet and script files.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">RootContentHtmlFile</span> <span class="k">extends</span> <span class="nx">File</span>
+<p>The <strong>RootContentHtmlFile</strong> contains the html with main links to a project's stylesheets,
+scripts, and resources. Its rootContentHtmlHandlerSet has cache, contentType, and file
+handlers, so that during serving it is read once, then cached. The <strong>RootContentHtmlFile</strong>
+is created at the end of the build process, when links to files and resources are known.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">RootContentHtmlFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">rootContentHtmlHandlerSet</span>
@@ -1159,14 +1133,7 @@ and for the virtual stylesheet and script files.</p>             </td>          
     <span class="s2">&quot;#{@app.url()}.html&quot;</span>
 
   <span class="nv">content: </span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span>
-    <span class="nv">html = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-77">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-77">&#182;</a>               </div>               <h2>File</h2>
-
-<p>The <strong>File</strong> class holds information about an on-disk file or a virtual file, which is
-an abstraction for a framework directory. The children array is used for virtual
-files, either the <strong>VirtualStylesheetFile</strong> or <strong>VirtualScriptFile</strong> derived classes. The
-handlerSet property has one of the <strong>HandlerSet</strong> singletons defined above, which
-controls the build process for a given file type. A file can be a symlink to the
-root html file, which is only used in <strong>SymlinkFile</strong>.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&quot;&quot; &lt;!DOCTYPE html&gt;</span>
+    <span class="nv">html = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-83">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-83">&#182;</a>               </div>               <p>Load html for document, head, and meta sections. [TODO] Fix the paths in apple-touch links.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&quot;&quot; &lt;!DOCTYPE html&gt;</span>
 <span class="s2">                  &lt;html lang=\&quot;#{buildLanguageAbbreviation()}\&quot;&gt;</span>
 <span class="s2">                    &lt;head&gt;</span>
 <span class="s2">                      &lt;meta charset=\&quot;utf-8\&quot;&gt;,</span>
@@ -1188,29 +1155,15 @@ root html file, which is only used in <strong>SymlinkFile</strong>.</p>         
 <span class="s2">                      &lt;link rel=\&quot;shortcut icon\&quot; href=\&quot;/static/sproutcore/foundation/en/current/resources/images/favicon.ico?1317844275\&quot; type=\&quot;image/x-icon\&quot; /&gt;</span>
 <span class="s2">              &quot;&quot;&quot;</span>
 
-    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;title&gt;#{@title}&lt;/title&gt;&quot;</span> <span class="k">if</span> <span class="nx">@title</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-78">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-78">&#182;</a>               </div>               <p><em>pathForSave</em> has logic for isHtml that is coordinated with the use of a symlink
-to the root html file. The url() by itself, for use in file lookup, will allow
-http://localhost:8000/myapp instead of http://localhost:8000/myapp/myapp.html.
-The use of the symlink handler, this check for isHtml to add the extension, and
-the use of an overridden content method in <em>RootContentHtmlFile</em> are tied together.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">for</span> <span class="nx">framework</span> <span class="k">in</span> <span class="nx">@app</span><span class="p">.</span><span class="nx">frameworks</span>
+    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;title&gt;#{@title}&lt;/title&gt;&quot;</span> <span class="k">if</span> <span class="nx">@title</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-84">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-84">&#182;</a>               </div>               <p>Load references to the virtual stylesheet for each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">for</span> <span class="nx">framework</span> <span class="k">in</span> <span class="nx">@app</span><span class="p">.</span><span class="nx">frameworks</span>
       <span class="k">for</span> <span class="nx">stylesheet</span> <span class="k">in</span> <span class="nx">framework</span><span class="p">.</span><span class="nx">orderedStylesheetFiles</span>
         <span class="k">if</span> <span class="nx">stylesheet</span><span class="p">.</span><span class="nx">framework</span> <span class="o">is</span> <span class="nx">framework</span>
-          <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;link href=\&quot;#{@app.urlPrefix + stylesheet.url()}\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-79">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-79">&#182;</a>               </div>               <p>The <em>content</em> method is coordinated with the queue system for managing the number
-of open files, via the call to readFile to read an on-disk file. This method is 
-overridden in the <strong>RootContentHtmlFile</strong> subclass to return html content directly
-(from memory), without reading a real on-disk file.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;/head&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;body class=\&quot;#{@app.theme} focus\&quot;&gt;&quot;</span>
+          <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;link href=\&quot;#{@app.urlPrefix + stylesheet.url()}\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-85">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-85">&#182;</a>               </div>               <p>Close the head and begin the body.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;/head&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;body class=\&quot;#{@app.theme} focus\&quot;&gt;&quot;</span>
     <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;script type=\&quot;text/javascript\&quot;&gt;String.preferredLanguage = \&quot;#{buildLanguage}\&quot;;&lt;/script&gt;&quot;</span>
-      </pre></div>             </td>           </tr>                               <tr id="section-80">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-80">&#182;</a>               </div>               <h2>SymlinkFile</h2>
-
-<p><strong>SymlinkFile</strong> is used for the instance of a symlink to the root html file.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">for</span> <span class="nx">framework</span> <span class="k">in</span> <span class="nx">@app</span><span class="p">.</span><span class="nx">frameworks</span>
+      </pre></div>             </td>           </tr>                               <tr id="section-86">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-86">&#182;</a>               </div>               <p>Load references to the virtual scripts for each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">for</span> <span class="nx">framework</span> <span class="k">in</span> <span class="nx">@app</span><span class="p">.</span><span class="nx">frameworks</span>
       <span class="k">for</span> <span class="nx">script</span> <span class="k">in</span> <span class="nx">framework</span><span class="p">.</span><span class="nx">orderedScriptFiles</span>
         <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&lt;script type=\&quot;text/javascript\&quot; src=\&quot;#{@app.urlPrefix + script.url()}\&quot;&gt;&lt;/script&gt;&quot;</span>
-      </pre></div>             </td>           </tr>                               <tr id="section-81">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-81">&#182;</a>               </div>               <h2>RootContentHtmlFile</h2>
-
-<p>The <strong>RootContentHtmlFile</strong> contains the html with main links to a project's stylesheets,
-scripts, and resources. Its rootContentHtmlHandlerSet has cache, contentType, and file
-handlers, so that during serving it is read once, then cached. The <strong>RootContentHtmlFile</strong>
-is created at the end of the build process, when links to files and resources are known.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&quot;&quot; </span>
+      </pre></div>             </td>           </tr>                               <tr id="section-87">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-87">&#182;</a>               </div>               <p>Close the body and page.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">html</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;&quot;&quot; </span>
 <span class="s2">                  &lt;script&gt;</span>
 <span class="s2">                    SC.benchmarkPreloadEvents[&#39;bodyEnd&#39;] = new Date().getTime();</span>
 <span class="s2">                  &lt;/script&gt;</span>
@@ -1219,53 +1172,83 @@ is created at the end of the build process, when links to files and resources ar
 <span class="s2">              &quot;&quot;&quot;</span>
     <span class="nv">html = </span><span class="nx">html</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot;\n&quot;</span><span class="p">)</span>
       
-    <span class="nx">callback</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">html</span></pre></div>             </td>           </tr>                               <tr id="section-82">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-82">&#182;</a>               </div>               <p>Load html for document, head, and meta sections. [TODO] Fix the paths in apple-touch links.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">StylesheetFile</span> <span class="k">extends</span> <span class="nx">File</span>
+    <span class="nx">callback</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">html</span></pre></div>             </td>           </tr>                               <tr id="section-88">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-88">&#182;</a>               </div>               <h2>StylesheetFile</h2>
+
+<p><em>*StylesheetFile</em> is a class for .css and related file types.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">StylesheetFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">stylesheetHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-83">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-83">&#182;</a>               </div>               <p>Load references to the virtual stylesheet for each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">MinifiedStylesheetFile</span> <span class="k">extends</span> <span class="nx">File</span>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-89">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-89">&#182;</a>               </div>               <h2>MinifiedStylesheetFile </h2>
+
+<p><strong>MinifiedStylesheetFile</strong> is a class for .css and related file types, minified.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">MinifiedStylesheetFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">minifiedStylesheetHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-84">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-84">&#182;</a>               </div>               <p>Close the head and begin the body.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">ScriptFile</span> <span class="k">extends</span> <span class="nx">File</span>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-90">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-90">&#182;</a>               </div>               <h2>ScriptFile</h2>
+
+<p><strong>ScriptFile</strong> is a class for .js files.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">ScriptFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">scriptHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-85">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-85">&#182;</a>               </div>               <p>Load references to the virtual scripts for each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">MinifiedScriptFile</span> <span class="k">extends</span> <span class="nx">File</span>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-91">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-91">&#182;</a>               </div>               <h2>MinifiedScriptFile</h2>
+
+<p><strong>MinifiedScriptFile</strong> is a class for .js files, minified.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">MinifiedScriptFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">minifiedScriptHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-86">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-86">&#182;</a>               </div>               <p>Close the body and page.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">TestFile</span> <span class="k">extends</span> <span class="nx">File</span>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-92">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-92">&#182;</a>               </div>               <h2>TestFile</h2>
+
+<p><strong>TestFile</strong> is a class for .js files used in testing, and are idendified
+as such by matching against a set of known directory names in paths.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">TestFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">testHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-87">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-87">&#182;</a>               </div>               <h2>StylesheetFile</h2>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-93">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-93">&#182;</a>               </div>               <h2>ResourceFile</h2>
 
-<p><em>*StylesheetFile</em> is a class for .css and related file types.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">ResourceFile</span> <span class="k">extends</span> <span class="nx">File</span>
+<p><strong>ResourceFile</strong> is a class for a variety of image types used in a project,
+defined in the static property resourceExtensions.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">ResourceFile</span> <span class="k">extends</span> <span class="nx">File</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@handlerSet = </span><span class="nx">resourceHandlerSet</span>
     <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span>
 
-  <span class="vi">@resourceExtensions = </span><span class="p">[</span><span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.gif&#39;</span><span class="p">,</span> <span class="s1">&#39;.svg&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-88">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-88">&#182;</a>               </div>               <h2>MinifiedStylesheetFile </h2>
+  <span class="vi">@resourceExtensions = </span><span class="p">[</span><span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.gif&#39;</span><span class="p">,</span> <span class="s1">&#39;.svg&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-94">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-94">&#182;</a>               </div>               <h2>VirtualStylesheetFile</h2>
 
-<p><strong>MinifiedStylesheetFile</strong> is a class for .css and related file types, minified.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">VirtualStylesheetFile</span> <span class="k">extends</span> <span class="nx">StylesheetFile</span>
+<p>The <strong>VirtualStylesheetFile</strong> class is an extension of StylesheetFile, for use in
+handling framework directories that contain individual stylesheet files. So,
+by virtual here, we refer to the fact that the file is not actually found on
+disk in the original project, and exists either only in memory or also as a
+saved combined file, if save operations are directed to make one.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">VirtualStylesheetFile</span> <span class="k">extends</span> <span class="nx">StylesheetFile</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@isVirtual = </span><span class="kc">true</span>
     <span class="vi">@children = </span><span class="p">[]</span>
     <span class="vi">@handlerSet = </span><span class="nx">virtualStylesheetHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-89">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-89">&#182;</a>               </div>               <h2>ScriptFile</h2>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-95">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-95">&#182;</a>               </div>               <h2>VirtualScriptFile</h2>
 
-<p><strong>ScriptFile</strong> is a class for .js files.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">VirtualScriptFile</span> <span class="k">extends</span> <span class="nx">ScriptFile</span>
+<p>The <strong>VirtualScriptFile</strong> extends <strong>ScriptFile</strong>, for use in handling script files in
+a framework. It is identical in structure to <strong>VirtualStylesheetFile</strong>, with the
+addition of two methods, headFile and tailFile, which contain javascript to be
+inserted at the head or tail of the children list of contained scripts. This
+head and tail javascript covers such needs as defining variables and namespaces
+before contained child scripts load and reporting after scripts have loaded.</p>
+
+<p><strong>VirtualScriptFile</strong> only has tailFile defined, for inclusion of a did-load check.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">VirtualScriptFile</span> <span class="k">extends</span> <span class="nx">ScriptFile</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="k">super</span> <span class="nx">options</span>
     <span class="vi">@isVirtual = </span><span class="kc">true</span>
     <span class="vi">@children = </span><span class="p">[]</span>
     <span class="vi">@handlerSet = </span><span class="nx">virtualScriptHandlerSet</span>
-    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-90">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-90">&#182;</a>               </div>               <h2>MinifiedScriptFile</h2>
+    <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-96">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-96">&#182;</a>               </div>               <h2>BootstrapFramework</h2>
 
-<p><strong>MinifiedScriptFile</strong> is a class for .js files, minified.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">BootstrapFramework</span> <span class="k">extends</span> <span class="nx">Framework</span>
+<p>The <strong>BootstrapFramework</strong> class has headFile and tailFile methods that return
+needed script fragments before and after child files in the bootstrap
+framework, the files of which are read from disk in the build procedure.
+headFile and tailFile override methods of the Framework superclass. The
+head file contains main declarations of SC and require. Tail file code
+calls SC.setupBodyClassNames(), once bootrap code has loaded. This function
+is in bootstrap/system/loader.js, where browser-specific tweaks are made for
+setting up the body of the main app html page.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">BootstrapFramework</span> <span class="k">extends</span> <span class="nx">Framework</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="nv">options.name = </span><span class="s2">&quot;bootstrap&quot;</span>
     <span class="nv">options.path = </span><span class="s2">&quot;frameworks/sproutcore/frameworks/bootstrap&quot;</span>
@@ -1289,10 +1272,17 @@ is created at the end of the build process, when links to files and resources ar
       <span class="nv">framework: </span><span class="k">this</span>
       <span class="nv">content: </span><span class="nf">(callback) -&gt;</span>
         <span class="nx">callback</span> <span class="kc">null</span><span class="p">,</span> <span class="s2">&quot;; if (SC.setupBodyClassNames) SC.setupBodyClassNames();&quot;</span>
-      <span class="nv">handlerSet: </span><span class="nx">uncombinedScriptHandlerSet</span></pre></div>             </td>           </tr>                               <tr id="section-91">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-91">&#182;</a>               </div>               <h2>TestFile</h2>
+      <span class="nv">handlerSet: </span><span class="nx">uncombinedScriptHandlerSet</span></pre></div>             </td>           </tr>                               <tr id="section-97">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-97">&#182;</a>               </div>               <h2>App</h2>
 
-<p><strong>TestFile</strong> is a class for .js files used in testing, and are idendified
-as such by matching against a set of known directory names in paths.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">App</span>
+<p>The <strong>App</strong> class contains metadata properties for a single SproutCore application, along
+with build-specific properties and their default values. An <strong>App</strong> is <strong>Framework</strong>-like, in
+the similarity of properties. It contains a list of frameworks and a files associative
+array of urls to files, which is set up by a call to registerFiles after the build
+processes complete. This files array is exposed to a server.</p>
+
+<p><em>htmlFileReference</em> and <em>htmlSymlinkReference</em> hold links to the root html file.</p>
+
+<p>Principal methods are <em>build</em> and <em>save</em>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">App</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="vi">@name = </span><span class="kc">null</span>
     <span class="vi">@title = </span><span class="kc">null</span>
@@ -1316,60 +1306,29 @@ as such by matching against a set of known directory names in paths.</p>        
 
     <span class="err">@</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">own</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span>
 
-  <span class="vi">@buildVersion: </span><span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-92">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-92">&#182;</a>               </div>               <h2>ResourceFile</h2>
-
-<p><strong>ResourceFile</strong> is a class for a variety of image types used in a project,
-defined in the static property resourceExtensions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">reducedPathFor: </span><span class="nx">Framework</span><span class="o">::</span><span class="nx">reducedPathFor</span>
+  <span class="vi">@buildVersion: </span><span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-98">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-98">&#182;</a>               </div>               <p>The <em>reducedPathFor</em>, <em>urlFor</em>, and <em>url</em> methods are the same as those for
+the <strong>Framework</strong> class, tied here to the prototype definitions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">reducedPathFor: </span><span class="nx">Framework</span><span class="o">::</span><span class="nx">reducedPathFor</span>
   <span class="nv">reducedPath: </span><span class="nx">Framework</span><span class="o">::</span><span class="nx">reducedPath</span>
   <span class="nv">urlFor: </span><span class="nx">Framework</span><span class="o">::</span><span class="nx">urlFor</span>
   <span class="nv">url: </span><span class="o">-&gt;</span> <span class="nx">Framework</span><span class="o">::</span><span class="nx">urlFor</span><span class="p">(</span><span class="nx">@name</span><span class="p">)</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-93">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-93">&#182;</a>               </div>               <h2>VirtualStylesheetFile</h2>
-
-<p>The <strong>VirtualStylesheetFile</strong> class is an extension of StylesheetFile, for use in
-handling framework directories that contain individual stylesheet files. So,
-by virtual here, we refer to the fact that the file is not actually found on
-disk in the original project, and exists either only in memory or also as a
-saved combined file, if save operations are directed to make one.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">addSproutCore: </span><span class="nf">(options={}) -&gt;</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-99">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-99">&#182;</a>               </div>               <p>The <em>addSproutCore</em> convenience method adds frameworks returned by the static function
+<em>sproutcoreFrameworks</em> defined in the <strong>Framework</strong> class.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">addSproutCore: </span><span class="nf">(options={}) -&gt;</span>
     <span class="nx">@frameworks</span><span class="p">.</span><span class="nx">push</span> <span class="nx">framework</span> <span class="k">for</span> <span class="nx">framework</span> <span class="k">in</span> <span class="nx">Framework</span><span class="p">.</span><span class="nx">sproutcoreFrameworks</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span>
-  </pre></div>             </td>           </tr>                               <tr id="section-94">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-94">&#182;</a>               </div>               <h2>VirtualScriptFile</h2>
-
-<p>The <strong>VirtualScriptFile</strong> extends <strong>ScriptFile</strong>, for use in handling script files in
-a framework. It is identical in structure to <strong>VirtualStylesheetFile</strong>, with the
-addition of two methods, headFile and tailFile, which contain javascript to be
-inserted at the head or tail of the children list of contained scripts. This
-head and tail javascript covers such needs as defining variables and namespaces
-before contained child scripts load and reporting after scripts have loaded.</p>
-
-<p><strong>VirtualScriptFile</strong> only has tailFile defined, for inclusion of a did-load check.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">buildRoot: </span><span class="o">-&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-95">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-95">&#182;</a>               </div>               <h2>BootstrapFramework</h2>
-
-<p>The <strong>BootstrapFramework</strong> class has headFile and tailFile methods that return
-needed script fragments before and after child files in the bootstrap
-framework, the files of which are read from disk in the build procedure.
-headFile and tailFile override methods of the Framework superclass. The
-head file contains main declarations of SC and require. Tail file code
-calls SC.setupBodyClassNames(), once bootrap code has loaded. This function
-is in bootstrap/system/loader.js, where browser-specific tweaks are made for
-setting up the body of the main app html page.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">file = </span><span class="k">new</span> <span class="nx">RootContentHtmlFile</span>
+  </pre></div>             </td>           </tr>                               <tr id="section-100">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-100">&#182;</a>               </div>               <p><em>buildRoot</em> creates the root html file and a symlink to it.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">buildRoot: </span><span class="o">-&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-101">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-101">&#182;</a>               </div>               <p>Set a file for the root html content.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">file = </span><span class="k">new</span> <span class="nx">RootContentHtmlFile</span>
       <span class="nv">path: </span><span class="nx">@name</span>
       <span class="nv">app: </span><span class="k">this</span>
       <span class="nv">framework: </span><span class="k">this</span>
-    <span class="vi">@htmlFileReference = </span><span class="k">new</span> <span class="nx">Reference</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">file</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-96">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-96">&#182;</a>               </div>               <h2>App</h2>
-
-<p>The <strong>App</strong> class contains metadata properties for a single SproutCore application, along
-with build-specific properties and their default values. An <strong>App</strong> is <strong>Framework</strong>-like, in
-the similarity of properties. It contains a list of frameworks and a files associative
-array of urls to files, which is set up by a call to registerFiles after the build
-processes complete. This files array is exposed to a server.</p>
-
-<p><em>htmlFileReference</em> and <em>htmlSymlinkReference</em> hold links to the root html file.</p>
-
-<p>Principal methods are <em>build</em> and <em>save</em>.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">symlink = </span><span class="k">new</span> <span class="nx">SymlinkFile</span>
+    <span class="vi">@htmlFileReference = </span><span class="k">new</span> <span class="nx">Reference</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">file</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-102">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-102">&#182;</a>               </div>               <p>Set a file for a symlink to the root html file.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">symlink = </span><span class="k">new</span> <span class="nx">SymlinkFile</span>
       <span class="nv">path: </span><span class="nx">@name</span>
       <span class="nv">app: </span><span class="k">this</span>
       <span class="nv">symlink: </span><span class="nx">file</span>
       <span class="nv">framework: </span><span class="k">this</span>
-    <span class="vi">@htmlSymlinkReference = </span><span class="k">new</span> <span class="nx">Reference</span><span class="p">(</span><span class="nx">@name</span><span class="p">,</span> <span class="nx">symlink</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-97">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-97">&#182;</a>               </div>               <p>The <em>reducedPathFor</em>, <em>urlFor</em>, and <em>url</em> methods are the same as those for
-the <strong>Framework</strong> class, tied here to the prototype definitions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">build: </span><span class="nf">(callbackAfterBuild) -&gt;</span>
+    <span class="vi">@htmlSymlinkReference = </span><span class="k">new</span> <span class="nx">Reference</span><span class="p">(</span><span class="nx">@name</span><span class="p">,</span> <span class="nx">symlink</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-103">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-103">&#182;</a>               </div>               <p>The <em>build</em> method uses the contained <strong>FrameworksBuilder</strong> class to build an app, first
+calling the app's buildRoot method, then building frameworks in the app.
+When finished, the callback is called if it is defined.</p>
+
+<p>The <strong>FrameworksBuilder</strong> class for the app execs the build methods for the
+root html content and for the content of each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">build: </span><span class="nf">(callbackAfterBuild) -&gt;</span>
     <span class="k">class</span> <span class="nx">FrameworksBuilder</span> <span class="k">extends</span> <span class="nx">process</span><span class="p">.</span><span class="nx">EventEmitter</span>
       <span class="nv">constructor: </span><span class="nf">(@frameworks) -&gt;</span>
         <span class="vi">@count = </span><span class="nx">@frameworks</span><span class="p">.</span><span class="nx">length</span>
@@ -1390,14 +1349,20 @@ the <strong>Framework</strong> class, tied here to the prototype definitions.</p
         <span class="nx">callbackAfterBuild</span><span class="p">()</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Build for #{@path} has started.&quot;</span>
     <span class="nx">builder</span><span class="p">.</span><span class="nx">build</span><span class="p">()</span>
-    </pre></div>             </td>           </tr>                               <tr id="section-98">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-98">&#182;</a>               </div>               <p>The <em>addSproutCore</em> convenience method adds frameworks returned by the static function
-<em>sproutcoreFrameworks</em> defined in the <strong>Framework</strong> class.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">registerFile: </span><span class="nf">(url, file) -&gt;</span>
-    <span class="nx">@files</span><span class="p">[</span><span class="nx">url</span><span class="p">]</span> <span class="o">=</span> <span class="nx">file</span></pre></div>             </td>           </tr>                               <tr id="section-99">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-99">&#182;</a>               </div>               <p><em>buildRoot</em> creates the root html file and a symlink to it.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">registerFiles: </span><span class="o">-&gt;</span>
+    </pre></div>             </td>           </tr>                               <tr id="section-104">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-104">&#182;</a>               </div>               <p><em>registerFile</em> sets the url of the file as the key in the files associative
+array, which is exposed to the server for file requests.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">registerFile: </span><span class="nf">(url, file) -&gt;</span>
+    <span class="nx">@files</span><span class="p">[</span><span class="nx">url</span><span class="p">]</span> <span class="o">=</span> <span class="nx">file</span></pre></div>             </td>           </tr>                               <tr id="section-105">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-105">&#182;</a>               </div>               <p><em>registerFiles</em> is called after the build process has completed. It resets the 
+files array, then calls <em>registerFile</em> to add back references for the root file
+and symlink and for the files in child frameworks.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">registerFiles: </span><span class="o">-&gt;</span>
     <span class="vi">@files = </span><span class="p">[]</span>
     <span class="nx">@registerFile</span> <span class="nx">@htmlFileReference</span><span class="p">.</span><span class="nx">file</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">@htmlFileReference</span><span class="p">.</span><span class="nx">file</span>
     <span class="nx">@registerFile</span> <span class="nx">@name</span><span class="p">,</span> <span class="nx">@htmlSymlinkReference</span><span class="p">.</span><span class="nx">file</span>
     <span class="k">for</span> <span class="nx">framework</span> <span class="k">in</span> <span class="nx">@frameworks</span>
-      <span class="nx">@registerFile</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">framework</span><span class="p">.</span><span class="nx">allFiles</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-100">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-100">&#182;</a>               </div>               <p>Set a file for the root html content.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">save: </span><span class="o">=&gt;</span>
+      <span class="nx">@registerFile</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">url</span><span class="p">(),</span> <span class="nx">file</span><span class="p">)</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">framework</span><span class="p">.</span><span class="nx">allFiles</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-106">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-106">&#182;</a>               </div>               <p>The <em>save</em> method first creates a fresh unique <em>buildVersion</em> as a long <strong>Date</strong> instance
+for the current time, then the contained <strong>Saver</strong> class is used to save child
+frameworks and usually some combination of combined virtual files. The logic for
+combining and bundling frameworks and application code flows in a series of if
+else blocks until the main root html file is writen.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">save: </span><span class="o">=&gt;</span>
     <span class="vi">@buildVersion = </span><span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">()</span>
 
     <span class="k">class</span> <span class="nx">Saver</span>
@@ -1474,7 +1439,7 @@ the <strong>Framework</strong> class, tied here to the prototype definitions.</p
     <span class="nx">File</span><span class="p">.</span><span class="nx">createDirectory</span> <span class="nx">path_module</span><span class="p">.</span><span class="nx">dirname</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
     <span class="nx">htmlFile</span><span class="p">.</span><span class="nx">content</span> <span class="nf">(data) -&gt;</span>
       <span class="nx">fs</span><span class="p">.</span><span class="nx">writeFile</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nf">(err) -&gt;</span>
-        <span class="k">throw</span> <span class="nx">err</span>  <span class="k">if</span> <span class="nx">err</span></pre></div>             </td>           </tr>                               <tr id="section-101">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-101">&#182;</a>               </div>               <p>Set a file for a symlink to the root html file.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Server</span>
+        <span class="k">throw</span> <span class="nx">err</span>  <span class="k">if</span> <span class="nx">err</span></pre></div>             </td>           </tr>                               <tr id="section-107">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-107">&#182;</a>               </div>               <h1>Server</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Server</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="vi">@port = </span><span class="mi">8000</span>
     <span class="vi">@hostname = </span><span class="s2">&quot;localhost&quot;</span>
@@ -1567,13 +1532,7 @@ the <strong>Framework</strong> class, tied here to the prototype definitions.</p
         <span class="nv">port: </span><span class="nx">@port</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Server started on #{app_url}/APPLICATION_NAME&quot;</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s1">&#39;  HOSTNAME:&#39;</span><span class="p">,</span> <span class="nx">@hostname</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s1">&#39;  PORT:&#39;</span><span class="p">,</span> <span class="nx">@port</span></pre></div>             </td>           </tr>                               <tr id="section-102">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-102">&#182;</a>               </div>               <p>The <em>build</em> method uses the contained <strong>FrameworksBuilder</strong> class to build an app, first
-calling the app's buildRoot method, then building frameworks in the app.
-When finished, the callback is called if it is defined.</p>
-
-<p>The <strong>FrameworksBuilder</strong> class for the app execs the build methods for the
-root html content and for the content of each framework.</p>             </td>             <td class="code">               <div class="highlight"><pre> </pre></div>             </td>           </tr>                               <tr id="section-103">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-103">&#182;</a>               </div>               <p><em>registerFile</em> sets the url of the file as the key in the files associative
-array, which is exposed to the server for file requests.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exec = </span><span class="nf">(appTargets, actionItems) -&gt;</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s1">&#39;  PORT:&#39;</span><span class="p">,</span> <span class="nx">@port</span></pre></div>             </td>           </tr>                               <tr id="section-108">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-108">&#182;</a>               </div>               <hr />             </td>             <td class="code">               <div class="highlight"><pre> </pre></div>             </td>           </tr>                               <tr id="section-109">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-109">&#182;</a>               </div>               <h1>Instantiation and Execution</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exec = </span><span class="nf">(appTargets, actionItems) -&gt;</span>
   <span class="nv">defaultAppDevConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-app-dev&quot;</span><span class="p">)</span>
   <span class="nv">defaultAppProdConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-app-prod&quot;</span><span class="p">)</span>
   <span class="nv">defaultFrameworksDevConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-sc-frameworks-dev&quot;</span><span class="p">)</span>
@@ -1631,13 +1590,10 @@ array, which is exposed to the server for file requests.</p>             </td>  
           <span class="nx">myApp</span><span class="p">.</span><span class="nx">save</span><span class="p">()</span>
           <span class="nv">server = </span><span class="k">new</span> <span class="nx">Server</span><span class="p">()</span>
           <span class="nx">server</span><span class="p">.</span><span class="nx">addApp</span><span class="p">(</span><span class="nx">myApp</span><span class="p">)</span>
-          <span class="nx">server</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-104">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-104">&#182;</a>               </div>               <p><em>registerFiles</em> is called after the build process has completed. It resets the 
-files array, then calls <em>registerFile</em> to add back references for the root file
-and symlink and for the files in child frameworks.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-105">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-105">&#182;</a>               </div>               <p>The <em>save</em> method first creates a fresh unique <em>buildVersion</em> as a long <strong>Date</strong> instance
-for the current time, then the contained <strong>Saver</strong> class is used to save child
-frameworks and usually some combination of combined virtual files. The logic for
-combining and bundling frameworks and application code flows in a series of if
-else blocks until the main root html file is writen.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">if</span> <span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span>
+          <span class="nx">server</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-110">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-110">&#182;</a>               </div>               <p>Initialize nconf for command line arguments and for environmental settings</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-111">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-111">&#182;</a>               </div>               <p>If the operating mode is to use prompt, which we determine by checking for 
+an arg length of 2 (node bin/busser.js), we use the prompt system. Otherwise,
+in the else below, startup will initialize from command line arguments and/or
+environment settings.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">if</span> <span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span>
   <span class="nv">prompt.message = </span><span class="s2">&quot;Question!&quot;</span><span class="p">.</span><span class="nx">blue</span>
   <span class="nv">prompt.delimiter = </span><span class="s2">&quot;&gt;|&quot;</span><span class="p">.</span><span class="nx">green</span>
 
@@ -1677,38 +1633,35 @@ else blocks until the main root html file is writen.</p>             </td>      
       <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionItems</span>
     <span class="k">else</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Valid target(s) and action are needed... Please try again... Aborting.&quot;</span>
-<span class="k">else</span></pre></div>             </td>           </tr>                               <tr id="section-106">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-106">&#182;</a>               </div>               <h1>Server</h1>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">)</span><span class="o">?</span>
+<span class="k">else</span></pre></div>             </td>           </tr>                               <tr id="section-112">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-112">&#182;</a>               </div>               <p>All info is provided as command line arguments, or from environment settings. nconf
+will be initialized with these, and will also be given the config file specified in
+the config command line argument.</p>
+
+<p>First, parse the config path, which for the command line argument '--config' is used,
+and not the configPath internal name used in the prompt menu. The default config path
+is conf/busser.json.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">)</span><span class="o">?</span>
     <span class="k">try</span>
       <span class="nv">config_file = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">),</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
       <span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">().</span><span class="nx">file</span> <span class="nv">file: </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
     <span class="k">catch</span> <span class="nx">err</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Problem reading custom config file&quot;</span>
   <span class="k">else</span>
-    <span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">().</span><span class="nx">file</span> <span class="nv">file: </span><span class="s2">&quot;./conf/busser.json&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-107">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-107">&#182;</a>               </div>               <hr />             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">errors = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-108">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-108">&#182;</a>               </div>               <h1>Instantiation and Execution</h1>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;appTargets&#39;</span><span class="p">)</span><span class="o">?</span>
+    <span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">().</span><span class="nx">file</span> <span class="nv">file: </span><span class="s2">&quot;./conf/busser.json&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-113">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-113">&#182;</a>               </div>               <p>Prepare to catch command line argument parsing errors, for appTargets and actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">errors = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-114">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-114">&#182;</a>               </div>               <p>Parse appTargets.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;appTargets&#39;</span><span class="p">)</span><span class="o">?</span>
     <span class="k">if</span> <span class="nx">appTargetsValidator</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;appTargets&#39;</span><span class="p">))</span>
       <span class="nv">appTargets = </span><span class="nx">parseAppTargetsArgument</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;appTargets&quot;</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;appTargets did not parse.&quot;</span>
   <span class="k">else</span>
     <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;appTargets argument is missing.&quot;</span>
-      </pre></div>             </td>           </tr>                               <tr id="section-109">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-109">&#182;</a>               </div>               <p>Initialize nconf for command line arguments and for environmental settings</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span><span class="o">?</span>
+      </pre></div>             </td>           </tr>                               <tr id="section-115">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-115">&#182;</a>               </div>               <p>Parse actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span><span class="o">?</span>
     <span class="k">if</span> <span class="nx">actionsValidator</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">))</span>
       <span class="nv">actionItems = </span><span class="nx">parseActionsArgument</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions did not parse.&quot;</span>
   <span class="k">else</span>
-    <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions argument is missing.&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-110">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-110">&#182;</a>               </div>               <p>If the operating mode is to use prompt, which we determine by checking for 
-an arg length of 2 (node bin/busser.js), we use the prompt system. Otherwise,
-in the else below, startup will initialize from command line arguments and/or
-environment settings.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions argument is missing.&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-116">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-116">&#182;</a>               </div>               <p>Report errors or execute.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">errors</span>
   <span class="k">else</span>
     <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionItems</span>
 
-</pre></div>             </td>           </tr>                               <tr id="section-111">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-111">&#182;</a>               </div>               <p>All info is provided as command line arguments, or from environment settings. nconf
-will be initialized with these, and will also be given the config file specified in
-the config command line argument.</p>
-
-<p>First, parse the config path, which for the command line argument '--config' is used,
-and not the configPath internal name used in the prompt menu. The default config path
-is conf/busser.json.</p>             </td>             <td class="code">               <div class="highlight"><pre>undefined</pre></div>             </td>           </tr>                               <tr id="section-112">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-112">&#182;</a>               </div>               <p>Prepare to catch command line argument parsing errors, for appTargets and actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>undefined</pre></div>             </td>           </tr>                               <tr id="section-113">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-113">&#182;</a>               </div>               <p>Parse appTargets.</p>             </td>             <td class="code">               <div class="highlight"><pre>undefined</pre></div>             </td>           </tr>                               <tr id="section-114">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-114">&#182;</a>               </div>               <p>Parse actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>undefined</pre></div>             </td>           </tr>                               <tr id="section-115">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-115">&#182;</a>               </div>               <p>Report errors or execute.</p>             </td>             <td class="code">               <div class="highlight"><pre>undefined</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

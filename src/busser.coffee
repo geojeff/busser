@@ -729,12 +729,13 @@ class Busser
           if err
             throw err
           else
-            callback data: """
-                           function() {
-                             SC.filename = \"__FILE__\";"
-                             #{data}
-                           })();
-                           """
+            data = """
+                   function() {
+                     SC.filename = \"__FILE__\";
+                     #{data}
+                   })();
+                   """
+            callback data: data
 
   # The *join* handler joins any files coming through, and their children, into 
   # a cumulative data array, which is joined upon callback. The callback is fired
