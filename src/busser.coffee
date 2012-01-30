@@ -41,13 +41,13 @@ appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 #
 actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
 
-# The *appTargets* input, having passed the validator above, is simply split
+# The *appTargets* input, having passed the validator above, is split
 # on comma, then the items are trimmed. Commas don't have to be present.
 #
 parseAppTargetsArgument = (appTargetsResult) ->
   (target.trim() for target in appTargetsResult.split(','))
 
-# For the actions argument, the preferred style of input is to simply type
+# For the actions argument, the preferred style of input is to type
 # 'build' or 'build, save' or 'build, save, run', or 'build, run', or any of
 # the same combinations without commas, e.g. 'build save run'. The user
 # could also enter a compound word, such as buildsaverun, or any manner of
@@ -694,7 +694,7 @@ class Busser
             callback data: Busser.rewriteStatic "url('%@')", file, data
 
   # The *rewriteStaticInScript* handler calls the *rewriteStatic* method with the
-  # format '%@' for simple references in javascript.
+  # format '%@' for references in javascript.
   #
   rewriteStaticInScript:
     exec: (file, request, callback) ->
@@ -983,7 +983,7 @@ joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPre
 # scripts, if the booleans for these are set:
 #
 #    > *virtualStylesheetReference* -- These two are instances of Reference,
-#    > *virtualScriptReference*        which is a simple url-to-file couplet.
+#    > *virtualScriptReference*        which is a url-to-file couplet.
 #
 # And, finally, the **Framework** class has a *pathsToExlude* property, which is
 # and array of paths or regular expressions used to exclude directories. For
@@ -1374,7 +1374,7 @@ class Framework
 # Reference
 # ---------
 #
-# The **Reference** class is a simple url/file couplet. It is used for html and symlink files, 
+# The **Reference** class is a url/file couplet. It is used for html and symlink files, 
 # and for the virtual stylesheet and script files.
 #
 class Reference
