@@ -390,7 +390,7 @@
   "apps": {
     "HelloWorld-dev": {
       "name": "HelloWorld",
-      "title": "One Point Seven",
+      "title": "Hello World",
       "path": "apps/HelloWorld",
       "theme": "sc-theme",
       "buildLanguage": "english",
@@ -473,7 +473,7 @@
     },
     "test_controls-dev": {
       "name": "test_controls",
-      "title": "One Point Seven",
+      "title": "Hello World",
       "path": "apps/test_controls",
       "theme": "sc-theme",
       "buildLanguage": "english",
