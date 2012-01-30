@@ -375,8 +375,7 @@ class Handler
 #
 #   The exec() method fires on the head handler, beginning an "async waterfall,"
 #   wherein the sequence of handlers is called in succession, each one passing along
-#   a callback function. It is different than a one-way flow, as we see in an async
-#   waterfall, because when the final "tail" handler executes, there is a return 
+#   a callback function. When the final "tail" handler executes, there is a return 
 #   through callbacks back up to the head handler. In the end, the handler has 
 #   performed one or more operations, finally returning the data via the head callback.
 #
