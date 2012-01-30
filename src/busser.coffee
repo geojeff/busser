@@ -118,7 +118,7 @@ fileClassType = (file) ->
   return "ScriptFile" if file instanceof ScriptFile
   return "ResourceFile" if file instanceof ResourceFile
   return "TestFile" if file instanceof TestFile
-  return "RootContentHtmlFile" if file instanceof RootContentHtmlFile
+  return "RootHtmlFile" if file instanceof RootHtmlFile
   return "BootstrapVirtualScriptFile" if file instanceof BootstrapVirtualScriptFile
   return "File" if file instanceof File
 
@@ -1391,7 +1391,7 @@ class File
     @framework.urlFor(@path)
   
   # In *pathForSave*, we see the use of url(), which by itself is used in file lookup,
-  # but the file that is saved for *RootContentHtmlFile* needs a ".html" extension to allow
+  # but the file that is saved for *RootHtmlFile* needs a ".html" extension to allow
   # http://localhost:8000/myapp instead of http://localhost:8000/myapp/myapp.html.
   # The symlink handler is involved in linking to the root content.
   #
@@ -1400,7 +1400,7 @@ class File
   
   # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
-  # overridden in the **RootContentHtmlFile** subclass to return html content.
+  # overridden in the **RootHtmlFile** subclass to return html content.
   #
   content: (callback) ->
     readFile @path, callback
@@ -1426,15 +1426,15 @@ class SymlinkFile extends File
     @handlerSet = rootSymlinkHandlerSet
     @[key] = options[key] for own key of options
 
-# RootContentHtmlFile
+# RootHtmlFile
 # -------------------
 #
-# The **RootContentHtmlFile** contains the html with main links to a project's stylesheets,
+# The **RootHtmlFile** contains the html with main links to a project's stylesheets,
 # scripts, and resources. Its rootContentHtmlHandlerSet has cache, contentType, and file
-# handlers, so that during serving it is read once, then cached. The **RootContentHtmlFile**
+# handlers, so that during serving it is read once, then cached. The **RootHtmlFile**
 # is created at the end of the build process, when links to files and resources are known.
 #
-class RootContentHtmlFile extends File
+class RootHtmlFile extends File
   constructor: (options={}) ->
     super options
     @handlerSet = rootContentHtmlHandlerSet
@@ -1703,7 +1703,7 @@ class App
   #
   buildRoot: ->
     # Set a file for the root html content.
-    file = new RootContentHtmlFile
+    file = new RootHtmlFile
       path: @name
       app: this
       framework: this
@@ -1837,7 +1837,7 @@ class App
           htmlScriptLinks.push "<link href=\"#{@urlPrefix + fw.virtualScriptFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
       htmlScriptLinks.join('\n')
 
-    htmlFile = new RootContentHtmlFile
+    htmlFile = new RootHtmlFile
       path: @name
       app: this
       framework: this
