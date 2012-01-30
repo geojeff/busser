@@ -45,12 +45,7 @@ actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,
 parseAppTargetsArgument = (appTargetsResult) ->
   (target.trim() for target in appTargetsResult.split(','))
 
-# For the actions argument, the preferred style of input is to type
-# 'build' or 'build, save' or 'build, save, run', or 'build, run', or any of
-# the same combinations without commas, e.g. 'build save run'. The user
-# could also enter a compound word, such as buildsaverun, or any manner of
-# incorrect order, jambed up words without commas and the like. We do a string
-# match for presence of build, save, run words and construct one of several
+# Match for presence of build, save, run words and construct one of several
 # possible actionItems.
 #
 parseActionsArgument = (actionsResult) ->
