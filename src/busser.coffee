@@ -1465,10 +1465,10 @@ class RootContentHtmlFile extends File
                       <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />
                       <meta name=\"viewport\" content=\"initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no\" />
 
-                      <link rel=\"apple-touch-icon\" href=\"/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-logo.png?1317844275\" />
-                      <link rel=\"apple-touch-startup-image\" media=\"screen and (orientation:portrait)\" href=\"/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-startup-portrait.png?1317844275\" /> 
-                      <link rel=\"apple-touch-startup-image\" media=\"screen and (orientation:landscape)\" href=\"/static/sproutcore/foundation/en/current/source/resources/images/sproutcore-startup-landscape.png?1317844275\" />
-                      <link rel=\"shortcut icon\" href=\"/static/sproutcore/foundation/en/current/resources/images/favicon.ico?1317844275\" type=\"image/x-icon\" />
+                      <link rel=\"apple-touch-icon\" href=\"frameworks/sproutcore/foundation/resources/images/sproutcore-logo.png\" />
+                      <link rel=\"apple-touch-startup-image\" media=\"screen and (orientation:portrait)\" href=\"frameworks/sproutcore/foundation/resources/images/sproutcore-startup-portrait.png\" /> 
+                      <link rel=\"apple-touch-startup-image\" media=\"screen and (orientation:landscape)\" href=\"frameworks/sproutcore/foundation/resources/images/sproutcore-startup-landscape.png\" />
+                      <link rel=\"shortcut icon\" href=\"frameworks/sproutcore/foundation/resources/images/favicon.ico\" type=\"image/x-icon\" />
               """
 
     html.push "<title>#{@title}</title>" if @title?
