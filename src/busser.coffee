@@ -1253,10 +1253,7 @@ class Framework
   build: (callbackAfterBuild) =>
     # The *createBasicFiles* method scans the framework directory for all files,
     # filtering by *shouldExcludeFile*, and creates basic File objects: stylesheets, 
-    # scripts, tests, and resources. Each File instance is given its path and a 
-    # reference to the framework. Note that basic file classes, **StylesheetFile**, 
-    # **ScriptFile**, **TestFile**, and **ResourceFile**, have their own unique handlerSets, 
-    # which are given in class definitions.
+    # scripts, tests, and resources.
     #
     createBasicFiles = (callbackAfterBuild) =>
       class Scanner extends process.EventEmitter
@@ -1382,23 +1379,23 @@ class File
   url: ->
     @framework.urlFor(@path)
   
-  # *pathForSave* has logic for isHtml that is coordinated with the use of a symlink
-  # to the root html file. The url() by itself, for use in file lookup, will allow
+  # In *pathForSave*, we see the use of url(), which by itself is used in file lookup,
+  # but the file that is saved for *RootContentHtmlFile* needs a ".html" extension to allow
   # http://localhost:8000/myapp instead of http://localhost:8000/myapp/myapp.html.
-  # The use of the symlink handler, this check for isHtml to add the extension, and
-  # the use of an overridden content method in *RootContentHtmlFile* are tied together.
+  # The symlink handler is involved in linking to the root content.
   #
   pathForSave: ->
     "#{@url()}.html" if @isHtml else @url()
   
   # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
-  # overridden in the **RootContentHtmlFile** subclass to return html content directly
-  # (from memory), without reading a real on-disk file.
+  # overridden in the **RootContentHtmlFile** subclass to return html content.
   #
   content: (callback) ->
     readFile @path, callback
   
+  # Create a directory, checking the prefix of the path for "." and "/".
+  #
   @createDirectory: (path) ->
     prefix = path_module.dirname(path)
     File.createDirectory prefix  if prefix isnt "." and prefix isnt "/"
