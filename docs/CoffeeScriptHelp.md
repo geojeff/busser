@@ -364,4 +364,26 @@ you don't want to. Contrast:
     > usually work on problems for which understanding objects and their interactions.
     > CoffeeScript adds an explicit coverage of this important concept.
 
+* **heregexes**, which are like heredocs, but for regular expressions.
+
+    > Compare an original all-jambed-together regex:
+
+        actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
+
+    > that was changed to:
+
+        actionsValidator = /// ^ (                # from beginning of input
+                             [\s*\<build\>*\s*]*  # build, save, or run, with or without whitespace
+                             [\s*\<save\>*\s*]*
+                             [\s*\<run\>*\s*]*
+                           ) + (
+                             ,                    # comma, then build, save, or run with or without whitespace
+                             [\s*\<build\>*\s*]*
+                             [\s*\<save\>*\s*]*
+                             [\s*\<run\>*\s*]*
+                           )*$                    # to end of input
+                           ///
+
+    > Being able to break it up is one thing; being able to add comments within is even better.
+
 * And there will be more items like these to share, as programming for busser and busboy continues...

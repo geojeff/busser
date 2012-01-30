@@ -37,7 +37,17 @@ appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 # expression, which allows any combination of the action verbs build, save, and run, in
 # any order, and even jambed-up, as buildsave or buildsaverun.
 #
-actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
+actionsValidator = /// ^ (                # from beginning of input
+                     [\s*\<build\>*\s*]*  # build, save, or run, with or without whitespace
+                     [\s*\<save\>*\s*]*
+                     [\s*\<run\>*\s*]*
+                   ) + (
+                     ,                    # comma, then build, save, or run with or without whitespace
+                     [\s*\<build\>*\s*]*
+                     [\s*\<save\>*\s*]*
+                     [\s*\<run\>*\s*]*
+                   )*$                    # to end of input
+                   ///
 
 # The *appTargets* input, having passed the validator above, is split
 # on comma, then the items are trimmed. Commas don't have to be present.
