@@ -35,9 +35,7 @@ appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 
 # See the user input-handling method, *parseActionsArgument*, for design of this regular
 # expression, which allows any combination of the action verbs build, save, and run, in
-# any order, and even jambed-up, as buildsave or buildsaverun. But the preferred, and
-# documented input style is one of 'build', 'build, run', 'build, save', and 'build,
-# save, run', and the shortcuts 'run' and 'save' which will also trigger build, first.
+# any order, and even jambed-up, as buildsave or buildsaverun.
 #
 actionsValidator = /^([\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)+(,[\s*\<build\>*\s*]*[\s*\<save\>*\s*]*[\s*\<run\>*\s*]*)*$/
 
