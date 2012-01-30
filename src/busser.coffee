@@ -1491,7 +1491,7 @@ class RootContentHtmlFile extends File
     # Close the body and page.
     html.push """ 
                   <script>
-                    SC.benchmarkPreloadEvents['bodyEnd'] = new Date().getTime();
+                    SC_benchmarkPreloadEvents['bodyEnd'] = new Date().getTime();
                   </script>
                 </body>
               </html>
