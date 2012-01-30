@@ -1477,16 +1477,16 @@ class RootContentHtmlFile extends File
     for framework in @app.frameworks
       for stylesheet in framework.orderedStylesheetFiles
         if stylesheet.framework is framework
-          html.push "<link href=\"#{@app.urlPrefix + stylesheet.url()}\" rel=\"stylesheet\" type=\"text/css\">"
+          html.push "        <link href=\"#{@app.urlPrefix + stylesheet.url()}\" rel=\"stylesheet\" type=\"text/css\">"
 
     # Close the head and begin the body.
-    html.push "</head>", "<body class=\"#{@app.theme} focus\">"
-    html.push "<script type=\"text/javascript\">String.preferredLanguage = \"#{buildLanguage}\";</script>"
+    html.push "      </head>", "<body class=\"#{@app.theme} focus\">"
+    html.push "        <script type=\"text/javascript\">String.preferredLanguage = \"#{buildLanguage}\";</script>"
       
     # Load references to the virtual scripts for each framework.
     for framework in @app.frameworks
       for script in framework.orderedScriptFiles
-        html.push "<script type=\"text/javascript\" src=\"#{@app.urlPrefix + script.url()}\"></script>"
+        html.push "    <script type=\"text/javascript\" src=\"#{@app.urlPrefix + script.url()}\"></script>"
       
     # Close the body and page.
     html.push """ 
