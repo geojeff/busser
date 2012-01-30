@@ -92,14 +92,6 @@ Evaluate IcedCoffeeScript, with its addition of *await* and *defer*, for
 replacing code in busser's handler exec methods, for cases where counts
 are used to wait for overall completion. See [IcedCoffeeScript](http://maxtaco.github.com/coffee-script/).
 
-Another build tools treatment to be considered is that in Blossom, released 
-by Erich Ocean (erichocean), https://github.com/fohr/blossom.  Blossom's 
-build tools take a fresh approach to the way SproutCore frameworks are 
-incorporated, attendant with a refactoring of framework configuration 
-specific to Blossom. An abstraction like this might be a good fit for 
-implementation in CoffeeScript, but must be compared to the merits of the 
-fine-grained simple json configuration files, via nconf, now in Busser.
-
 For coming up to par with Chance, and for adding new features, graphics
 production and handling may be enhanced by using node.js modules such as
 node-canvas, to add screen capturing for SproutCore testing and software
