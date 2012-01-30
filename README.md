@@ -136,6 +136,13 @@ and to test its viability. This experience has been so favorable that an
 expansion for support of CoffeeScript programming for SproutCore development
 is a goal.
 
+Review [CoffeeScriptLineMatcher](https://github.com/showell/CoffeeScriptLineMatcher) and [video](http://www.youtube.com/watch?v=dEze_TaORJs&feature=youtu.be).
+This work is tied to ongoing efforts to add direct line number support in the
+CoffeeScript compiler, but the concept of providing a dashboard in a browser 
+window is perfect for a development tool like busser. The dashboard could
+have the CoffeeScript and javascript side-by-side and coordinated by
+line number, plus other goodies specific to SproutCore development.
+
 Another original goal of the project has been reevaluated after saturation in
 CoffeeScript programming: to offer a Python version of the build tools or to 
 wrap/incorporate the build tools in an effective Python development environment. 
