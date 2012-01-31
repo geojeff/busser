@@ -660,7 +660,6 @@ class Busser
       data = data.toString("utf8").gsub re, (match) =>
         path = path_module.join(dirname, match[3])
 
-        console.log file.framework.name, resourceUrls
         if path not in resourceUrls
           for prefix in [ "", "images" ]
             for extname in ResourceFile.resourceExtensions
