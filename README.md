@@ -255,7 +255,7 @@ or even all jammed up, as buildsaverun.
 
 Power users will want command-line-only functionality, something like:
 
-    node bin/busser.js --appTargets=HelloWorld-dev --actions=build,run
+    node bin/busser.js --config=myconfig.json --appTargets=HelloWorld-dev --actions=build,run
 
 Because this is command line input, when providing multiples for either argument, use
 comma-delimited style with no blanks, certainly for appTargets, with no blanks, or use
@@ -286,6 +286,10 @@ put it. Edit this conf file, changing HelloWorld, etc. to your app's info. Then 
 should be able to run node busser/bin/busser.js either interactively or via the
 command line, per instructions above. As of 2012-01-30, an app would not be expected
 to serve up correctly.
+
+A usage to consider, is to make a conf directory in your project and put a file 
+called busser.json in there. That way, you can edit this file and you won't have to
+worry with a command line argument, because conf/busser.json is the default.
 
 Contributors
 ============
