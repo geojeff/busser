@@ -182,7 +182,7 @@ guessMaxSimultaneouslyOpenedFileDescriptors()
 # above. Look at the content method in **File** and derivatives for calls to *readFile*.
 #
 queue = (method) ->
-  @_queue = []  unless @_queue
+  @_queue = []  unless @_queue?
   @_queue.push method
   dequeue()
 
@@ -1461,6 +1461,7 @@ class RootHtmlFile extends File
 
                       <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />
                       <meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\" />
+                      <meta http-equiv="content-script-type" content="text/javascript">
                       <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />
                       <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />
                       <meta name=\"viewport\" content=\"initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no\" />
