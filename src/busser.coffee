@@ -656,10 +656,11 @@ class Busser
     dirname = file.framework.url()
 
     if data?
-      resourceUrls = (file.url() for file in file.framework.resourceFiles)
-      data = data.toString("utf8").gsub re, (match) ->
+      resourceUrls = (resourceFile.url() for resourceFile in file.framework.resourceFiles)
+      data = data.toString("utf8").gsub re, (match) =>
         path = path_module.join(dirname, match[3])
 
+        console.log file.framework.name, resourceUrls
         if path not in resourceUrls
           for prefix in [ "", "images" ]
             for extname in ResourceFile.resourceExtensions
@@ -670,6 +671,7 @@ class Busser
     
           unless path in resourceUrls
             util.puts "WARNING: #{path} referenced in #{file.path} but was not found."
+
         format.replace "%@", path_module.join(@urlPrefix, path)
 
   # The *rewriteStaticInStylesheet* handler calls the *rewriteStatic* method with the
