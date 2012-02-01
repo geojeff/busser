@@ -828,10 +828,7 @@ class Busser
             callback response
         else
           file.content (err, data) ->
-            if err
-              throw err
-            else
-              callback data: data
+            throw err  if err else callback data: data
 
   # The *handlebars* handler treats handlebar template files by stringifying them
   # to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
@@ -2106,8 +2103,5 @@ else
 
   # Report errors or execute.
   #
-  if errors.length > 0
-    console.log errors
-  else
-    exec appTargets, actionItems
+  console.log errors if errors.length > 0 else exec appTargets, actionItems
 
