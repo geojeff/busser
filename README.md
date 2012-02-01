@@ -355,6 +355,8 @@ Note that the instructions in the README file suggest using npm to install modul
 although you may, for some reason, prefer using something like homebrew for a general install. There is also
 a description of how to use plugins for TextMate, if you want.
 
+And even an iPad book, by Trevor Burnham: [CoffeeScript: An Interactive Reference](http://itunes.apple.com/us/book/coffeescript/id498532763).
+
 Color-coding for CoffeeScript code is really nice to use.  There are many [editor plugins](https://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins).
 MacVim with the CoffeeScript plugin works great.
 
