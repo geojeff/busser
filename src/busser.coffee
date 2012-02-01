@@ -1456,10 +1456,6 @@ class RootHtmlFile extends File
                       <meta charset=\"utf-8\">,
                       <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">
 
-                      <script>
-                        var SC_benchmarkPreloadEvents = { headStart: new Date().getTime() };
-                      </script>
-
                       <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />
                       <meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\" />
                       <meta http-equiv="content-script-type" content="text/javascript">
@@ -1493,9 +1489,6 @@ class RootHtmlFile extends File
       
     # Close the body and page.
     html.push """ 
-                  <script>
-                    SC_benchmarkPreloadEvents['bodyEnd'] = new Date().getTime();
-                  </script>
                 </body>
               </html>
               """
