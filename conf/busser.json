@@ -96,9 +96,9 @@
       "minifyScripts": false,
       "minifyStylesheets": false
     },
-    "experimental": {
-      "name": "experimental",
-      "path": "frameworks/sproutcore/frameworks/experimental",
+    "split_view": {
+      "name": "split_view",
+      "path": "frameworks/sproutcore/frameworks/experimental/frameworks/split_view",
       "combineScripts": true,
       "combineStylesheets": true,
       "minifyScripts": false,
@@ -282,9 +282,9 @@
       "minifyScripts": true,
       "minifyStylesheets": true
     },
-    "experimental": {
-      "name": "experimental",
-      "path": "frameworks/sproutcore/frameworks/experimental",
+    "split_view": {
+      "name": "split_view",
+      "path": "frameworks/sproutcore/frameworks/experimental/frameworks/split_view",
       "combineScripts": true,
       "combineStylesheets": true,
       "minifyScripts": true,
