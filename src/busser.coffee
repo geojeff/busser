@@ -1846,14 +1846,25 @@ class App
 # Server
 # ======
 #
+# You can only have one development server at a time for the client app, so there is a
+# short server configuration section at the top of the json configuration file for port
+# and hostname, and also allowCrossSiteRequests.
+#
+# The proxy properties are configured per app in the json configuration file, so that, for
+# example, you could have one dev setup for HelloWorld-dev, which might have one proxy for
+# your local backend dev REST server, and a different setup for HelloWorld-dev-images, which
+# might also have a second proxy to a local nginx server for testing image uploading.
+#
 class Server
   constructor: (options={}) ->
-    @port = 8000
     @hostname = "localhost"
+    @port = 8000
+    @allowCrossSiteRequests = false
+
     @proxyHost = null
     @proxyPort = null
     @proxyPrefix = ""
-    @allowCrossSiteRequests = false
+
     @apps = []
 
     this[key] = options[key] for key of options

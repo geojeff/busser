@@ -1,4 +1,9 @@
 {
+  "server": {
+    "hostname": "localhost",
+    "port": 8000,
+    "allowCrossSiteRequests": false
+  },
   "default-app-dev": {
     "theme": "sc-theme",
     "buildLanguage": "english",
@@ -398,6 +403,9 @@
       "combineStylesheets": true,
       "minifyScripts": false,
       "minifyStylesheets": false,
+      "proxies": [
+        { "proxyHost": null, "proxyPort": null, "proxyPrefix": "" }
+      ],
       "sc-frameworks": [
         { "name": "jquery",          "conf": "dev" },
         { "name": "runtime",         "conf": "dev" },
@@ -439,6 +447,7 @@
       "combineStylesheets": true,
       "minifyScripts": true,
       "minifyStylesheets": true,
+      "proxies": [],
       "pathsToExclude": [ "/fixtures\//" ],
       "sc-frameworks": [
         { "name": "jquery",          "conf": "prod" },
