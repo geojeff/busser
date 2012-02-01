@@ -1151,7 +1151,10 @@ class Framework
   sortDependencies: (file, orderedFiles, files, recursionHistory) ->
     recursionHistory = []  if not recursionHistory?
 
-    return if file in recursionHistory else recursionHistory.push file
+    if file in recursionHistory
+      return
+    else
+      recursionHistory.push file
 
     if file not in orderedFiles
       if file.deps?
@@ -1188,12 +1191,12 @@ class Framework
         a.path.localeCompare b.path
       )
 
-      # Do strings.js first.
+      # Do strings.js first. See if a core.js is found while at it.
       for script in sortedScripts
         @sortDependencies(script, orderedScriptFiles, sortedScripts) if /strings\.js$/.test(script.path)
         coreJs = script  if script.path is coreJsPath
-  
-      # Then do core.js and its dependencies.
+
+      # Then do core.js and its dependencies, if a core.js is found.
       if coreJs?
         @sortDependencies(coreJs, orderedScriptFiles, sortedScripts)
         for script in sortedScripts
@@ -1333,8 +1336,8 @@ class Framework
         @orderScripts @scriptFiles, =>
           if @combineScripts is true
             virtualScriptFile = new VirtualScriptFile
-              path: @path + ".js"
-              #path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
+              #path: @path + ".js"
+              path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
               framework: this
               children: (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
             @virtualScriptReference = new Reference(virtualScriptFile.url(), virtualScriptFile)
