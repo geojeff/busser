@@ -1333,8 +1333,8 @@ class Framework
         @orderScripts @scriptFiles, =>
           if @combineScripts is true
             virtualScriptFile = new VirtualScriptFile
-              #path: @path + ".js"
-              path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
+              path: @path + ".js"
+              #path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
               framework: this
               children: (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
             @virtualScriptReference = new Reference(virtualScriptFile.url(), virtualScriptFile)
@@ -2103,5 +2103,8 @@ else
 
   # Report errors or execute.
   #
-  console.log errors if errors.length > 0 else exec appTargets, actionItems
+  if errors.length > 0
+    console.log errors
+  else
+    exec appTargets, actionItems
 
