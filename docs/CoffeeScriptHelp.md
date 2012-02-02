@@ -98,7 +98,7 @@ list comprehensions, such as:
     > Also within the Server class is a function called shouldProxy() that has a one-liner body:
 
         shouldProxy: ->
-          ((proxy.host? and proxy.port?) for proxy in proxies).some (bool) -> bool
+          ((proxy.host? and proxy.port?) for proxy in @proxies).some (bool) -> bool
 
     > You've probably seen the tagline sometimes used for CoffeeScript, "It's just javascript."
     > Well, it ends up as javascript, but more importantly, you have the advantage of combining
@@ -143,7 +143,7 @@ list comprehensions, such as:
           ...
 
     > This is the "fat arrow" variant of ->. Appreciating it requires digging deeper into the realm 
-    > of scope and closures and such. You would use the "fat arrow" variant when you want to
+    > of scope and closures. You would use the "fat arrow" variant when you want to
     > have the **this** reference set to the specific context of the calling line. Search the busser
     > code for => and for each line where you find it, think "this (and the @ reference) in the
     > function will have the value of this on the calling line". (Or, think, "the function is bound to

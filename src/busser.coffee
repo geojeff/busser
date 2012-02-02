@@ -1942,7 +1942,7 @@ class Server
       @proxies = (new Proxy(proxyHash) for proxyHash in @proxyHashes)
 
   shouldProxy: ->
-    ((proxy.host? and proxy.port?) for proxy in proxies).some (bool) -> bool
+    ((proxy.host? and proxy.port?) for proxy in @proxies).some (bool) -> bool
 
   addApp: (app) ->
     app = new App(app) unless app instanceof App
