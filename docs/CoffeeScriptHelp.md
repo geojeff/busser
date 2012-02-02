@@ -89,7 +89,7 @@ list comprehensions, such as:
     > of Proxy need to be created from hashes read from the json config file:
 
         if @proxyHashes?
-          (proxyHash["server"] = this for proxyHash in @proxyHashes)
+          proxyHash["server"] = this for proxyHash in @proxyHashes
           @proxies = (new Proxy(proxyHash) for proxyHash in @proxyHashes)
 
     > There are two list comprehensions within this if block. The first adds a server property

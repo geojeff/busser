@@ -1938,7 +1938,7 @@ class Server
     this[key] = options[key] for key of options
 
     if @proxyHashes?
-      (proxyHash["server"] = this for proxyHash in @proxyHashes)
+      proxyHash["server"] = this for proxyHash in @proxyHashes
       @proxies = (new Proxy(proxyHash) for proxyHash in @proxyHashes)
 
   shouldProxy: ->
