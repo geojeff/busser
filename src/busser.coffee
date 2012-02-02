@@ -1664,6 +1664,7 @@ class App
     @combineScripts = true
     @minifyScripts = false
     @minifyStylesheets = false
+    @cssTheme = ""
 
     @urlPrefix = ""
     @theme = "sc-theme"
@@ -2027,6 +2028,7 @@ exec = (appTargets, actionItems) ->
         combineStylesheets: appConf["combineStylesheets"]
         minifyScripts: appConf["minifyScripts"]
         minifyStylesheets: appConf["minifyStylesheets"]
+        cssTheme: appConf["cssTheme"]
   
       myApp.frameworks = []
       myApp.frameworks.push new BootstrapFramework()
