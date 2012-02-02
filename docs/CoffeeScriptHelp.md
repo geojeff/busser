@@ -89,6 +89,31 @@ list comprehensions, such as:
     > file.framework.resourceFiles, stuffing file.url() into a new array. But you don't have
     > to worry with declaring a new array, and you, of course, don't have to type {}s.
 
+    > In the Server class, several list comprehensions are used. First, in the constructor instances
+    > of Proxy need to be created from hashes read from the json config file:
+
+        if @proxyHashes?
+          (proxyHash["server"] = this for proxyHash in @proxyHashes)
+          @proxies = (new Proxy(proxyHash) for proxyHash in @proxyHashes)
+
+    > There are two list comprehensions within this if block. The first adds a server property
+    > to each proxyHash input object. The second sets the array of instantiated Proxy objects.
+
+    > Also within the Server class is a function called shouldProxy() that has a one-liner body:
+
+        shouldProxy: ->
+          ((proxy.host? and proxy.port?) for proxy in proxies).some (bool) -> bool
+
+    > You've probably seen the tagline sometimes used for CoffeeScript, "It's just javascript."
+    > Well, it ends up as javascript, but more importantly, you have the advantage of combining
+    > the intrinsic qualities added with CoffeeScript, with the API and the "good parts" of
+    > javascript. Here this is manifested in the use of the some function in javascript for Array,
+    > combined with the list comprehension. In this one, there is a compound boolean check for both
+    > a host and port property existing on each proxy. The list comprehension computes an array
+    > of boolean values from this. The some function is passed the function (bool) -> bool, which
+    > returns the value for each bool (It could be written (bool) -> return bool). The function
+    > will evaluate to true if any one of the proxies has both host and port defined.
+
     > There are more advanced examples, such as:
 
         children = (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
