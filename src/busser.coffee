@@ -557,6 +557,7 @@ class Busser
           response.contentType = contentTypes[extname(file.path)]
           callback response
       else
+        # [TODO] does this make any sense? (There should always be a next? because contentType is never last)
         callback contentType: contentTypes[extname(file.path)]
 
   # *minifyStylesheet* is a static utility method that uses yuicompressor
@@ -898,11 +899,11 @@ rootSymlinkHandlerSet = busser.handlerSet("root symlink", "/", [ "symlink" ])
 
 stylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
 minifiedStylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
-virtualStylesheetHandlerSet = busser.handlerSet("virtual stylesheet", "/", [ "join" ])
+virtualStylesheetHandlerSet = busser.handlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
 
 scriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
 minifiedScriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptHandlerSet = busser.handlerSet("virtual script", "/", [ "join" ])
+virtualScriptHandlerSet = busser.handlerSet("virtual script", "/", [ "contentType", "join" ])
 
 testHandlerSet = busser.handlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
 resourceHandlerSet = busser.handlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
@@ -1457,8 +1458,7 @@ class RootHtmlFile extends File
                       <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">
 
                       <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />
-                      <meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\" />
-                      <meta http-equiv="content-script-type" content="text/javascript">
+                      <meta http-equiv=\"Content-script-type\" content=\"text/javascript\" />
                       <meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />
                       <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\" />
                       <meta name=\"viewport\" content=\"initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no\" />
@@ -1479,7 +1479,7 @@ class RootHtmlFile extends File
 
     # Close the head and begin the body.
     html.push "  </head>"
-    html.push "  <body class=\"#{@app.theme} focus\">"
+    html.push "  <body class=\"#{@app.cssTheme} focus sc-blur\">"
     html.push "    <script type=\"text/javascript\">String.preferredLanguage = \"#{buildLanguage}\";</script>"
       
     # Load references to the virtual scripts for each framework.

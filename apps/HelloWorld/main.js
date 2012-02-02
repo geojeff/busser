@@ -19,7 +19,6 @@ HelloWorld.main = function main() {
   // create multiple pages and panes.  
   console.log(SC.inspect(HelloWorld.getPath('mainPage.mainPane').childViews));
   HelloWorld.getPath('mainPage.mainPane').append() ;
-  console.log("Appended mainPage.mainPane");
 
   // Step 2. Set the content property on your primary controller.
   // This will make your app come alive!
