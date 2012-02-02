@@ -53,28 +53,25 @@ Lamers for background and for explanation has been very important. The
 martoche version of garçon was used as a starting point for the current
 development, followed by comparison to the later mauritslamers versions.
 
-General similarities to garçon remain in the first version of Busser, but 
-reorganization and renaming of variables has happened in course, to adapt 
+General similarities to garçon remain in early work on Busser, but 
+reorganization and renaming of variables happens in course, to adapt 
 to the CoffeeScript ways of doing things, and to add understanding where
-needed. Several node.js libraries have been added to the mix, and to 
-attempt to find and follow best practices for their use.
+needed. Several node.js libraries were added to the mix.
 
 Roadmap and ToDo List
 =====================
 
-In the short-term, certainly within the timeframe for 0.1.x incremental 
-releases, focus will be on getting Busser to work with SproutCore master, 
+Early focus will be on getting Busser to work with SproutCore master, 
 the development target, for running and building the "test controls"
 SproutCore app in the SproutCore 1.8 release, using an Ace theme. 
 
 A longer-term goal is to match the feature set of the very capable
 Abbot/Chance build tools in Ruby for the next release of SproutCore (1.9?),
-if not to be incorporated as an official build tools option, to begin a
-life as a separately maintained project as an unofficial build tools 
-option. The progression of development of official SproutCore build tools
-may be followed at https://github.com/sproutcore/sproutcore/issues/639.
+if not to be incorporated as an official build tools option, to continue
+as a separately maintained project as an unofficial build tools 
+option.
 
-Busser will be developed with a fresh look at new tools available, such 
+Busser is being developed with a fresh look at new tools available, such 
 as browserify, stylus, stitch, and the like, to see where use of these 
 tools can replace code or enhance the program.
 
@@ -92,8 +89,8 @@ to be considered is the way the system of handlers works, compared to the
 modifications done in Busser.
 
 Evaluate IcedCoffeeScript, with its addition of *await* and *defer*, for
-replacing code in busser's handler exec methods, for cases where counts
-are used to wait for overall completion. See [IcedCoffeeScript](http://maxtaco.github.com/coffee-script/).
+replacing code in busser's handler exec methods, at least for cases where
+counts are used to wait for overall completion. See [IcedCoffeeScript](http://maxtaco.github.com/coffee-script/).
 
 For coming up to par with Chance, and for adding new features, graphics
 production and handling may be enhanced by using node.js modules such as
@@ -106,16 +103,17 @@ itself. The development of Busser will include coverage of bundle support,
 and may also incorporate these SproutCore components, especially if they
 are packaged in dedicated npm modules, per discussion with mauritslamers.
 
-[ **DONE 2012-01-26** The node.js modules prompt and color were successfully 
+**DONE 2012-01-26** The node.js modules prompt and color were successfully 
 used in linelizer, so it will be easy to add their use to Busser. prompt 
 will be useful for making a version for new users that prompts them for 
 their project file name, app name or version, build action, etc. And the 
 colors module can be used for custom reporting from the server and in 
-analysis printouts.]
+analysis printouts.
 
-[ **DONE 2012-01-28** Format the docco presentation by customizing docco css for the project.]
+**DONE 2012-01-28** Format the docco presentation by customizing docco css
+for the project. [Not by customizing css, yet, but by use of md formatting.]
 
-Make Busser into an installable npm module.
+Make busser and busboy into installable npm modules.
 
 Review the url, urlFor, and similar functions in Busser, which were not
 substantially changed from garçon, to see if all of that can be simpler.
@@ -134,19 +132,19 @@ is a goal.
 Review [CoffeeScriptLineMatcher](https://github.com/showell/CoffeeScriptLineMatcher) and [video](http://www.youtube.com/watch?v=dEze_TaORJs&feature=youtu.be).
 This work is tied to ongoing efforts to add direct line number support in the
 CoffeeScript compiler, which you can follow on the [github issue](https://github.com/jashkenas/coffee-script/issues/558).
-The concept of providing a dashboard in a browser window is perfect for a 
-development tool like busser. The dashboard could have the CoffeeScript and 
-javascript side-by-side and coordinated by line number, plus other goodies 
-specific to SproutCore development.
+The concept of providing a dashboard in a browser window is also inticing, and
+is perfect for a development tool like busser. The dashboard could have the 
+CoffeeScript and javascript side-by-side (could optionally hide the javascript)
+and coordinated by line number, plus other goodies specific to SproutCore development.
 
 Another original goal of the project has been reevaluated after saturation in
-CoffeeScript programming: to offer a Python version of the build tools or to 
-wrap/incorporate the build tools in an effective Python development environment. 
-Instead of writing a version in Python, using a common API, the similarity of
-CoffeeScript to Python is now deemed enough to serve as a draw to Python
-programmers who wish to understand or modify the build tools. This goal exists 
-primarily for addressing a perceived missed opportunity to empower and draw in
-new users of SproutCore from the Python community, which many of us already 
+CoffeeScript programming. The idea to offer a Python version of the build tools
+or to wrap/incorporate the build tools in an effective Python development environment
+no longer seems needed.  Rather, instead of writing a version in Python, the 
+similarity of CoffeeScript to Python is now deemed enough to serve as a draw to
+Python programmers who wish to understand or modify the build tools. This goal
+exists primarily for addressing a perceived missed opportunity to empower and draw
+in new users of SproutCore from the Python community, which many of us already 
 know from experience or from use of Python on the backend. Although the Ruby
 community already may look to Abbot, which is written in Ruby, the style of
 programming in Busser may be attractive, as for Python developers. All of
@@ -161,7 +159,7 @@ Install with:
     npm install busser
 
 This would install the dependencies and busser, but that doesn't work yet.
-Significant note: CoffeeScript, nor the testing framework, will not be required
+Significant NOTE: CoffeeScript, nor the testing framework, will not be required
 in a normal user installation. This will be a node.js tool installable
 via npm.
 
@@ -203,8 +201,9 @@ Preparing Config File
 ---------------------
 
 **Busser** uses the node.js nconf module for configurations. See the default
-conf/busser.json file for usage. busser.json contains the following default
-sections, which are rather long, offering fine-grained control, per framework:
+conf/busser.json file for usage. busser.json contains a short section for
+configuring the server at the very top, followed by the default framework
+sections, which are rather long, offering fine-grained control:
 
 * default-app-dev
 
@@ -344,7 +343,7 @@ Other websites:
 [CoffeeScript One-liners](http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html)
 
 When first starting, use [js2coffee.org](http://js2coffee.org/) to experiment. It is still handy after you
-have learned coffeescript pretty well.
+have learned coffeescript pretty well. There is also an npm installable command line version that is useful.
 
 A very nice video for background and "top ten" favorites is by Sam Stephenson:
 
