@@ -6,6 +6,9 @@ Prominent Note at the Top
 
 **_This program does not well work yet..._**
 
+UPDATE 2012-02-01: New Proxy class, improvements to configuration of
+server and proxies, and fixes for script building and root html.
+
 UPDATE 2012-01-29: Documentation and comments improvements.
 
 UPDATE 2012-01-28: Addition of src/CoffeeScriptHelp.md, along with many
