@@ -1843,6 +1843,80 @@ class App
       fs.writeFile path, data, (err) ->
         throw err  if err
 
+
+# Proxy
+# =====
+#
+# Proxy properties are configured per app in the json configuration file, so that, for
+# example, you could have one dev setup for HelloWorld-dev, which might have one proxy for
+# your local backend dev REST server, and a different setup for HelloWorld-dev-images, which
+# might also have a second proxy to a local nginx server for testing image uploading.
+#
+class Proxy
+  constructor: (options={}) ->
+    @hostname = null
+    @port = null
+    @prefix = null
+    @proxyPrefix = null
+    @server = null
+    @body = null
+
+    this[key] = options[key] for key of options
+
+    @onData = (chunk) =>
+      @body = ""  if @body is null
+      @body += chunk
+
+  onEnd: (request, response) =>
+    proxyClient = undefined
+    proxyRequest = undefined
+    body = @["body"] or ""
+    bodyLength = body.length
+    url = request.url
+
+    errorCallback = (err) =>
+      console.log "ERROR: \"#{err.message}\" for proxy request on #{@hostname}:#{@port}"
+      response.writeHead 404
+      response.end()
+      @data = ""
+
+    url = "#{@proxyPrefix}#{url}"  if @proxyPrefix.length > 0 and url.indexOf(@proxyPrefix) < 0
+
+    proxyClient = http.createClient(@port, @hostname)
+    proxyClient.addListener "error", errorCallback
+
+    request.headers.host = @hostname
+
+    request.headers["content-length"] = bodyLength
+    request.headers["X-Forwarded-Host"] = request.headers.host + ":#{@server.port}"
+    request.headers.host += ":#{@port}"  unless @port is 80
+
+    proxyRequest = proxyClient.request(request.method, url, request.headers)
+
+    proxyRequest.write body  if bodyLength > 0
+
+    proxyRequest.addListener "response", (proxyResponse) ->
+      response.writeHead proxyResponse.statusCode, proxyResponse.headers
+      proxyResponse.addListener "data", (chunk) ->
+        response.write chunk
+      proxyResponse.addListener "end", ->
+        response.end()
+
+    proxyRequest.end()
+
+  proxy: (request, response) ->
+    prefix = @prefix
+    path = url.parse(request.url).pathname
+    if path.substr(0, prefix.length) is prefix
+      console.log "Proxying #{request.url}"
+      request.addListener "data", (chunk) =>
+        @onData.call @, chunk
+      request.addListener "end", =>
+        @onEnd.call @, request, response
+      true
+    else
+      false
+
 # Server
 # ======
 #
@@ -1850,27 +1924,25 @@ class App
 # short server configuration section at the top of the json configuration file for port
 # and hostname, and also allowCrossSiteRequests.
 #
-# The proxy properties are configured per app in the json configuration file, so that, for
-# example, you could have one dev setup for HelloWorld-dev, which might have one proxy for
-# your local backend dev REST server, and a different setup for HelloWorld-dev-images, which
-# might also have a second proxy to a local nginx server for testing image uploading.
-#
 class Server
   constructor: (options={}) ->
     @hostname = "localhost"
     @port = 8000
     @allowCrossSiteRequests = false
 
-    @proxyHost = null
-    @proxyPort = null
-    @proxyPrefix = ""
+    @proxyHashes = null
+    @proxies = null
 
     @apps = []
 
     this[key] = options[key] for key of options
 
+    if @proxyHashes?
+      (proxyHash["server"] = this for proxyHash in @proxyHashes)
+      @proxies = (new Proxy(proxyHash) for proxyHash in @proxyHashes)
+
   shouldProxy: ->
-    @proxyHost? and @proxyPort?
+    ((proxy.host? and proxy.port?) for proxy in proxies).some (bool) -> bool
 
   addApp: (app) ->
     app = new App(app) unless app instanceof App
@@ -1896,32 +1968,6 @@ class Server
       response.write r.data, "utf8"  if r.data?
       response.end()
   
-  proxy: (request, response) ->
-    proxy_url = request.url
-    proxy_url = @proxyPrefix + proxy_url  if @proxyPrefix.length > 0 and proxy_url.indexOf(@proxyPrefix) < 0
-    proxyClient = http.createClient(@proxyPort, @proxyHost)
-    proxyClient.on "error", (err) ->
-      util.puts "ERROR: \"#{err.message}\" for proxy request on #{@proxyHost}:#{@proxyPort}"
-      response.writeHead 404
-      response.end()
-
-    request.headers.host = @proxyHost
-    request.headers.host += ":#{@proxyPort}"  unless @proxyPort is 80
-    proxyRequest = proxyClient.request(request.method, url, request.headers)
-    request.on "data", (chunk) ->
-      proxyRequest.write chunk
-
-    request.on "end", ->
-      proxyRequest.end()
-  
-    proxyRequest.on "response", (proxyResponse) ->
-      response.writeHead proxyResponse.statusCode, proxyResponse.headers
-      proxyResponse.on "data", (chunk) ->
-        response.write chunk
-
-      proxyResponse.on "end", ->
-        response.end()
-  
   file: (path) ->
     file = null
     for app in @apps
@@ -1936,8 +1982,10 @@ class Server
         file = @file(path)
         if not file?
           if @shouldProxy()
-            util.puts "Proxying #{request.url}"
-            @proxy request, response
+            proxyResponded = false
+            for p in @proxies
+              proxyResponded = p.proxy(request, response)
+              break if proxyResponded
           else
             response.writeHead 404
             response.end()
@@ -2008,12 +2056,22 @@ exec = (appTargets, actionItems) ->
         when "build" then myApp.build()
         when "buildsave" then myApp.build(myApp.save)
         when "buildrun" then myApp.build ->
-          server = new Server()
+          serverHash = nconf.get('server')
+          server = new Server
+            hostname: serverHash['hostname']
+            port: serverHash['port']
+            allowCrossSiteRequests: serverHash['allowCrossSiteRequests']
+            proxyHashes: appConf.proxies
           server.addApp(myApp)
           server.run()
         when "buildsaverun" then myApp.build ->
           myApp.save()
-          server = new Server()
+          serverHash = nconf.get('server')
+          server = new Server
+            hostname: serverHash['hostname']
+            port: serverHash['port']
+            allowCrossSiteRequests: serverHash['allowCrossSiteRequests']
+            proxyHashes: appConf.proxies
           server.addApp(myApp)
           server.run()
 
