@@ -1444,31 +1444,97 @@ else blocks until the main root html file is writen.</p>             </td>      
     <span class="nx">File</span><span class="p">.</span><span class="nx">createDirectory</span> <span class="nx">path_module</span><span class="p">.</span><span class="nx">dirname</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
     <span class="nx">htmlFile</span><span class="p">.</span><span class="nx">content</span> <span class="nf">(data) -&gt;</span>
       <span class="nx">fs</span><span class="p">.</span><span class="nx">writeFile</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nf">(err) -&gt;</span>
-        <span class="k">throw</span> <span class="nx">err</span>  <span class="k">if</span> <span class="nx">err</span></pre></div>             </td>           </tr>                               <tr id="section-107">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-107">&#182;</a>               </div>               <h1>Server</h1>
+        <span class="k">throw</span> <span class="nx">err</span>  <span class="k">if</span> <span class="nx">err</span></pre></div>             </td>           </tr>                               <tr id="section-107">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-107">&#182;</a>               </div>               <h1>Proxy</h1>
+
+<p>Proxy properties are configured per app in the json configuration file, so that, for
+example, you could have one dev setup for HelloWorld-dev, which might have one proxy for
+your local backend dev REST server, and a different setup for HelloWorld-dev-images, which
+might also have a second proxy to a local nginx server for testing image uploading.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Proxy</span>
+  <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
+    <span class="vi">@hostname = </span><span class="kc">null</span>
+    <span class="vi">@port = </span><span class="kc">null</span>
+    <span class="vi">@prefix = </span><span class="kc">null</span>
+    <span class="vi">@proxyPrefix = </span><span class="kc">null</span>
+    <span class="vi">@server = </span><span class="kc">null</span>
+    <span class="vi">@body = </span><span class="kc">null</span>
+
+    <span class="k">this</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span>
+
+    <span class="vi">@onData = </span><span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="o">=&gt;</span>
+      <span class="vi">@body = </span><span class="s2">&quot;&quot;</span>  <span class="k">if</span> <span class="nx">@body</span> <span class="o">is</span> <span class="kc">null</span>
+      <span class="nx">@body</span> <span class="o">+=</span> <span class="nx">chunk</span>
+
+  <span class="nv">onEnd: </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span>
+    <span class="nv">proxyClient = </span><span class="kc">undefined</span>
+    <span class="nv">proxyRequest = </span><span class="kc">undefined</span>
+    <span class="nv">body = </span><span class="err">@</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">]</span> <span class="o">or</span> <span class="s2">&quot;&quot;</span>
+    <span class="nv">bodyLength = </span><span class="nx">body</span><span class="p">.</span><span class="nx">length</span>
+    <span class="nv">url = </span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span>
+
+    <span class="nv">errorCallback = </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">=&gt;</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;ERROR: \&quot;#{err.message}\&quot; for proxy request on #{@hostname}:#{@port}&quot;</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span> <span class="mi">404</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+      <span class="vi">@data = </span><span class="s2">&quot;&quot;</span>
+
+    <span class="nv">url = </span><span class="s2">&quot;#{@proxyPrefix}#{url}&quot;</span>  <span class="k">if</span> <span class="nx">@proxyPrefix</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">url</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">@proxyPrefix</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span>
+
+    <span class="nv">proxyClient = </span><span class="nx">http</span><span class="p">.</span><span class="nx">createClient</span><span class="p">(</span><span class="nx">@port</span><span class="p">,</span> <span class="nx">@hostname</span><span class="p">)</span>
+    <span class="nx">proxyClient</span><span class="p">.</span><span class="nx">addListener</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="nx">errorCallback</span>
+
+    <span class="nv">request.headers.host = </span><span class="nx">@hostname</span>
+
+    <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="s2">&quot;content-length&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">bodyLength</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="s2">&quot;X-Forwarded-Host&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">host</span> <span class="o">+</span> <span class="s2">&quot;:#{@server.port}&quot;</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">host</span> <span class="o">+=</span> <span class="s2">&quot;:#{@port}&quot;</span>  <span class="nx">unless</span> <span class="nx">@port</span> <span class="o">is</span> <span class="mi">80</span>
+
+    <span class="nv">proxyRequest = </span><span class="nx">proxyClient</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">method</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">)</span>
+
+    <span class="nx">proxyRequest</span><span class="p">.</span><span class="nx">write</span> <span class="nx">body</span>  <span class="k">if</span> <span class="nx">bodyLength</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="nx">proxyRequest</span><span class="p">.</span><span class="nx">addListener</span> <span class="s2">&quot;response&quot;</span><span class="p">,</span> <span class="nf">(proxyResponse) -&gt;</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span> <span class="nx">proxyResponse</span><span class="p">.</span><span class="nx">statusCode</span><span class="p">,</span> <span class="nx">proxyResponse</span><span class="p">.</span><span class="nx">headers</span>
+      <span class="nx">proxyResponse</span><span class="p">.</span><span class="nx">addListener</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="nf">(chunk) -&gt;</span>
+        <span class="nx">response</span><span class="p">.</span><span class="nx">write</span> <span class="nx">chunk</span>
+      <span class="nx">proxyResponse</span><span class="p">.</span><span class="nx">addListener</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="o">-&gt;</span>
+        <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+
+    <span class="nx">proxyRequest</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+
+  <span class="nv">proxy: </span><span class="nf">(request, response) -&gt;</span>
+    <span class="nv">prefix = </span><span class="nx">@prefix</span>
+    <span class="nv">path = </span><span class="nx">url</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span><span class="p">).</span><span class="nx">pathname</span>
+    <span class="k">if</span> <span class="nx">path</span><span class="p">.</span><span class="nx">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">prefix</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="o">is</span> <span class="nx">prefix</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Proxying #{request.url}&quot;</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">addListener</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="o">=&gt;</span>
+        <span class="nx">@onData</span><span class="p">.</span><span class="nx">call</span> <span class="err">@</span><span class="p">,</span> <span class="nx">chunk</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">addListener</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="o">=&gt;</span>
+        <span class="nx">@onEnd</span><span class="p">.</span><span class="nx">call</span> <span class="err">@</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">response</span>
+      <span class="kc">true</span>
+    <span class="k">else</span>
+      <span class="kc">false</span></pre></div>             </td>           </tr>                               <tr id="section-108">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-108">&#182;</a>               </div>               <h1>Server</h1>
 
 <p>You can only have one development server at a time for the client app, so there is a
 short server configuration section at the top of the json configuration file for port
-and hostname, and also allowCrossSiteRequests.</p>
-
-<p>The proxy properties are configured per app in the json configuration file, so that, for
-example, you could have one dev setup for HelloWorld-dev, which might have one proxy for
-your local backend dev REST server, and a different setup for HelloWorld-dev-images, which
-might also have a second proxy to a local nginx server for testing image uploading.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Server</span>
+and hostname, and also allowCrossSiteRequests.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Server</span>
   <span class="nv">constructor: </span><span class="nf">(options={}) -&gt;</span>
     <span class="vi">@hostname = </span><span class="s2">&quot;localhost&quot;</span>
     <span class="vi">@port = </span><span class="mi">8000</span>
     <span class="vi">@allowCrossSiteRequests = </span><span class="kc">false</span>
 
-    <span class="vi">@proxyHost = </span><span class="kc">null</span>
-    <span class="vi">@proxyPort = </span><span class="kc">null</span>
-    <span class="vi">@proxyPrefix = </span><span class="s2">&quot;&quot;</span>
+    <span class="vi">@proxyHashes = </span><span class="kc">null</span>
+    <span class="vi">@proxies = </span><span class="kc">null</span>
 
     <span class="vi">@apps = </span><span class="p">[]</span>
 
     <span class="k">this</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">options</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">options</span>
 
+    <span class="k">if</span> <span class="nx">@proxyHashes</span><span class="o">?</span>
+      <span class="p">(</span><span class="nx">proxyHash</span><span class="p">[</span><span class="s2">&quot;server&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span> <span class="k">for</span> <span class="nx">proxyHash</span> <span class="k">in</span> <span class="nx">@proxyHashes</span><span class="p">)</span>
+      <span class="vi">@proxies = </span><span class="p">(</span><span class="k">new</span> <span class="nx">Proxy</span><span class="p">(</span><span class="nx">proxyHash</span><span class="p">)</span> <span class="k">for</span> <span class="nx">proxyHash</span> <span class="k">in</span> <span class="nx">@proxyHashes</span><span class="p">)</span>
+
   <span class="nv">shouldProxy: </span><span class="o">-&gt;</span>
-    <span class="nx">@proxyHost</span><span class="o">?</span> <span class="o">and</span> <span class="nx">@proxyPort</span><span class="o">?</span>
+    <span class="p">((</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">host</span><span class="o">?</span> <span class="o">and</span> <span class="nx">proxy</span><span class="p">.</span><span class="nx">port</span><span class="o">?</span><span class="p">)</span> <span class="k">for</span> <span class="nx">proxy</span> <span class="k">in</span> <span class="nx">proxies</span><span class="p">).</span><span class="nx">some</span> <span class="nf">(bool) -&gt;</span> <span class="nx">bool</span>
 
   <span class="nv">addApp: </span><span class="nf">(app) -&gt;</span>
     <span class="nv">app = </span><span class="k">new</span> <span class="nx">App</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">app</span> <span class="k">instanceof</span> <span class="nx">App</span>
@@ -1494,32 +1560,6 @@ might also have a second proxy to a local nginx server for testing image uploadi
       <span class="nx">response</span><span class="p">.</span><span class="nx">write</span> <span class="nx">r</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="s2">&quot;utf8&quot;</span>  <span class="k">if</span> <span class="nx">r</span><span class="p">.</span><span class="nx">data</span><span class="o">?</span>
       <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
   
-  <span class="nv">proxy: </span><span class="nf">(request, response) -&gt;</span>
-    <span class="nv">proxy_url = </span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span>
-    <span class="nv">proxy_url = </span><span class="nx">@proxyPrefix</span> <span class="o">+</span> <span class="nx">proxy_url</span>  <span class="k">if</span> <span class="nx">@proxyPrefix</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">proxy_url</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">@proxyPrefix</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span>
-    <span class="nv">proxyClient = </span><span class="nx">http</span><span class="p">.</span><span class="nx">createClient</span><span class="p">(</span><span class="nx">@proxyPort</span><span class="p">,</span> <span class="nx">@proxyHost</span><span class="p">)</span>
-    <span class="nx">proxyClient</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="nf">(err) -&gt;</span>
-      <span class="nx">util</span><span class="p">.</span><span class="nx">puts</span> <span class="s2">&quot;ERROR: \&quot;#{err.message}\&quot; for proxy request on #{@proxyHost}:#{@proxyPort}&quot;</span>
-      <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span> <span class="mi">404</span>
-      <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
-
-    <span class="nv">request.headers.host = </span><span class="nx">@proxyHost</span>
-    <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">host</span> <span class="o">+=</span> <span class="s2">&quot;:#{@proxyPort}&quot;</span>  <span class="nx">unless</span> <span class="nx">@proxyPort</span> <span class="o">is</span> <span class="mi">80</span>
-    <span class="nv">proxyRequest = </span><span class="nx">proxyClient</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">method</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">)</span>
-    <span class="nx">request</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="nf">(chunk) -&gt;</span>
-      <span class="nx">proxyRequest</span><span class="p">.</span><span class="nx">write</span> <span class="nx">chunk</span>
-
-    <span class="nx">request</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="o">-&gt;</span>
-      <span class="nx">proxyRequest</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
-  
-    <span class="nx">proxyRequest</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;response&quot;</span><span class="p">,</span> <span class="nf">(proxyResponse) -&gt;</span>
-      <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span> <span class="nx">proxyResponse</span><span class="p">.</span><span class="nx">statusCode</span><span class="p">,</span> <span class="nx">proxyResponse</span><span class="p">.</span><span class="nx">headers</span>
-      <span class="nx">proxyResponse</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="nf">(chunk) -&gt;</span>
-        <span class="nx">response</span><span class="p">.</span><span class="nx">write</span> <span class="nx">chunk</span>
-
-      <span class="nx">proxyResponse</span><span class="p">.</span><span class="kc">on</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="o">-&gt;</span>
-        <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
-  
   <span class="nv">file: </span><span class="nf">(path) -&gt;</span>
     <span class="nv">file = </span><span class="kc">null</span>
     <span class="k">for</span> <span class="nx">app</span> <span class="k">in</span> <span class="nx">@apps</span>
@@ -1534,8 +1574,10 @@ might also have a second proxy to a local nginx server for testing image uploadi
         <span class="nv">file = </span><span class="nx">@file</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="o">not</span> <span class="nx">file</span><span class="o">?</span>
           <span class="k">if</span> <span class="nx">@shouldProxy</span><span class="p">()</span>
-            <span class="nx">util</span><span class="p">.</span><span class="nx">puts</span> <span class="s2">&quot;Proxying #{request.url}&quot;</span>
-            <span class="nx">@proxy</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">response</span>
+            <span class="nv">proxyResponded = </span><span class="kc">false</span>
+            <span class="k">for</span> <span class="nx">p</span> <span class="k">in</span> <span class="nx">@proxies</span>
+              <span class="nv">proxyResponded = </span><span class="nx">p</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span>
+              <span class="k">break</span> <span class="k">if</span> <span class="nx">proxyResponded</span>
           <span class="k">else</span>
             <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span> <span class="mi">404</span>
             <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
@@ -1548,7 +1590,7 @@ might also have a second proxy to a local nginx server for testing image uploadi
         <span class="nv">port: </span><span class="nx">@port</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Server started on #{app_url}/APPLICATION_NAME&quot;</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s1">&#39;  HOSTNAME:&#39;</span><span class="p">,</span> <span class="nx">@hostname</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s1">&#39;  PORT:&#39;</span><span class="p">,</span> <span class="nx">@port</span></pre></div>             </td>           </tr>                               <tr id="section-108">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-108">&#182;</a>               </div>               <hr />             </td>             <td class="code">               <div class="highlight"><pre> </pre></div>             </td>           </tr>                               <tr id="section-109">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-109">&#182;</a>               </div>               <h1>Instantiation and Execution</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exec = </span><span class="nf">(appTargets, actionItems) -&gt;</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s1">&#39;  PORT:&#39;</span><span class="p">,</span> <span class="nx">@port</span></pre></div>             </td>           </tr>                               <tr id="section-109">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-109">&#182;</a>               </div>               <hr />             </td>             <td class="code">               <div class="highlight"><pre> </pre></div>             </td>           </tr>                               <tr id="section-110">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-110">&#182;</a>               </div>               <h1>Instantiation and Execution</h1>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exec = </span><span class="nf">(appTargets, actionItems) -&gt;</span>
   <span class="nv">defaultAppDevConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-app-dev&quot;</span><span class="p">)</span>
   <span class="nv">defaultAppProdConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-app-prod&quot;</span><span class="p">)</span>
   <span class="nv">defaultFrameworksDevConf = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;default-sc-frameworks-dev&quot;</span><span class="p">)</span>
@@ -1599,14 +1641,24 @@ might also have a second proxy to a local nginx server for testing image uploadi
         <span class="k">when</span> <span class="s2">&quot;build&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span><span class="p">()</span>
         <span class="k">when</span> <span class="s2">&quot;buildsave&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span><span class="p">(</span><span class="nx">myApp</span><span class="p">.</span><span class="nx">save</span><span class="p">)</span>
         <span class="k">when</span> <span class="s2">&quot;buildrun&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span> <span class="o">-&gt;</span>
-          <span class="nv">server = </span><span class="k">new</span> <span class="nx">Server</span><span class="p">()</span>
+          <span class="nv">serverHash = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;server&#39;</span><span class="p">)</span>
+          <span class="nv">server = </span><span class="k">new</span> <span class="nx">Server</span>
+            <span class="nv">hostname: </span><span class="nx">serverHash</span><span class="p">[</span><span class="s1">&#39;hostname&#39;</span><span class="p">]</span>
+            <span class="nv">port: </span><span class="nx">serverHash</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+            <span class="nv">allowCrossSiteRequests: </span><span class="nx">serverHash</span><span class="p">[</span><span class="s1">&#39;allowCrossSiteRequests&#39;</span><span class="p">]</span>
+            <span class="nv">proxyHashes: </span><span class="nx">appConf</span><span class="p">.</span><span class="nx">proxies</span>
           <span class="nx">server</span><span class="p">.</span><span class="nx">addApp</span><span class="p">(</span><span class="nx">myApp</span><span class="p">)</span>
           <span class="nx">server</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span>
         <span class="k">when</span> <span class="s2">&quot;buildsaverun&quot;</span> <span class="k">then</span> <span class="nx">myApp</span><span class="p">.</span><span class="nx">build</span> <span class="o">-&gt;</span>
           <span class="nx">myApp</span><span class="p">.</span><span class="nx">save</span><span class="p">()</span>
-          <span class="nv">server = </span><span class="k">new</span> <span class="nx">Server</span><span class="p">()</span>
+          <span class="nv">serverHash = </span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;server&#39;</span><span class="p">)</span>
+          <span class="nv">server = </span><span class="k">new</span> <span class="nx">Server</span>
+            <span class="nv">hostname: </span><span class="nx">serverHash</span><span class="p">[</span><span class="s1">&#39;hostname&#39;</span><span class="p">]</span>
+            <span class="nv">port: </span><span class="nx">serverHash</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+            <span class="nv">allowCrossSiteRequests: </span><span class="nx">serverHash</span><span class="p">[</span><span class="s1">&#39;allowCrossSiteRequests&#39;</span><span class="p">]</span>
+            <span class="nv">proxyHashes: </span><span class="nx">appConf</span><span class="p">.</span><span class="nx">proxies</span>
           <span class="nx">server</span><span class="p">.</span><span class="nx">addApp</span><span class="p">(</span><span class="nx">myApp</span><span class="p">)</span>
-          <span class="nx">server</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-110">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-110">&#182;</a>               </div>               <p>Initialize nconf for command line arguments and for environmental settings</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-111">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-111">&#182;</a>               </div>               <p>If the operating mode is to use prompt, which we determine by checking for 
+          <span class="nx">server</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-111">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-111">&#182;</a>               </div>               <p>Initialize nconf for command line arguments and for environmental settings</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-112">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-112">&#182;</a>               </div>               <p>If the operating mode is to use prompt, which we determine by checking for 
 an arg length of 2 (node bin/busser.js), we use the prompt system. Otherwise,
 in the else below, startup will initialize from command line arguments and/or
 environment settings.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">if</span> <span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">length</span> <span class="o">is</span> <span class="mi">2</span>
@@ -1649,7 +1701,7 @@ environment settings.</p>             </td>             <td class="code">       
       <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionItems</span>
     <span class="k">else</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Valid target(s) and action are needed... Please try again... Aborting.&quot;</span>
-<span class="k">else</span></pre></div>             </td>           </tr>                               <tr id="section-112">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-112">&#182;</a>               </div>               <p>All info is provided as command line arguments, or from environment settings. nconf
+<span class="k">else</span></pre></div>             </td>           </tr>                               <tr id="section-113">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-113">&#182;</a>               </div>               <p>All info is provided as command line arguments, or from environment settings. nconf
 will be initialized with these, and will also be given the config file specified in
 the config command line argument.</p>
 
@@ -1662,20 +1714,20 @@ is conf/busser.json.</p>             </td>             <td class="code">        
     <span class="k">catch</span> <span class="nx">err</span>
       <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s2">&quot;Problem reading custom config file&quot;</span>
   <span class="k">else</span>
-    <span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">().</span><span class="nx">file</span> <span class="nv">file: </span><span class="s2">&quot;./conf/busser.json&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-113">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-113">&#182;</a>               </div>               <p>Prepare to catch command line argument parsing errors, for appTargets and actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">errors = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-114">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-114">&#182;</a>               </div>               <p>Parse appTargets.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;appTargets&#39;</span><span class="p">)</span><span class="o">?</span>
+    <span class="nx">nconf</span><span class="p">.</span><span class="nx">argv</span><span class="p">().</span><span class="nx">env</span><span class="p">().</span><span class="nx">file</span> <span class="nv">file: </span><span class="s2">&quot;./conf/busser.json&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-114">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-114">&#182;</a>               </div>               <p>Prepare to catch command line argument parsing errors, for appTargets and actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">errors = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-115">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-115">&#182;</a>               </div>               <p>Parse appTargets.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;appTargets&#39;</span><span class="p">)</span><span class="o">?</span>
     <span class="k">if</span> <span class="nx">appTargetsValidator</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;appTargets&#39;</span><span class="p">))</span>
       <span class="nv">appTargets = </span><span class="nx">parseAppTargetsArgument</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;appTargets&quot;</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;appTargets did not parse.&quot;</span>
   <span class="k">else</span>
     <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;appTargets argument is missing.&quot;</span>
-      </pre></div>             </td>           </tr>                               <tr id="section-115">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-115">&#182;</a>               </div>               <p>Parse actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span><span class="o">?</span>
+      </pre></div>             </td>           </tr>                               <tr id="section-116">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-116">&#182;</a>               </div>               <p>Parse actions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span><span class="o">?</span>
     <span class="k">if</span> <span class="nx">actionsValidator</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">))</span>
       <span class="nv">actionItems = </span><span class="nx">parseActionsArgument</span> <span class="nx">nconf</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;actions&#39;</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions did not parse.&quot;</span>
   <span class="k">else</span>
-    <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions argument is missing.&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-116">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-116">&#182;</a>               </div>               <p>Report errors or execute.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="nx">errors</span><span class="p">.</span><span class="nx">push</span> <span class="s2">&quot;actions argument is missing.&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-117">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-117">&#182;</a>               </div>               <p>Report errors or execute.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">errors</span>
   <span class="k">else</span>
     <span class="nx">exec</span> <span class="nx">appTargets</span><span class="p">,</span> <span class="nx">actionItems</span>
