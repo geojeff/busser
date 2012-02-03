@@ -1188,9 +1188,8 @@ class Framework
       coreJsPath = path_module.join(@path, "core.js")
 
       # Order scripts alphabetically by path.
-      sortedScripts = scripts.sort((a, b) ->
+      sortedScripts = scripts.sort (a, b) ->
         a.path.localeCompare b.path
-      )
 
       # Do strings.js first. See if a core.js is found while at it.
       for script in sortedScripts
