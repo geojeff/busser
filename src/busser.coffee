@@ -1983,10 +1983,8 @@ class Server
         file = @file(path)
         if not file?
           if @shouldProxy()
-            proxyResponded = false
             for p in @proxies
-              proxyResponded = p.proxy(request, response)
-              break if proxyResponded
+              break if p.proxy(request, response)
           else
             response.writeHead 404
             response.end()

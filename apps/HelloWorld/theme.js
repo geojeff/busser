@@ -20,8 +20,6 @@ HelloWorld.Theme = SC.AceTheme.create({
   name: 'HelloWorld'
 });
 
-console.log(SC.inspect(HelloWorld.Theme));
-
 // SproutCore needs to know that your app's theme exists
 SC.Theme.addTheme(HelloWorld.Theme);
 
