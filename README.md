@@ -6,6 +6,10 @@ Prominent Note at the Top
 
 **_This program does not well work yet..._**
 
+UPDATE 2012-02-02: To the point where layout and css of themes, and
+for starting work on busboy begins, with study of Chance and other
+available css and slicing possibilities.
+
 UPDATE 2012-02-01: New Proxy class, improvements to configuration of
 server and proxies, and fixes for script building and root html.
 
