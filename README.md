@@ -89,11 +89,11 @@ the async module in ember-runner will be reviewed. ember-runner may be
 found at https://github.com/envone/ember-runner.
 
 Also, the design and operation of ember-runner will be reviewed. One aspect
-to be considered is the way the system of handlers works, compared to the
+to be considered is the way the system of task handlers works, compared to the
 modifications done in Busser.
 
 Evaluate IcedCoffeeScript, with its addition of *await* and *defer*, for
-replacing code in busser's handler exec methods, at least for cases where
+replacing code in busser's task handler exec methods, at least for cases where
 counts are used to wait for overall completion. See [IcedCoffeeScript](http://maxtaco.github.com/coffee-script/).
 
 For coming up to par with Chance, and for adding new features, graphics

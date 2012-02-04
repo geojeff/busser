@@ -328,32 +328,32 @@ String::gsub = (re, callback) ->
 
 # -----
 
-# File Handler System
+# TaskHandler System
 # ===================
 #
-# Handler
+# TaskHandler
 # -------
 # 
 # Synopsis: 
 #   
-#   A **Handler** handles some type of file or content processing, for reading file
+#   A **TaskHandler** handles some type of file or content processing, for reading file
 #   content, for minifying, for text replacement, etc.
 #
 # Constructor:
 #
 #   Parameters:
 #
-#     @name -- the name of the one of the properties in the Busser class for handlers,
+#     @name -- the name of the one of the properties in the Busser class for taskHandlers,
 #              e.g., ifModifiedSince, contentType, minify, join.
 #
 #     @exec -- the method to do the work, perhaps involving other functions or classes.
 #
-#     @next -- a link to the next handler.
+#     @next -- a link to the next taskHandler.
 #     
-#   **Handler** exec functions are held in the **Busser** class. **HandlerSet** instances are 
-#   created by calls to **Busser**, with a subset of available handlers.
+#   **TaskHandler** exec functions are held in the **Busser** class. **TaskHandlerSet** instances are 
+#   created by calls to **Busser**, with a subset of available taskHandlers.
 #   
-class Handler
+class TaskHandler
   constructor: (options) ->
     @name = ""
     @next = null
@@ -361,100 +361,100 @@ class Handler
 
     @[key] = options[key] for own key of options
 
-# HandlerSet
+# TaskHandlerSet
 # ----------
 # 
 # Synopsis: 
 #
-#   **HandlerSet** is a container for handlers which work on files and content in a 
-#   SproutCore project to build an system for development or deployment. A **HandlerSet**
-#   consists of a linked-list of handlers built from the available set. A **HandlerSet**
-#   instance is fired with exec(). A HandlerSet contains one or more handlers.
+#   **TaskHandlerSet** is a container for taskHandlers which work on files and content in a 
+#   SproutCore project to build an system for development or deployment. A **TaskHandlerSet**
+#   consists of a linked-list of taskHandlers built from the available set. A **TaskHandlerSet**
+#   instance is fired with exec(). A TaskHandlerSet contains one or more taskHandlers.
 #
 # Constructor:
 #
 #   Parameters:
 #
-#     @name -- for reference in labeling each HandlerSet singleton instance, e.g.
-#              stylesheetHandlerSet or joinHandlerSet.
+#     @name -- for reference in labeling each TaskHandlerSet singleton instance, e.g.
+#              stylesheetTasks or joinTasks.
 #
 #     @urlPrefix -- to be prepended to resulting paths.
 #
-#   Each **Handler** instance has exec and next, which are called during traversal
-#   from a HandlerSet exec call.
+#   Each **TaskHandler** instance has exec and next, which are called during traversal
+#   from a TaskHandlerSet exec call.
 #
-#   The exec() method fires on the head handler, beginning an "async waterfall,"
-#   wherein the sequence of handlers is called in succession, each one passing along
-#   a callback function. When the final "tail" handler executes, there is a return 
-#   through callbacks back up to the head handler. In the end, the handler has 
+#   The exec() method fires on the head taskHandler, beginning an "async waterfall,"
+#   wherein the sequence of taskHandlers is called in succession, each one passing along
+#   a callback function. When the final "tail" taskHandler executes, there is a return 
+#   through callbacks back up to the head taskHandler. In the end, the taskHandler has 
 #   performed one or more operations, finally returning the data via the head callback.
 #
-class HandlerSet
+class TaskHandlerSet
   constructor: (@name, @urlPrefix="/") ->
-    @handlers  = []
+    @taskHandlers  = []
 
-  # *head* returns the first handler.
+  # *head* returns the first taskHandler.
   #
   head: ->
-    @handlers[0] if @handlers.length > 0
+    @taskHandlers[0] if @taskHandlers.length > 0
 
-  # *exec* fires on the head handler. The file and callback parameters are always used;
+  # *exec* fires on the head taskHandler. The file and callback parameters are always used;
   # request is used during server operations for passing a modification time.
   #
   exec: (file, request, callback) ->
-    headHandler = @head()
-    headHandler.exec(file, request, callback)
+    headTaskHandler = @head()
+    headTaskHandler.exec(file, request, callback)
 
 # Busser
 # ------
 #
 # The **Busser** class is the workhorse for the build system. It contains the
-# code for available handlers and related utility functions. The handlerSet
-# method is used to create **HandlerSet** instances with a subset of available
-# handlers, instantiated and returned as a singly-linked-list.
+# code for available taskHandlers and related utility functions. The taskHandlerSet
+# method is used to create **TaskHandlerSet** instances with a subset of available
+# taskHandlers, instantiated and returned as a singly-linked-list.
 #
 class Busser
   constructor ->
 
-  # The handlerSet method returns a HandlerSet instance that contains a linked-list
-  # of Handler objects, instantiated and ready for processing.
+  # The taskHandlerSet method returns a TaskHandlerSet instance that contains a linked-list
+  # of TaskHandler objects, instantiated and ready for processing.
   #
   # Parameters:
   #
-  #    name -- handlerSet instance label.
+  #    name -- taskHandlerSet instance label.
   #
   #    urlPrefix -- default is "/"... [TODO] should be customizable for apps? 
   #                                          Also, check when this should be used...
   #
-  #    handlerNames -- an array of handler names from the list of those available.
-  #                    These are the names of handlers, keys to properties of the Busser
+  #    taskHandlerNames -- an array of taskHandler names from the list of those available.
+  #                    These are the names of taskHandlers, keys to properties of the Busser
   #                    class.
   #
-  # A new **HandlerSet** instance is created with the name and urlPrefix. Then
-  # a list of handlers is created from handlerNames, setting handlerSet.handlers, the
-  # linked-list of handlers. All but the last handler have their next property set.
-  # The @[handlerName].exec reference, seen in Handler creation calls, is a lookup to the
-  # given handler property definition in the Busser class. If you examine, for example,
+  # A new **TaskHandlerSet** instance is created with the name and urlPrefix. Then
+  # a list of taskHandlers is created from taskHandlerNames, setting taskHandlerSet.taskHandlers, the
+  # linked-list of taskHandlers. All but the last taskHandler have their next property set.
+  # The @[taskHandlerName].exec reference, seen in TaskHandler creation calls, is a lookup to the
+  # given taskHandler property definition in the Busser class. If you examine, for example,
   # the ifModifiedSince property in the Busser class, you will see an exec function,
-  # which is given a parameter in creating a new Handler instance of that type.
+  # which is given a parameter in creating a new TaskHandler instance of that type.
   # 
-  # The completed **HandlerSet** instance, with linked-list of handlers, is returned.
+  # The completed **TaskHandlerSet** instance, with linked-list of taskHandlers, is returned.
   #
-  handlerSet: (name, urlPrefix, handlerNames) ->
+  taskHandlerSet: (name, urlPrefix, taskHandlerNames) ->
     urlPrefix ?= "/"
 
-    handlerSet = new HandlerSet name, urlPrefix
+    taskHandlerSet = new TaskHandlerSet name, urlPrefix
 
-    for handlerName in handlerNames
-      handlerSet.handlers.push new Handler
-        name: handlerName
+    for taskHandlerName in taskHandlerNames
+      taskHandlerSet.taskHandlers.push new TaskHandler
+        name: taskHandlerName
         next: null
-        exec: @[handlerName].exec
+        exec: @[taskHandlerName].exec
 
-    # Set handler.next for all but the last handler, which will have the default next = null.
-    handler.next = handlerSet.handlers[i+1]  for handler,i in handlerSet.handlers[0...handlerSet.handlers.length-1]
+    # Set taskHandler.next for all but the last taskHandler, which will have the default next = null.
+    taskHandler.next = taskHandlerSet.taskHandlers[i+1]  for taskHandler,i in taskHandlerSet.taskHandlers[0...taskHandlerSet.taskHandlers.length-1]
 
-    handlerSet
+    taskHandlerSet
 
   # *mtimeScanner* is a static utility function that takes a list of files,
   # scans each file for modification time, finding the max (most recent),
@@ -487,11 +487,11 @@ class Busser
       callback mtime
     scanner.scan()
 
-  # The *ifModifiedSince* handler checks if a file's children have been modified since
+  # The *ifModifiedSince* taskHandler checks if a file's children have been modified since
   # a time given in the request argument. If no request is passed, then control
-  # passes on, without checking, to the next handler, if there is one.
+  # passes on, without checking, to the next taskHandler, if there is one.
   #
-  # This handler can be used at the head of a handler set as a gatekeeper to processs
+  # This taskHandler can be used at the head of a taskHandler set as a gatekeeper to processs
   # only those files that have been modified.
   #
   ifModifiedSince:
@@ -516,11 +516,11 @@ class Busser
           else
             callback status: 304
 
-  # The *cache* handler creates a cache if it doesn't exist. The first time
+  # The *cache* taskHandler creates a cache if it doesn't exist. The first time
   # control passes through here for a given file, the downstream response for
   # the file is cached. Subsequent calls for the file will get the cached value.
   #
-  # The *cache* handler can be used at the head of a handler set to avoid unneeded
+  # The *cache* taskHandler can be used at the head of a taskHandler set to avoid unneeded
   # processing.
   #
   cache:
@@ -538,8 +538,8 @@ class Busser
       else
         callback @cache[file.path]
 
-  # The *contentType* handler adds the content type of the file to the response for
-  # the handler set.
+  # The *contentType* taskHandler adds the content type of the file to the response for
+  # the taskHandler set.
   #
   contentType:
     exec: (file, request, callback) ->
@@ -604,7 +604,7 @@ class Busser
       callback minifier.minifiedData
     minifier.minify()
 
-  # The *minify* handler minifies the downstream response for stylesheets and scripts. 
+  # The *minify* taskHandler minifies the downstream response for stylesheets and scripts. 
   # Stylesheets are minified with yuicompressor. Scripts are minified with uglify.
   #
   minify:
@@ -627,7 +627,7 @@ class Busser
             Busser.minifyScript data, (minifiedData) ->
               callback data: minifiedData
 
-  # The *rewriteSuper* handler replaces instances of sc_super in SproutCore javascript
+  # The *rewriteSuper* taskHandler replaces instances of sc_super in SproutCore javascript
   # with the magic equivalent: arguments.callee.base.apply(this,arguments).
   #
   rewriteSuper:
@@ -674,7 +674,7 @@ class Busser
 
         format.replace "%@", path_module.join(@urlPrefix, path)
 
-  # The *rewriteStaticInStylesheet* handler calls the *rewriteStatic* method with the
+  # The *rewriteStaticInStylesheet* taskHandler calls the *rewriteStatic* method with the
   # format url('%@') for url references in stylesheets.
   #
   rewriteStaticInStylesheet:
@@ -690,7 +690,7 @@ class Busser
           else
             callback data: Busser.rewriteStatic "url('%@')", file, data
 
-  # The *rewriteStaticInScript* handler calls the *rewriteStatic* method with the
+  # The *rewriteStaticInScript* taskHandler calls the *rewriteStatic* method with the
   # format '%@' for references in javascript.
   #
   rewriteStaticInScript:
@@ -706,7 +706,7 @@ class Busser
           else
             callback data: Busser.rewriteStatic "'%@'", file, data
 
-  # The *rewriteFile* handler replaces instances of direct file references, which
+  # The *rewriteFile* taskHandler replaces instances of direct file references, which
   # are found via __FILE__, with the file url.
   #
   rewriteFile:
@@ -722,7 +722,7 @@ class Busser
           else
             callback data: data.replace(/__FILE__/g, file.url())
 
-  # The *wrapTest* handler wraps the downstream reponse in an SC.filename reference,
+  # The *wrapTest* taskHandler wraps the downstream reponse in an SC.filename reference,
   # which is found via __FILE__.
   #
   wrapTest:
@@ -749,15 +749,15 @@ class Busser
                    """
             callback data: data
 
-  # The *join* handler joins any files coming through, and their children, into 
+  # The *join* taskHandler joins any files coming through, and their children, into 
   # a cumulative data array, which is joined upon callback. The callback is fired
   # when the file count from downstream processing is met.
   #
-  # If the file has no children, the file's handlerSet is called to process and
+  # If the file has no children, the file's taskHandlerSet is called to process and
   # return data. 
   #
   # If the file has children (It is a virtual file, not present on
-  # disk in the original project), handlerSets for the children, which may in
+  # disk in the original project), taskHandlerSets for the children, which may in
   # turn also have children, are called, perhaps to return data resulting from
   # a large recursive sequence.
   # 
@@ -766,7 +766,7 @@ class Busser
       data = []
 
       if not file.children? or file.children.length is 0
-        file.handlerSet.exec file, request, (response) ->
+        file.taskHandlerSet.exec file, request, (response) ->
           callback data: response.data
       else
         filesForJoin = file.children
@@ -777,18 +777,18 @@ class Busser
           callback data: ''
         else
           filesForJoin.forEach (file, i) ->
-            next = (if @next then @next else file.handlerSet)
+            next = (if @next then @next else file.taskHandlerSet)
             next.exec file, request, (d) ->
               data[i] = d.data
               count -= 1
               callback data: data.join("\n")  if count is 0
             
-  # The *symlink* handler can only be run by itself or at the tail end 
-  # of a sequence of handlers.
+  # The *symlink* taskHandler can only be run by itself or at the tail end 
+  # of a sequence of taskHandlers.
   #
   symlink:
     exec: (file, request, callback) ->
-      file.symlink.handlerSet.exec file.symlink, request, callback
+      file.symlink.taskHandlerSet.exec file.symlink, request, callback
 
   # *lessify* is a static utility method that applies less to data.
   #
@@ -807,7 +807,7 @@ class Busser
           util.puts "ERROR: " + e.message
       callback data
 
-  # The *less* handler applies the less parser to file data.
+  # The *less* taskHandler applies the less parser to file data.
   #
   less:
     exec: (file, request, callback) ->
@@ -831,7 +831,7 @@ class Busser
           file.content (err, data) ->
             throw err  if err else callback data: data
 
-  # The *handlebars* handler treats handlebar template files by stringifying them
+  # The *handlebars* taskHandler treats handlebar template files by stringifying them
   # to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
   # data in an SC.TEMPLATES directive.
   #
@@ -862,10 +862,10 @@ class Busser
             else
               callback data: data
 
-  # The *file* handler must be the only handler in a **HandlerSet** or it must come 
-  # at the end of a handler sequence where a file is read.
+  # The *file* taskHandler must be the only taskHandler in a **TaskHandlerSet** or it must come 
+  # at the end of a taskHandler sequence where a file is read.
   #
-  # The *file* handler calls file.content() to read data from a file. Calls to
+  # The *file* taskHandler calls file.content() to read data from a file. Calls to
   # file.content() are coordinated by a queue system to stay within a limit
   # for simultaneously open files. (See the content method of the **File** class
   # and the global readFile() and related functions).
@@ -882,33 +882,33 @@ class Busser
 #
 busser = new Busser
 
-# *availableHandlerNames* is a convenience method for use by developers in listing
-# handlers defined in the **Busser** class. The global instance of busser is queried
+# *availableTaskHandlerNames* is a convenience method for use by developers in listing
+# taskHandlers defined in the **Busser** class. The global instance of busser is queried
 # for its own properties, which will include variables and methods, and the
-# list returned is filtered for known non-handler properties and methods.
+# list returned is filtered for known non-taskHandler properties and methods.
 #
-availableHandlerNames  = ->
-  (h for own h of busser when h not in [ "constructor", "handlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ])
+availableTaskHandlerNames  = ->
+  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ])
 
-# **HandlerSet** singletons are used in the specialized File subclasses defined
-# below. The names of the handlerSets match the **File** subclasses, generally,
+# **TaskHandlerSet** singletons are used in the specialized File subclasses defined
+# below. The names of the taskHandlerSets match the **File** subclasses, generally,
 # and there are several with descriptive names.
 #
-rootContentHtmlHandlerSet = busser.handlerSet("root content html", "/", [ "cache", "contentType", "file" ])
-rootSymlinkHandlerSet = busser.handlerSet("root symlink", "/", [ "symlink" ])
+rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", [ "cache", "contentType", "file" ])
+rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", [ "symlink" ])
 
-stylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
-minifiedStylesheetHandlerSet = busser.handlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
-virtualStylesheetHandlerSet = busser.handlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
+stylesheetTasks = busser.taskHandlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
+minifiedStylesheetTasks = busser.taskHandlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
+virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
 
-scriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-minifiedScriptHandlerSet = busser.handlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptHandlerSet = busser.handlerSet("virtual script", "/", [ "contentType", "join" ])
+scriptTasks = busser.taskHandlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+minifiedScriptTasks = busser.taskHandlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+virtualScriptTasks = busser.taskHandlerSet("virtual script", "/", [ "contentType", "join" ])
 
-testHandlerSet = busser.handlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
-resourceHandlerSet = busser.handlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
-uncombinedScriptHandlerSet = busser.handlerSet("uncombined script", "/", [ "contentType", "file" ])
-joinHandlerSet = busser.handlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
+testTasks = busser.taskHandlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
+resourceFileTasks = busser.taskHandlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
+uncombinedScriptTasks = busser.taskHandlerSet("uncombined script", "/", [ "contentType", "file" ])
+joinTasks = busser.taskHandlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
 # -----
 
@@ -1095,7 +1095,7 @@ class Framework
       framework: this
       content: (callback) =>
         callback null, "; if ((typeof SC !== \"undefined\") && SC && SC.bundleDidLoad) SC.bundleDidLoad(\"#{@reducedPath()}\");\n"
-      handlerSet: uncombinedScriptHandlerSet
+      taskHandlerSet: uncombinedScriptTasks
     )
 
   # *computeDependencies* uses a **DependenciesComputer** class and its compute
@@ -1372,7 +1372,7 @@ class Reference
 # The **File** class holds information about an on-disk file or a virtual file, which is
 # an abstraction for a framework directory. The children array is used for virtual
 # files, either the **VirtualStylesheetFile** or **VirtualScriptFile** derived classes. The
-# handlerSet property has one of the **HandlerSet** singletons defined above, which
+# taskHandlerSet property has one of the **TaskHandlerSet** singletons defined above, which
 # controls the build process for a given file type. A file can be a symlink to the
 # root html file, which is only used in **SymlinkFile**.
 #
@@ -1381,7 +1381,7 @@ class File
     @path = null
     @framework = null
     @children = null
-    @handlerSet = null
+    @taskHandlerSet = null
     @isHtml = false
     @isVirtual = false
     @symlink = null
@@ -1394,7 +1394,7 @@ class File
   # In *pathForSave*, we see the use of url(), which by itself is used in file lookup,
   # but the file that is saved for *RootHtmlFile* needs a ".html" extension to allow
   # http://localhost:8000/myapp instead of http://localhost:8000/myapp/myapp.html.
-  # The symlink handler is involved in linking to the root content.
+  # The symlink taskHandler is involved in linking to the root content.
   #
   pathForSave: ->
     "#{@url()}.html" if @isHtml else @url()
@@ -1424,21 +1424,21 @@ class File
 class SymlinkFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = rootSymlinkHandlerSet
+    @taskHandlerSet = rootSymlinkTasks
     @[key] = options[key] for own key of options
 
 # RootHtmlFile
 # -------------------
 #
 # The **RootHtmlFile** contains the html with main links to a project's stylesheets,
-# scripts, and resources. Its rootContentHtmlHandlerSet has cache, contentType, and file
-# handlers, so that during serving it is read once, then cached. The **RootHtmlFile**
+# scripts, and resources. Its rootContentHtmlTasks has cache, contentType, and file
+# taskHandlers, so that during serving it is read once, then cached. The **RootHtmlFile**
 # is created at the end of the build process, when links to files and resources are known.
 #
 class RootHtmlFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = rootContentHtmlHandlerSet
+    @taskHandlerSet = rootContentHtmlTasks
     @app = null
     @isHtml = true
     @[key] = options[key] for own key of options
@@ -1503,7 +1503,7 @@ class RootHtmlFile extends File
 class StylesheetFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = stylesheetHandlerSet
+    @taskHandlerSet = stylesheetTasks
     @[key] = options[key] for own key of options
 
 # MinifiedStylesheetFile 
@@ -1514,7 +1514,7 @@ class StylesheetFile extends File
 class MinifiedStylesheetFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = minifiedStylesheetHandlerSet
+    @taskHandlerSet = minifiedStylesheetTasks
     @[key] = options[key] for own key of options
 
 # ScriptFile
@@ -1525,7 +1525,7 @@ class MinifiedStylesheetFile extends File
 class ScriptFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = scriptHandlerSet
+    @taskHandlerSet = scriptTasks
     @[key] = options[key] for own key of options
 
 # MinifiedScriptFile
@@ -1536,7 +1536,7 @@ class ScriptFile extends File
 class MinifiedScriptFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = minifiedScriptHandlerSet
+    @taskHandlerSet = minifiedScriptTasks
     @[key] = options[key] for own key of options
 
 # TestFile
@@ -1548,7 +1548,7 @@ class MinifiedScriptFile extends File
 class TestFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = testHandlerSet
+    @taskHandlerSet = testTasks
     @[key] = options[key] for own key of options
 
 # ResourceFile
@@ -1560,7 +1560,7 @@ class TestFile extends File
 class ResourceFile extends File
   constructor: (options={}) ->
     super options
-    @handlerSet = resourceHandlerSet
+    @taskHandlerSet = resourceFileTasks
     @[key] = options[key] for own key of options
 
   @resourceExtensions = ['.png', '.jpg', '.gif', '.svg']
@@ -1579,7 +1579,7 @@ class VirtualStylesheetFile extends StylesheetFile
     super options
     @isVirtual = true
     @children = []
-    @handlerSet = virtualStylesheetHandlerSet
+    @taskHandlerSet = virtualStylesheetTasks
     @[key] = options[key] for own key of options
 
 # VirtualScriptFile
@@ -1599,7 +1599,7 @@ class VirtualScriptFile extends ScriptFile
     super options
     @isVirtual = true
     @children = []
-    @handlerSet = virtualScriptHandlerSet
+    @taskHandlerSet = virtualScriptTasks
     @[key] = options[key] for own key of options
 
 # BootstrapFramework
@@ -1630,7 +1630,7 @@ class BootstrapFramework extends Framework
                        var SC = SC || { BUNDLE_INFO: {}, LAZY_INSTANTIATION: {} };
                        var require = require || function require() {};
                        """
-      handlerSet: uncombinedScriptHandlerSet
+      taskHandlerSet: uncombinedScriptTasks
   
   tailFile: =>
     new File
@@ -1638,7 +1638,7 @@ class BootstrapFramework extends Framework
       framework: this
       content: (callback) ->
         callback null, "; if (SC.setupBodyClassNames) SC.setupBodyClassNames();"
-      handlerSet: uncombinedScriptHandlerSet
+      taskHandlerSet: uncombinedScriptTasks
 
 # App
 # ---
@@ -1771,7 +1771,7 @@ class App
       constructor: (@buildVersion, @app, @file) ->
         
       save: ->
-        @file.handlerSet.exec @file, null, (response) =>
+        @file.taskHandlerSet.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
             path = path_module.join(@app.pathForSave, @buildVersion.toString(), @file.pathForSave())
             File.createDirectory path_module.dirname(path)
@@ -1794,7 +1794,7 @@ class App
       virtualStylesheetFile = new VirtualStylesheetFile
         path: "#{@name}.css"
         framework: this
-        handlerSet: joinHandlerSet
+        taskHandlerSet: joinTasks
         children: (fw.virtualStylesheetReference.file for fw in @frameworks when fw.virtualStylesheetReference?)
       new Saver(@buildVersion, this, virtualStylesheetFile).save()
     else
@@ -1806,7 +1806,7 @@ class App
       virtualScriptFile = new VirtualScriptFile
         path: "{@name}.js"
         framework: this
-        handlerSet: joinHandlerSet
+        taskHandlerSet: joinTasks
         children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
       new Saver(@buildVersion, this, virtualScriptFile).save()
     else
@@ -1954,7 +1954,7 @@ class Server
     process.chdir path
 
   serve: (file, request, response) ->
-    file.handlerSet.exec file, request, (r) ->
+    file.taskHandlerSet.exec file, request, (r) ->
       headers = {}
       status = 200
       headers["Content-Type"] = r.contentType  if r.contentType?
