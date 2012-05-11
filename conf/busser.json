@@ -393,20 +393,21 @@
     }
   },
   "apps": {
-    "HelloWorld-dev": {
-      "name": "HelloWorld",
-      "title": "Hello World",
-      "path": "apps/HelloWorld",
+    "TodosThree-dev": {
+      "name": "TodosThree",
+      "title": "Todos Three",
+      "path": "apps/TodosThree",
+      "pathForSave": "./build",
+      "pathForStage": "./stage",
+      "pathForChance": "./chance",
       "theme": "sc-theme",
       "buildLanguage": "english",
       "combineScripts": true,
       "combineStylesheets": true,
       "minifyScripts": false,
       "minifyStylesheets": false,
-      "cssTheme": "ace.helloworld",
-      "proxies": [
-        { "hostname": null, "port": null, "prefix": "" }
-      ],
+      "cssTheme": "ace.todosthree",
+      "proxies": [],
       "sc-frameworks": [
         { "name": "jquery",          "conf": "dev" },
         { "name": "runtime",         "conf": "dev" },
@@ -435,20 +436,25 @@
             "combineScripts": true,
             "combineStylesheets": true,
             "minifyScripts": false,
-            "minifyStylesheets": false 
+            "minifyStylesheets": false
           }
         }
       ]
     },
-    "HelloWorld-prod": {
-      "name": "HelloWorld",
+    "TodosThree-prod": {
+      "name": "TodosThree",
+      "title": "Todos Three",
+      "path": "apps/TodosThree",
+      "pathForSave": "./build",
+      "pathForStage": "./stage",
+      "pathForChance": "./chance",
       "theme": "sc-theme",
       "buildLanguage": "english",
       "combineScripts": true,
       "combineStylesheets": true,
       "minifyScripts": true,
       "minifyStylesheets": true,
-      "cssTheme": "ace.helloworld",
+      "cssTheme": "ace.todosthree",
       "proxies": [],
       "pathsToExclude": [ "/fixtures\//" ],
       "sc-frameworks": [
@@ -484,7 +490,7 @@
     },
     "test_controls-dev": {
       "name": "test_controls",
-      "title": "Hello World",
+      "title": "Todos Three",
       "path": "apps/test_controls",
       "theme": "sc-theme",
       "buildLanguage": "english",

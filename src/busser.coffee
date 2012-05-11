@@ -8,19 +8,26 @@ path_module  = require "path"
 nconf        = require "nconf"
 prompt       = require "prompt"
 colors       = require "colors"
+scss         = require "scss"
+sass         = require "sass"
+stylus       = require "stylus"
 {exec}       = require "child_process"
 {spawn}      = require "child_process"
 EventEmitter = require('events').EventEmitter
 uglify =
   parser: require("uglify-js").parser
   processor: require("uglify-js").uglify
-
 try
   less = require("less")
 catch e
   util.puts "WARNING: 'less' could not be required."
   util.puts "         You won't be able to parse .less files."
   util.puts "         Install it with `npm install less`."
+Chance                 = require("./chance").Chance
+ChanceProcessorFactory = require("./chance").ChanceProcessorFactory
+
+chance = new Chance()
+chanceProcessorFactory = new ChanceProcessorFactory(chance)
 
 # Input Arguments Handling
 # ------------------------
@@ -34,16 +41,18 @@ catch e
 appTargetsValidator = /^([A-Za-z0-9_\s\-])+(,[A-Za-z0-9_\s\-]+)*$/
 
 # See the user input-handling method, *parseActionsArgument*, for design of this regular
-# expression, which allows any combination of the action verbs build, save, and run, in
-# any order, and even jammed-up, as buildsave or buildsaverun.
+# expression, which allows any combination of the action verbs build, stage, save, and run, in
+# any order, and even jammed-up, as buildstagesave or buildstagesaverun.
 #
 actionsValidator = /// ^ (                # from beginning of input
-                     [\s*\<build\>*\s*]*  # build, save, or run, with or without whitespace
+                     [\s*\<build\>*\s*]*  # build, stage, save, or run, with or without whitespace
+                     [\s*\<stage\>*\s*]*
                      [\s*\<save\>*\s*]*
                      [\s*\<run\>*\s*]*
                    ) + (
-                     ,                    # comma, then build, save, or run with or without whitespace
+                     ,                    # comma, then build, stage, save, or run with or without whitespace
                      [\s*\<build\>*\s*]*
+                     [\s*\<stage\>*\s*]*
                      [\s*\<save\>*\s*]*
                      [\s*\<run\>*\s*]*
                    )*$                    # to end of input
@@ -55,7 +64,7 @@ actionsValidator = /// ^ (                # from beginning of input
 parseAppTargetsArgument = (appTargetsResult) ->
   (target.trim() for target in appTargetsResult.split(','))
 
-# Match for presence of build, save, run words and construct one of several
+# Match for presence of build, stage, save, run words and construct one of several
 # possible actionItems.
 #
 parseActionsArgument = (actionsResult) ->
@@ -63,25 +72,34 @@ parseActionsArgument = (actionsResult) ->
 
   actions = []
   actions.push 'build' if actionsResult.indexOf('build') isnt -1
+  actions.push 'stage' if actionsResult.indexOf('stage') isnt -1
   actions.push 'save' if actionsResult.indexOf('save') isnt -1
   actions.push 'run' if actionsResult.indexOf('run') isnt -1
        
-  # The possible combinations for actions are these four compound actionItems, 
-  # as used internally. As noted above, the user has the freedom to type build,
-  # save, run in any manner, as csv input, as blank-delimited, or as a compound
-  # word with no blanks.
+  # The possible combinations for actions are these five compound actionItems, as
+  # used internally. The user has the freedom to type build, stage save, run in any 
+  # manner, as csv input, as blank-delimited, or as a compound word with no blanks.
   #
-  actionItems = 'build'        if actions.length is 1 and 'build' in actions
-  actionItems = "buildsave"    if actions.length is 2 and 'build' in actions and 'save' in actions
-  actionItems = "buildsave"    if actions.length is 1 and 'save' in actions
-  actionItems = "buildrun"     if actions.length is 2 and 'build' in actions and 'run' in actions
-  actionItems = "buildrun"     if actions.length is 1 and 'run' in actions
-  actionItems = "buildsaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
+  actionItems = 'build'             if actions.length is 1 and 'build' in actions
+  actionItems = "buildstage"        if actions.length is 2 and 'build' in actions and 'stage' in actions
+  actionItems = "buildstagesave"    if actions.length is 2 and 'build' in actions and 'stage' in actions and 'save' in actions
+  actionItems = "buildstagesave"    if actions.length is 2 and 'build' in actions and 'save' in actions
+  actionItems = "buildstagesave"    if actions.length is 1 and 'save' in actions
+  actionItems = "buildstagerun"     if actions.length is 2 and 'build' in actions and 'stage' in actions and 'run' in actions
+  actionItems = "buildstagerun"     if actions.length is 2 and 'build' in actions and 'run' in actions
+  actionItems = "buildstagerun"     if actions.length is 1 and 'run' in actions
+  actionItems = "buildstagesaverun" if actions.length is 3 and 'build' in actions and 'stage' in actions and 'save' in actions and 'run' in actions
+  actionItems = "buildstagesaverun" if actions.length is 3 and 'build' in actions and 'save' in actions and 'run' in actions
 
   actionItems
 
-# File Extension and Type Functions
-# ---------------------------------
+# File, File Extension and Type Functions
+# ---------------------------------------
+
+# Does a file exist at the path?
+#
+exists = (path) ->
+  path_module.exists(path)
 
 # Use the node.js path module to pull the file extension from the path.
 #
@@ -92,7 +110,7 @@ extname = (path) ->
 #
 fileType = (path) ->
   ext = extname(path)
-  return "stylesheet" if /^\.(css|less)$/.test ext
+  return "stylesheet" if /^\.(css|less|scss|styl)$/.test ext
   return "script"     if (ext is ".js") or (ext is ".handlebars") and not /tests\//.test(path)
   return "test"       if ext is ".js" and /tests\//.test(path)
   return "resource"   if ext in ResourceFile.resourceExtensions
@@ -548,6 +566,7 @@ class Busser
         ".css": "text/css; charset=utf-8"
         ".png": "image/png"
         ".jpg": "image/jpeg"
+        ".jpeg": "image/jpeg"
         ".gif": "image/gif"
         ".json": "application/json"
         ".svg": "image/svg+xml"
@@ -620,7 +639,7 @@ class Busser
               response.data = minifiedData
               callback response
       else
-        file.content (err, data) ->
+        file.content file.path, (err, data) ->
           if err
             throw err
           else
@@ -639,7 +658,7 @@ class Busser
           response.data = response.data.replace(/sc_super\(\)/g, "arguments.callee.base.apply(this,arguments)")
           callback response
       else
-        file.content (err, data) ->
+        file.content file.path, (err, data) ->
           if err
             throw err
           else
@@ -672,6 +691,8 @@ class Busser
           unless path in resourceUrls
             util.puts "WARNING: #{path} referenced in #{file.path} but was not found."
 
+        console.log('urlPrefix', @urlPrefix, path)
+
         format.replace "%@", path_module.join(@urlPrefix, path)
 
   # The *rewriteStaticInStylesheet* taskHandler calls the *rewriteStatic* method with the
@@ -684,7 +705,7 @@ class Busser
           response.data = Busser.rewriteStatic "url('%@')", file, response.data
           callback response
       else
-        file.content (err, data) ->
+        file.content file.path, (err, data) ->
           if err
             throw err
           else
@@ -700,7 +721,7 @@ class Busser
           response.data = Busser.rewriteStatic "'%@'", file, response.data
           callback response
       else
-        file.content (err, data) ->
+        file.content file.path, (err, data) ->
           if err
             throw err
           else
@@ -716,7 +737,7 @@ class Busser
           response.data = response.data.replace(/__FILE__/g, file.url())
           callback response
       else
-        file.content (err, data) ->
+        file.content file.path, (err, data) ->
           if err
             throw err
           else
@@ -737,7 +758,7 @@ class Busser
                           """
           callback response
       else
-        file.content (err, data) ->
+        file.content file.path, (err, data) ->
           if err
             throw err
           else
@@ -790,6 +811,33 @@ class Busser
     exec: (file, request, callback) ->
       file.symlink.taskHandlerSet.exec file.symlink, request, callback
 
+  # *sassify* is a static utility method that applies sass to data.
+  #
+  @sassify: (path, data, callback) ->
+    sass.render data, (err, css) ->
+      if err?
+        util.puts "ERROR: initial " + err.message + path
+      else
+        callback css
+
+  # *stylify* is a static utility method that applies stylus to data.
+  #
+  @stylify: (path, data, callback) ->
+    stylus.render data, (err, css) ->
+      if err?
+        util.puts "ERROR: initial " + err.message + path
+      else
+        callback css
+
+  # *scssify* is a static utility method that applies scss to data.
+  #
+  @scssify: (path, data, callback) ->
+    scss.parse data, (err, css) ->
+      if err?
+        util.puts "ERROR: initial " + err + path
+      else
+        callback css
+
   # *lessify* is a static utility method that applies less to data.
   #
   @lessify: (path, data, callback) ->
@@ -797,27 +845,52 @@ class Busser
       optimization: 0
       paths: [ path ]
     )
-    parser.parse data, (err, tree) ->
-      if err
-        util.puts "ERROR: " + err.message
+    parser.parse data, (err, tree) =>
+      if err?
+        util.puts "ERROR: initial " + err.message + path
       else
         try
           data = tree.toCSS()
         catch e
-          util.puts "ERROR: " + e.message
+          util.puts "ERROR: toCSS " + e.message + path
       callback data
+
+  # The *scss* taskHandler applies the scss parser to file data.
+  #
+  scss:
+    exec: (file, request, callback) ->
+      if scss? and extname(file.path) is ".css" # not .less, not .scss, not .styl
+        if @next?
+          @next.exec file, request, (response) ->
+            Busser.scssify file.framework.path, response.data, (scssifiedData) ->
+              callback data: scssifiedData
+        else
+          file.content file.path, (err, data) ->
+            if err
+              throw err
+            else
+              Busser.scssify file.framework.path, data, (scssifiedData) ->
+                callback data: scssifiedData
+      else
+        if @next?
+          @next.exec file, request, (response) ->
+            callback response
+        else
+          file.content file.path, (err, data) ->
+            throw err  if err else callback data: data
 
   # The *less* taskHandler applies the less parser to file data.
   #
   less:
     exec: (file, request, callback) ->
-      if less? and extname(file.path) is ".less"
+      if less? and extname(file.path) is ".css" # not .less, not .scss, not .styl
         if @next?
           @next.exec file, request, (response) ->
-            Busser.lessify file.framework.path, response.data, (lessifiedData) ->
+            #Busser.lessify file.framework.path, response.data, (lessifiedData) ->
+            Busser.sassify file.framework.path, response.data, (lessifiedData) ->
               callback data: lessifiedData
         else
-          file.content (err, data) ->
+          file.content file.path, (err, data) ->
             if err
               throw err
             else
@@ -828,8 +901,30 @@ class Busser
           @next.exec file, request, (response) ->
             callback response
         else
-          file.content (err, data) ->
+          file.content file.path, (err, data) ->
             throw err  if err else callback data: data
+
+  # The *chance* taskHandler applies Chance parser to file data.
+  #
+  chance:
+    exec: (file, request, callback) ->
+      #chanceKey = path_module.join(file.framework.app.pathForSave, file.framework.app.buildVersion.toString(), file.path)
+      #console.log file.framework.chanceProcessor.output_for chanceKey
+      #callback data: file.framework.chanceProcessor.output_for chanceKey
+      #callback data: file.framework.chanceProcessor.css file.path
+
+      # We want chance to process on the staged files -- it knows where staged files are
+      # because chanceKey, with the stage path, was given as an argument to ChanceProcessor
+      # instance creation calls. The key passed here, file.path, was given to Chance in
+      # add_file calls, so it will do lookups on that.
+      #
+      if file instanceof VirtualStylesheetFile
+        console.log "output_for", file.framework.chanceFilename
+        #css = file.framework.chanceProcessor.output_for file.framework.chanceFilename
+        callback data: file.framework.chanceProcessor.output_for file.framework.chanceFilename
+      else
+        console.log "output_for", file.path
+        callback data: file.framework.chanceProcessor.output_for file.path
 
   # The *handlebars* taskHandler treats handlebar template files by stringifying them
   # to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
@@ -850,13 +945,13 @@ class Busser
         if extname(file.path) is ".handlebars"
           re = /[^\/]+\/templates\/(.+)\.handlebars/
           filename = re.exec(file.url())[1]
-          file.content (err, data) ->
+          file.content file.path, (err, data) ->
             if err
               throw err
             else
               callback data: "SC.TEMPLATES['#{filename}'] = SC.Handlebars.compile(#{JSON.stringify(data.toString("utf8"))});"
         else
-          file.content (err, data) ->
+          file.content file.path, (err, data) ->
             if err
               throw err
             else
@@ -872,7 +967,7 @@ class Busser
   #
   file:
     exec: (file, request, callback) ->
-      file.content (err, data) ->
+      file.content file.path, (err, data) ->
         if err
           throw err
         else
@@ -888,7 +983,7 @@ busser = new Busser
 # list returned is filtered for known non-taskHandler properties and methods.
 #
 availableTaskHandlerNames  = ->
-  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "lessify" ])
+  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "scssify", "sassify", "lessify" ])
 
 # **TaskHandlerSet** singletons are used in the specialized File subclasses defined
 # below. The names of the taskHandlerSets match the **File** subclasses, generally,
@@ -897,18 +992,41 @@ availableTaskHandlerNames  = ->
 rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", [ "cache", "contentType", "file" ])
 rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", [ "symlink" ])
 
-stylesheetTasks = busser.taskHandlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "less", "rewriteStaticInStylesheet", "file"])
-minifiedStylesheetTasks = busser.taskHandlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "minify", "less", "rewriteStaticInStylesheet", "file"])
-virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
+stylesheetTasksStaging = busser.taskHandlerSet("staging stylesheet tasks", "/", ["file"])
+stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType"])
+#stylesheetTasks = busser.taskHandlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "chance"])
+minifiedStylesheetTasksStaging = busser.taskHandlerSet("staging stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "file"])
+minifiedStylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify"])
+#virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
+virtualStylesheetTasksStaging = busser.taskHandlerSet("staging virtual stylesheet tasks", "/", ["file"])
+virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
+#virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "chance"])
 
-scriptTasks = busser.taskHandlerSet("script", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-minifiedScriptTasks = busser.taskHandlerSet("script", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptTasks = busser.taskHandlerSet("virtual script", "/", [ "contentType", "join" ])
+scriptTasksStaging = busser.taskHandlerSet("staging script tasks", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+scriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+minifiedScriptTasksStaging = busser.taskHandlerSet("staging script tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+minifiedScriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
+virtualScriptTasksStaging = busser.taskHandlerSet("staging virtual script tasks", "/", [ "contentType", "join" ])
+virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", "/", [ "contentType", "join" ])
 
-testTasks = busser.taskHandlerSet("test", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
-resourceFileTasks = busser.taskHandlerSet("resource", "/", [ "ifModifiedSince", "contentType", "file" ])
-uncombinedScriptTasks = busser.taskHandlerSet("uncombined script", "/", [ "contentType", "file" ])
-joinTasks = busser.taskHandlerSet("join only", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
+testTasksStaging = busser.taskHandlerSet("staging test tasks", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
+testTasks = busser.taskHandlerSet("test tasks", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
+resourceFileTasksStaging = busser.taskHandlerSet("staging resource tasks", "/", [ "file" ])
+resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "chance" ])
+#resourceFileTasks = busser.taskHandlerSet("resource", "/", [ "ifModifiedSince", "contentType", "chance" ])
+uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", "/", [ "contentType", "file" ])
+joinTasks = busser.taskHandlerSet("join only tasks", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
+
+chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance"])
+
+#stylesheetTasksChance = busser.taskHandlerSet("chance stylesheet tasks", "/", ["chance", "chanceFile"])
+#minifiedStylesheetTasksChance = busser.taskHandlerSet("chance stylesheet tasks", "/", ["chance", "chanceFile"])
+#virtualStylesheetTasksChance = busser.taskHandlerSet("chance virtual stylesheet tasks", "/", ["chance", "chanceFile"])
+#scriptTasksChance = busser.taskHandlerSet("chance script tasks", "/", ["chance", "chanceFile"])
+#minifiedScriptTasksChance = busser.taskHandlerSet("chance script tasks", "/", ["chance", "chanceFile"])
+#virtualScriptTasksChance = busser.taskHandlerSet("chance virtual script tasks", "/", [ "contentType", "join" ])
+#testTasksChance = busser.taskHandlerSet("chance test tasks", "/", [ "chance", "chanceFile" ])
+#resourceFileTasksChance = busser.taskHandlerSet("chance resource tasks", "/", [ "chance", "chanceFile" ])
 
 # -----
 
@@ -980,7 +1098,8 @@ joinTasks = busser.taskHandlerSet("join only", "/", [ "join" ]) # [TODO] urlPref
 # excluded for a production build.
 #
 class Framework
-  constructor: (options={}) ->
+  constructor: (app, options={}) ->
+    @app = app
     @name = null
     @path = null
 
@@ -1002,6 +1121,11 @@ class Framework
     @virtualStylesheetReference = null
     @virtualScriptReference = null
 
+    @chanceProcessor = null
+    @chanceFiles = []
+    @chanceFilename = @name
+    @spriteNames = []
+
     @pathsToExclude = [ /(^\.|\/\.|tmp\/|debug\/|tests\/|test_suites\/|setup_body_class_names)/ ]
 
     @[key] = options[key] for own key of options
@@ -1017,6 +1141,15 @@ class Framework
       @stylesheetFiles.push(new MinifiedStylesheetFile({ path: path, framework: this }))
     else
       @stylesheetFiles.push(new StylesheetFile({ path: path, framework: this }))
+
+  addChanceStylesheetFile: (path, options) ->
+    opts = { path: path, framework: this }
+    @opts[key] = options[key] for own key of options
+
+    if @minifyStylesheets
+      @stylesheetFiles.push(new MinifiedChanceStylesheetFile(opts))
+    else
+      @stylesheetFiles.push(new ChanceStylesheetFile(opts))
 
   addScriptFile: (path) ->
     if @minifyScripts
@@ -1035,10 +1168,12 @@ class Framework
   # list.
   #
   allFiles: ->
+    console.log 'allFiles for:', @name
     all = []
-    all.push @virtualStylesheetReference.file if @virtualStylesheetReference?
-    all.push @virtualScriptReference.file if @virtualScriptReference?
+    all.push @virtualStylesheetReference.file if @virtualStylesheetReference? # [TODO] if the following use OrderedS..Files, then these are redundant?
     all.push(file) for file in @stylesheetFiles # [TODO] Should this be ordered?
+    all.push @virtualScriptReference.file if @virtualScriptReference?
+    console.log('pushing @virtualScriptReference.file', @virtualScriptReference.file.url()) if @virtualScriptReference?
     all.push(file) for file in @scriptFiles
     all.push(file) for file in @testFiles
     all.push(file) for file in @resourceFiles
@@ -1060,7 +1195,7 @@ class Framework
   # A url consists of the joined buildVersion and reducedPath.
   #
   urlFor: (path) ->
-    path_module.join @buildVersion, @reducedPathFor(path)
+    path_module.join @app.buildVersion, @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
   #
@@ -1090,13 +1225,12 @@ class Framework
     null
 
   tailFile: ->
-    new File(
+    new File
       path: path_module.join(@path, "after.js")
       framework: this
-      content: (callback) =>
+      content: (path, callback) =>
         callback null, "; if ((typeof SC !== \"undefined\") && SC && SC.bundleDidLoad) SC.bundleDidLoad(\"#{@reducedPath()}\");\n"
       taskHandlerSet: uncombinedScriptTasks
-    )
 
   # *computeDependencies* uses a **DependenciesComputer** class and its compute
   # method to read a list of files, parsing each for require statements,
@@ -1225,7 +1359,7 @@ class Framework
   # either with or without jquery, testing for jquery in the project. This method is used
   # in testing, or when a build configuration file is not provided to the build process.
   #
-  @sproutcoreFrameworks: (options) ->
+  @sproutcoreFrameworks: (app, options) ->
     if not @_sproutcoreFrameworks?
       opts =
         combineScripts: true
@@ -1244,11 +1378,11 @@ class Framework
       catch e
         frameworkNames = [ "runtime", "foundation", "datastore", "desktop", "animation" ]
 
-      @_sproutcoreFrameworks = [ new BootstrapFramework() ]
+      @_sproutcoreFrameworks = [ new BootstrapFramework(app) ]
       for frameworkName in frameworkNames
         opts.name = frameworkName
         opts.path = "frameworks/sproutcore/frameworks/#{frameworkName}"
-        @_sproutcoreFrameworks.push(new Framework(opts))
+        @_sproutcoreFrameworks.push(new Framework(app, opts))
 
     @_sproutcoreFrameworks
   
@@ -1282,7 +1416,7 @@ class Framework
               fs.readdir path, (err, subpaths) =>
                 @count -= 1
                 throw err  if err
-                @scan path_module.join(path, subpath) for subpath in subpaths when subpath[0] isnt "."
+                @scan path_module.join(path, subpath) for subpath in subpaths when subpath[0] isnt "." # [TODO] subpath[0] and not subpath[0..0]?
               @emit "end" if @count <= 0
             else
               if not @framework.shouldExcludeFile(path)
@@ -1316,6 +1450,7 @@ class Framework
             path: "#{@path}.css"
             framework: this
             children: @stylesheetFiles
+          console.log '@path + .css', @path + ".css"
           @virtualStylesheetReference = new Reference(virtualStylesheetFile.url(), virtualStylesheetFile)
           @orderedStylesheetFiles = [ virtualStylesheetFile ]
         else
@@ -1334,12 +1469,14 @@ class Framework
 
       if @scriptFiles.length > 0
         @orderScripts @scriptFiles, =>
+          console.log('runtime.combineScripts is', @combineScripts) if @name is 'runtime'
           if @combineScripts is true
             virtualScriptFile = new VirtualScriptFile
-              #path: @path + ".js"
-              path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
+              path: @path + ".js"
+              #path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
               framework: this
               children: (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
+            console.log '@path + .js', @path + ".js"
             @virtualScriptReference = new Reference(virtualScriptFile.url(), virtualScriptFile)
             @orderedScriptFiles = [ virtualScriptFile ]
           else
@@ -1350,10 +1487,9 @@ class Framework
           callbackAfterBuild() if callbackAfterBuild?
       else
         console.log "  #{@name} ", "built.".red
-
         callbackAfterBuild() if callbackAfterBuild?
 
-    # Fire the build methods, passing the provided *callbackAfterBuild*.
+    # Fire the build method, passing the provided *callbackAfterBuild*.
     #
     createBasicFiles callbackAfterBuild
 
@@ -1385,6 +1521,8 @@ class File
     @isHtml = false
     @isVirtual = false
     @symlink = null
+    @timestamp = 0
+    @buildRequired = true
 
     @[key] = options[key] for own key of options
 
@@ -1397,14 +1535,17 @@ class File
   # The symlink taskHandler is involved in linking to the root content.
   #
   pathForSave: ->
-    "#{@url()}.html" if @isHtml else @url()
+    if @isHtml then "#{@url()}.html" else @url()
   
+  pathForStage: ->
+    "#{@framework.app.pathForStage}/#{@framework.app.buildVersion}/#{@pathForSave()}"
+
   # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
   # overridden in the **RootHtmlFile** subclass to return html content.
   #
-  content: (callback) ->
-    readFile @path, callback
+  content: (path, callback) ->
+    readFile path, callback
   
   # Create a directory, checking the prefix of the path for "." and "/".
   #
@@ -1446,7 +1587,7 @@ class RootHtmlFile extends File
   pathForSave: ->
     "#{@app.url()}.html"
 
-  content: (callback) =>
+  content: (path, callback) =>
     html = []
 
     # Load html for document, head, and meta sections. [TODO] Fix the paths in apple-touch links.
@@ -1474,6 +1615,7 @@ class RootHtmlFile extends File
     for framework in @app.frameworks
       for stylesheet in framework.orderedStylesheetFiles
         if stylesheet.framework is framework
+          console.log "stylesheet link", "#{@app.urlPrefix + stylesheet.url()}"
           html.push "    <link href=\"#{@app.urlPrefix + stylesheet.url()}\" rel=\"stylesheet\" type=\"text/css\">"
 
     # Close the head and begin the body.
@@ -1484,7 +1626,9 @@ class RootHtmlFile extends File
     # Load references to the virtual scripts for each framework.
     for framework in @app.frameworks
       for script in framework.orderedScriptFiles
-        html.push "    <script type=\"text/javascript\" src=\"#{@app.urlPrefix + script.url()}\"></script>"
+        if script.framework is framework
+          console.log "script link", "#{@app.urlPrefix + script.url()}"
+          html.push "    <script type=\"text/javascript\" src=\"#{@app.urlPrefix + script.url()}\"></script>"
       
     # Close the body and page.
     html.push """ 
@@ -1503,6 +1647,7 @@ class RootHtmlFile extends File
 class StylesheetFile extends File
   constructor: (options={}) ->
     super options
+    @stagingTaskHandlerSet = stylesheetTasksStaging
     @taskHandlerSet = stylesheetTasks
     @[key] = options[key] for own key of options
 
@@ -1514,6 +1659,31 @@ class StylesheetFile extends File
 class MinifiedStylesheetFile extends File
   constructor: (options={}) ->
     super options
+    @stagingTaskHandlerSet = minifiedStylesheetTasksStaging
+    @taskHandlerSet = minifiedStylesheetTasks
+    @[key] = options[key] for own key of options
+
+# ChanceStylesheetFile
+# --------------
+#
+# **ChanceStylesheetFile** is a class for .css and related file types.
+#
+class ChanceStylesheetFile extends File
+  constructor: (options={}) ->
+    super options
+    @stagingTaskHandlerSet = stylesheetTasksStaging
+    @taskHandlerSet = stylesheetTasks
+    @[key] = options[key] for own key of options
+
+# MinifiedChanceStylesheetFile 
+# ----------------------
+#
+# **MinifiedChanceStylesheetFile** is a class for .css and related file types, minified.
+#
+class MinifiedChanceStylesheetFile extends File
+  constructor: (options={}) ->
+    super options
+    @stagingTaskHandlerSet = minifiedStylesheetTasksStaging
     @taskHandlerSet = minifiedStylesheetTasks
     @[key] = options[key] for own key of options
 
@@ -1525,6 +1695,7 @@ class MinifiedStylesheetFile extends File
 class ScriptFile extends File
   constructor: (options={}) ->
     super options
+    @stagingTaskHandlerSet = scriptTasksStaging
     @taskHandlerSet = scriptTasks
     @[key] = options[key] for own key of options
 
@@ -1536,6 +1707,7 @@ class ScriptFile extends File
 class MinifiedScriptFile extends File
   constructor: (options={}) ->
     super options
+    @stagingTaskHandlerSet = minifiedScriptTasksStaging
     @taskHandlerSet = minifiedScriptTasks
     @[key] = options[key] for own key of options
 
@@ -1548,6 +1720,7 @@ class MinifiedScriptFile extends File
 class TestFile extends File
   constructor: (options={}) ->
     super options
+    @stagingTaskHandlerSet = testTasksStaging
     @taskHandlerSet = testTasks
     @[key] = options[key] for own key of options
 
@@ -1560,10 +1733,11 @@ class TestFile extends File
 class ResourceFile extends File
   constructor: (options={}) ->
     super options
+    @stagingTaskHandlerSet = resourceFileTasksStaging
     @taskHandlerSet = resourceFileTasks
     @[key] = options[key] for own key of options
 
-  @resourceExtensions = ['.png', '.jpg', '.gif', '.svg']
+  @resourceExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg']
 
 # VirtualStylesheetFile
 # ---------------------
@@ -1579,6 +1753,7 @@ class VirtualStylesheetFile extends StylesheetFile
     super options
     @isVirtual = true
     @children = []
+    @stagingTaskHandlerSet = virtualStylesheetTasksStaging
     @taskHandlerSet = virtualStylesheetTasks
     @[key] = options[key] for own key of options
 
@@ -1599,6 +1774,7 @@ class VirtualScriptFile extends ScriptFile
     super options
     @isVirtual = true
     @children = []
+    @stagingTaskHandlerSet = virtualScriptTasksStaging
     @taskHandlerSet = virtualScriptTasks
     @[key] = options[key] for own key of options
 
@@ -1615,17 +1791,17 @@ class VirtualScriptFile extends ScriptFile
 # setting up the body of the main app html page.
 #
 class BootstrapFramework extends Framework
-  constructor: (options={}) ->
+  constructor: (app, options={}) ->
     options.name = "bootstrap"
     options.path = "frameworks/sproutcore/frameworks/bootstrap"
     options.combineScripts = true
-    super(options)
+    super(app, options)
 
   headFile: =>
     new File
       path: path_module.join(@path, "before.js")
       framework: this
-      content: (callback) ->
+      content: (path, callback) ->
         callback null, """
                        var SC = SC || { BUNDLE_INFO: {}, LAZY_INSTANTIATION: {} };
                        var require = require || function require() {};
@@ -1636,7 +1812,7 @@ class BootstrapFramework extends Framework
     new File
       path: path_module.join(@path, "after.js")
       framework: this
-      content: (callback) ->
+      content: (path, callback) ->
         callback null, "; if (SC.setupBodyClassNames) SC.setupBodyClassNames();"
       taskHandlerSet: uncombinedScriptTasks
 
@@ -1655,6 +1831,7 @@ class BootstrapFramework extends Framework
 #
 class App
   constructor: (options={}) ->
+    @app = this
     @name = null
     @title = null
     @path = null
@@ -1664,10 +1841,16 @@ class App
     @minifyScripts = false
     @minifyStylesheets = false
     @cssTheme = ""
+    @useSprites = false
+    @optimizeSprites = false
+    @padSpritesForDebugging = false
 
-    @urlPrefix = ""
+    @urlPrefix = "/"
     @theme = "sc-theme"
+    @buildVersion = ""
     @pathForSave = "./build"
+    @pathForStage = "./stage"
+    @pathForChance = "./chance"
 
     @frameworks = []
 
@@ -1677,8 +1860,6 @@ class App
     @htmlSymlinkReference = null
 
     @[key] = options[key] for own key of options
-
-  @buildVersion: 0
 
   # The *reducedPathFor*, *urlFor*, and *url* methods are the same as those for
   # the **Framework** class, tied here to the prototype definitions.
@@ -1692,7 +1873,7 @@ class App
   # *sproutcoreFrameworks* defined in the **Framework** class.
   #
   addSproutCore: (options={}) ->
-    @frameworks.push framework for framework in Framework.sproutcoreFrameworks(options)
+    @frameworks.push framework for framework in Framework.sproutcoreFrameworks(this, options)
   
   # *buildRoot* creates the root html file and a symlink to it.
   #
@@ -1722,22 +1903,26 @@ class App
   build: (callbackAfterBuild) ->
     class FrameworksBuilder extends process.EventEmitter
       constructor: (@frameworks) ->
+        console.log 'FrameworksBuilder', @frameworks.length
         @count = @frameworks.length
 
       build: ->
         for framework in @frameworks
           framework.build =>
             @count -= 1
+            console.log @count
             @emit 'end'  if @count <= 0
+
+    # Create a fresh unique *buildVersion* as a long **Date** instance for the current time.
+    #
+    @buildVersion = new Date().getTime()
 
     @buildRoot()
     builder = new FrameworksBuilder(@frameworks)
     builder.on 'end', =>
-      console.log "Build for #{@path} is complete."
-      if callbackAfterBuild?
-        console.log "Registering files."
-        @registerFiles()
-        callbackAfterBuild()
+      console.log "Build for #{@path} is complete.  Registering files."
+      @registerFiles()
+      callbackAfterBuild() if callbackAfterBuild?
     console.log "Build for #{@path} has started."
     builder.build()
     
@@ -1758,37 +1943,123 @@ class App
     for framework in @frameworks
       @registerFile(file.url(), file) for file in framework.allFiles()
 
-  # The *save* method first creates a fresh unique *buildVersion* as a long **Date** instance
-  # for the current time, then the contained **Saver** class is used to save child
+  # The contained **Stager** class is used to save frameworks and their files.
+  #
+  stage: (callbackAfterStage) =>
+    class Stager
+      constructor: (@app, @file) ->
+        
+      save: ->
+        @file.stagingTaskHandlerSet.exec @file, null, (response) =>
+          if response.data? and response.data.length > 0
+            path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), @file.pathForSave())
+            File.createDirectory path_module.dirname(path)
+            fs.writeFile path, response.data, (err) ->
+              throw err  if err
+
+    for framework in @frameworks
+      new Stager(this, file).save() for file in framework.resourceFiles
+      new Stager(this, file).save() for file in framework.stylesheetFiles
+      new Stager(this, file).save() for file in framework.scriptFiles
+
+    callbackAfterStage()
+
+  # The contained **Chancer** class is used to call Chance for css and slices. <-- Was this an idea? (See Stager)
+  #
+  chance: (callbackAfterChance) =>
+    for framework in @frameworks
+      # Invoke Chance on css and resource files to process for SC-specific css directives and spriting.
+      #
+      # We create the ChanceProcessor Instance now, even though we don't run the whole thing.
+      # It is the only way to know what sprites, etc. need to be processed.
+      #
+      # To help, we cache the ChanceProcessor Instance based on a key we generate. The
+      # ChanceProcessorFactory class does this for us. It will automatically handle when 
+      # things change, for the most part (though the builder still has to tell Chance to 
+      # double-check things, etc.)
+      #
+      # The options for the ChanceProcessor call should be self-explanatory, except for
+      # instanceId, which is a unique identifier for the instance shared across localizations.
+      # This prevents conflicts within the SAME CSS file: Chance makes sure that all rules for
+      # generated images include this key. We'll use the framework name, recalling that a 
+      # framework, as used in busser, can be an app.
+      #
+      #chanceKey = path_module.join(@app.pathForSave, @app.buildVersion.toString(), "#{@name}.css")
+      chanceKey = path_module.join(framework.app.pathForStage, framework.app.buildVersion.toString(), "#{framework.path}.css")
+      console.log 'chanceKey', chanceKey
+      #chanceKey = @url()
+      #@chanceKey = @path
+    
+      # Create the ChanceProcessor instance for this framework, with general options for the app.
+      #
+      opts =
+        theme: framework.app.cssTheme
+        minifyStylesheets: framework.app.minifyStylesheets
+        optimizeSprites: framework.app.optimizeSprites
+        padSpritesForDebugging: framework.app.padSpritesForDebugging
+        instanceId: framework.name
+      framework.chanceProcessor = chanceProcessorFactory.instance_for_key chanceKey, opts
+    
+      # Add stylesheet and resource files to Chance, and reset their taskHandlerSet to chanceTasks,
+      # which will operate on staged files.
+      #
+      for chanceFile in [framework.stylesheetFiles..., framework.resourceFiles...]
+        #chance.add_file chanceFile.path
+        #chance.add_file chanceFile.url()
+        chance.add_file chanceFile.path
+    
+        # Remove source/ from the filename for sc_require and @import
+        #@app.chanceFiles[chanceFile.path.replace(/^source\//, '')] = chanceFile.path
+        #@chanceFiles[chanceFile.url()] = chanceFile
+        framework.chanceFiles[chanceFile.path] = chanceFile.path
+
+        chanceFile.taskHandlerSet = chanceTasks
+
+      # Chance will create a chance.css, or chance-sprited.css, or other similarly named
+      # master .css file for the framework. The chanceTasks handlers will map the names of
+      # framework .css files used in Busser to those used in Chance, e.g. ../Desktop.css will
+      # be mapped to chance.css.
+      if framework.virtualStylesheetReference?
+        framework.virtualStylesheetReference.file.taskHandlerSet = chanceTasks
+
+      chanceProcessorFactory.update_instance chanceKey, opts, framework.chanceFiles
+      
+      # This code block is from Abbot -- so far not used in Busser for anything.
+      framework.chanceFilename = "chance" + (if framework.app.useSprites then "-sprited" else "") + ".css"
+      if framework.app.useSprites
+        framework.spriteNames.push("#{framework.name}-#{spriteName}") for spriteName in chance.sprite_names
+
+    callbackAfterChance()
+
+  # The contained **Saver** class is used to save child
   # frameworks and usually some combination of combined virtual files. The logic for
   # combining and bundling frameworks and application code flows in a series of if
   # else blocks until the main root html file is writen.
   #
   save: =>
-    @buildVersion = new Date().getTime()
-
+    console.log('in save')
     class Saver
-      constructor: (@buildVersion, @app, @file) ->
+      constructor: (@app, @file) ->
         
       save: ->
         @file.taskHandlerSet.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            path = path_module.join(@app.pathForSave, @buildVersion.toString(), @file.pathForSave())
+            path = path_module.join(@app.pathForSave, @app.buildVersion.toString(), @file.pathForSave())
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
 
     for framework in @frameworks
       for file in framework.resourceFiles
-        new Saver(@buildVersion, this, file).save()
+        new Saver(this, file).save()
       if framework.combineStylesheets
-        new Saver(@buildVersion, this, framework.virtualStylesheetReference.file) if framework.virtualStyleSheetReference?
+        new Saver(this, framework.virtualStylesheetReference.file).save() if framework.virtualStyleSheetReference?
       else
-        new Saver(@buildVersion, this, file) for file in framework.orderedStylesheetFiles
+        new Saver(this, file).save() for file in framework.orderedStylesheetFiles
       if framework.combineScripts
-        new Saver(@buildVersion, this, framework.virtualScriptReference.file) if framework.virtualScriptReference?
+        new Saver(this, framework.virtualScriptReference.file).save() if framework.virtualScriptReference?
       else
-        new Saver(@buildVersion, this, file) for file in framework.orderedScriptFiles
+        new Saver(this, file).save() for file in framework.orderedScriptFiles
 
     if @combineStylesheets
       virtualStylesheetFile = new VirtualStylesheetFile
@@ -1796,11 +2067,11 @@ class App
         framework: this
         taskHandlerSet: joinTasks
         children: (fw.virtualStylesheetReference.file for fw in @frameworks when fw.virtualStylesheetReference?)
-      new Saver(@buildVersion, this, virtualStylesheetFile).save()
+      new Saver(this, virtualStylesheetFile).save()
     else
       for framework in @frameworks
         for file in framework.orderedStylesheetFiles
-          new Saver(@buildVersion, this, file).save()
+          new Saver(this, file).save()
 
     if @combineScripts
       virtualScriptFile = new VirtualScriptFile
@@ -1808,11 +2079,12 @@ class App
         framework: this
         taskHandlerSet: joinTasks
         children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
-      new Saver(@buildVersion, this, virtualScriptFile).save()
+      console.log 'about to save, at:', virtualScriptFile.pathForSave()
+      new Saver(this, virtualScriptFile).save()
     else
       for framework in @frameworks
         for file in framework.orderedScriptFiles
-          new Saver(@buildVersion, this, file).save()
+          new Saver(this, file).save()
 
     if virtualStylesheetFile?
       htmlStylesheetLinks = "<link href=\"#{@urlPrefix + virtualStylesheetFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
@@ -1838,11 +2110,11 @@ class App
       framework: this
 
     path = path_module.join(@pathForSave, @buildVersion.toString(), htmlFile.pathForSave())
+
     File.createDirectory path_module.dirname(path)
-    htmlFile.content (data) ->
+    htmlFile.content htmlFile.path, (data) ->
       fs.writeFile path, data, (err) ->
         throw err  if err
-
 
 # Proxy
 # =====
@@ -1866,6 +2138,14 @@ class Proxy
     @onData = (chunk) =>
       @body = ""  if @body is null
       @body += chunk
+
+    # In the conf file, for proxies, the format will be something like:
+    # 
+    # "proxies": [{ 
+    #    "hostname": "localhost", 
+    #    "port": 8000, 
+    #    "prefix": "/" 
+    # }],
 
   onEnd: (request, response) =>
     proxyClient = undefined
@@ -1969,10 +2249,13 @@ class Server
       response.end()
   
   file: (path) ->
+    console.log 'file:', path
     file = null
     for app in @apps
       file = app.files[path]
+      console.log '    found file:', path if file?
       return file if file?
+    console.log '    but why oh why are we here?'
     file
 
   run: ->
@@ -1981,13 +2264,16 @@ class Server
         path = url.parse(request.url).pathname.slice(1)
         file = @file(path)
         if not file?
+          console.log 'not file? is true'
           if @shouldProxy()
             for p in @proxies
               break if p.proxy(request, response)
           else
+            console.log 'not proxying, so 404'
             response.writeHead 404
             response.end()
         else
+          console.log 'serving it'
           @serve file, request, response
     ).listen @port, @hostname, =>
       app_url = url.format
@@ -2019,6 +2305,9 @@ exec = (appTargets, actionItems) ->
         name: appConf["name"]
         title: appConf["title"]
         path: appConf["path"]
+        pathForSave: appConf["pathForSave"]
+        pathForStage: appConf["pathForStage"]
+        pathForChance: appConf["pathForChance"]
         theme: appConf["theme"]
         buildLanguage: appConf["buildLanguage"]
         combineScripts: appConf["combineScripts"]
@@ -2026,24 +2315,30 @@ exec = (appTargets, actionItems) ->
         minifyScripts: appConf["minifyScripts"]
         minifyStylesheets: appConf["minifyStylesheets"]
         cssTheme: appConf["cssTheme"]
+        useSprites: appConf['useSprites']
+        optimizeSprites: appConf['optimizeSprites']
+        padSpritesForDebugging: appConf['padSpritesForDebugging']
   
       myApp.frameworks = []
-      myApp.frameworks.push new BootstrapFramework()
+      myApp.frameworks.push new BootstrapFramework(myApp)
   
       for fwConf in appConf["sc-frameworks"]
+        console.log 'fwConf.conf', fwConf.conf, fwConf.name, defaultFrameworksDevConf[fwConf.name]
         switch fwConf.conf
-          when "dev" then myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
-          when "prod" then myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
+          when "dev" then myApp.frameworks.push new Framework(myApp, defaultFrameworksDevConf[fwConf.name])
+          when "prod" then myApp.frameworks.push new Framework(myApp, defaultFrameworksProdConf[fwConf.name])
           when fwConf.conf instanceof String # The default for unknown is dev.
-            myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
+            myApp.frameworks.push new Framework(myApp, defaultFrameworksDevConf[fwConf.name])
           when fwConf.conf instanceof Object
-            myApp.frameworks.push new Framework(fwConf.conf)
+            myApp.frameworks.push new Framework(myApp, fwConf.conf)
   
       for fwConf in appConf["custom-frameworks"]
         if fwConf.conf instanceof Object
-          myApp.frameworks.push new Framework(fwConf.conf)
+          myApp.frameworks.push new Framework(myApp, fwConf.conf)
     
-      myApp.frameworks.push new Framework
+      console.log(f.name, f.combineScripts) for f in myApp.frameworks
+
+      myApp.frameworks.push new Framework myApp,
         name: myApp.name
         path: "apps/#{myApp.name}"
         combineScripts: true
@@ -2053,26 +2348,36 @@ exec = (appTargets, actionItems) ->
         
       switch actionItems
         when "build" then myApp.build()
-        when "buildsave" then myApp.build(myApp.save)
-        when "buildrun" then myApp.build ->
-          serverHash = nconf.get('server')
-          server = new Server
-            hostname: serverHash['hostname']
-            port: serverHash['port']
-            allowCrossSiteRequests: serverHash['allowCrossSiteRequests']
-            proxyHashes: appConf.proxies
-          server.addApp(myApp)
-          server.run()
-        when "buildsaverun" then myApp.build ->
+        when "buildstage" then myApp.build ->
+          myApp.stage ->
+            myApp.chance()
+        when "buildstagesave" then myApp.build ->
+          myApp.stage ->
+            myApp.chance()
           myApp.save()
-          serverHash = nconf.get('server')
-          server = new Server
-            hostname: serverHash['hostname']
-            port: serverHash['port']
-            allowCrossSiteRequests: serverHash['allowCrossSiteRequests']
-            proxyHashes: appConf.proxies
-          server.addApp(myApp)
-          server.run()
+        when "buildstagerun" then myApp.build ->
+          myApp.stage ->
+            myApp.chance ->
+              serverHash = nconf.get('server')
+              server = new Server
+                hostname: serverHash['hostname']
+                port: serverHash['port']
+                allowCrossSiteRequests: serverHash['allowCrossSiteRequests']
+                proxyHashes: appConf.proxies
+              server.addApp(myApp)
+              server.run()
+        when "buildstagesaverun" then myApp.build ->
+          myApp.stage ->
+            myApp.chance ->
+              myApp.save()
+              serverHash = nconf.get('server')
+              server = new Server
+                hostname: serverHash['hostname']
+                port: serverHash['port']
+                allowCrossSiteRequests: serverHash['allowCrossSiteRequests']
+                proxyHashes: appConf.proxies
+              server.addApp(myApp)
+              server.run()
 
 # Initialize nconf for command line arguments and for environmental settings
 #

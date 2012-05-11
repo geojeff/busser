@@ -6,6 +6,12 @@ Prominent Note at the Top
 
 **_This program does not well work yet..._**
 
+UPDATE 2012-05-11: With work on the SproutCore 1.8 release, attention
+fell away from busser development. But now is rekindled with help from
+mauritslamers. The Chance port has been moved from busboy, as a newly
+named tool, to be chance.coffee as a source file within busser. That
+way the Chance port can be also used in garcon.
+
 UPDATE 2012-02-02: To the point where layout and css of themes, and
 for starting work on busboy begins, with study of Chance and other
 available css and slicing possibilities.
@@ -117,6 +123,19 @@ analysis printouts.
 **DONE 2012-01-28** Format the docco presentation by customizing docco css
 for the project. [Not by customizing css, yet, but by use of md formatting.]
 
+Add build time console reporting.
+
+Study how the command line tools work in Abbot, for the functionality that
+might most be needed. The project init and generation code is in the tools
+module, e.g. in abbot/lib/sproutcore/models/generator.rb. The complexity
+of buildfiles and of handling merging them for varied targets is rather
+substantial, and can be weighed against requiring the developer to more
+explicitly lay out a project hierarchy and dependencies in an nconf json file.
+
+In Abbot, the interface to Chance allows for re-staging of files. When is
+that needed, and would it be easy to implement in busser? Some comments in
+abbot/lib/sproutcore/builders/chance_file.rb.
+ 
 Make busser and busboy into installable npm modules.
 
 Review the url, urlFor, and similar functions in Busser, which were not

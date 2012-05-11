@@ -330,7 +330,7 @@ you don't want to. Contrast:
             @path = null
             @framework = null
             @children = null
-            @handlerSet = null
+            @taskHandlerSet = null
             @isHtml = false
             @isVirtual = false
             @symlink = null
