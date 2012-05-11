@@ -346,7 +346,7 @@ class ChanceParser
       # We should still be able to use json to parse single-quoted strings
       # if we replace the quotes with double-quotes. The methodology should
       # be identical so long as we replace any unescaped quotes...
-      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\1\\"')}\""
+      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\1\\"')}\"" # [TODO] Added temporary / in front of the 1 (Grok this).
       #console.log 'replaced double with single quotes:', cssString
     else if cssString[0..0] isnt '"'
       #console.log 'ERROR string is not delimited by quotes!', cssString # This is not an error -- if not in quotes, just return cssString.
