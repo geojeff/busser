@@ -136,14 +136,14 @@ In Abbot, the interface to Chance allows for re-staging of files. When is
 that needed, and would it be easy to implement in busser? Some comments in
 abbot/lib/sproutcore/builders/chance_file.rb.
  
-Make busser and busboy into installable npm modules.
+Make busser and chance into installable npm modules. (Need to be separate?)
 
 Review the url, urlFor, and similar functions in Busser, which were not
 substantially changed from garçon, to see if all of that can be simpler.
 
 Add tests, using vows perhaps, but take a fresh look at mocha and any other
 testing frameworks available. Some of the node.js modules already employed
-in busser/busboy can be used in concert to make fixtures and testing harnesses.
+in busser/chance can be used in concert to make fixtures and testing harnesses.
 
 Support for CoffeeScript programming of SproutCore will be explored and
 developed as a primary focus after the dust settles on other roadmap items.
@@ -258,7 +258,7 @@ See https://github.com/flatiron/nconf for nconf details.
 Running
 -------
 
-busser and busboy use the node.js prompt module, along with the colors module,
+busser uses the node.js prompt module, along with the colors module,
 to prompt for and validate user input, if the run mode is interactive. If the
 run mode is command-line-only, the same arguments are validated and parsed with
 the same code, after which, accepted user input is fed to nconf. 

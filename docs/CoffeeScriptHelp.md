@@ -1,8 +1,8 @@
 CoffeeScript Help
 -----------------
 
-This document describes attractive features of CoffeeScript, with examples from busser
-and busboy:
+This document describes attractive features of CoffeeScript, with examples from busser.coffee
+and chance.coffee:
 
 * **less code**. As conventions offered by CoffeeScript are used, there are 
 fewer lines of code, not just by the omission of {, }, (, and ), but by language features
@@ -396,4 +396,4 @@ you don't want to. Contrast:
 
     > Breaking it up is one thing; interspersing comments is even better.
 
-There will be more items like these to share, as programming for busser and busboy continues...
+There will be more items like these to share, as programming for busser.coffee and chance.coffee continues...
