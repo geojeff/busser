@@ -49,7 +49,7 @@ StringScanner = require("strscan").StringScanner
 # https://gist.github.com/742162
 #
 mkdir_p = (path, mode, callback, position) ->
-  mode = mode or 0777
+  mode = mode or 0o777
   position = position or 0
   parts = path_module.normalize(path).split("/")
   if position >= parts.length
@@ -333,7 +333,7 @@ class ChanceParser
     output
 
   handle_comment: ->
-    #console.log 'handle_comment'
+    console.log 'handle_comment'
     scanner = @scanner
     scanner.scanChar() # /
     scanner.scanChar() # *
@@ -346,8 +346,8 @@ class ChanceParser
       # We should still be able to use json to parse single-quoted strings
       # if we replace the quotes with double-quotes. The methodology should
       # be identical so long as we replace any unescaped quotes...
-      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\1\\"')}\""
-      #console.log 'replaced single with double quotes:', cssString
+      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\1\\"')}\""
+      #console.log 'replaced double with single quotes:', cssString
     else if cssString[0..0] isnt '"'
       #console.log 'ERROR string is not delimited by quotes!', cssString # This is not an error -- if not in quotes, just return cssString.
       return cssString
@@ -557,8 +557,8 @@ class ChanceParser
     # We prefix with -chance; this should let everything be passed through more
     # or less as-is. Postprocessing will turn it into -background-position.
     #
-    output += "\t  -chance-offset: \"#{slice["name"]}\" #{offset[0]} #{offset[1]};\n" # [TODO] Fix missing indent and also \n in Ruby Chance.
-    output += "\t  background-repeat: #{slice["repeat"]}"
+    output += "-chance-offset: \"#{slice["name"]}\" #{offset[0]} #{offset[1]};\n" # [TODO] Fix missing indent and also \n in Ruby Chance.
+    output += "background-repeat: #{slice["repeat"]}"
     output
     
   handle_slice_include: ->
@@ -605,27 +605,27 @@ class ChanceParser
     scanner = @scanner
     scanner.scan /@include slices\s*/
 
-    arguments = @parse_argument_list()
+    slice_arguments = @parse_argument_list()
 
     # slices() only supports four-param, left top right bottom rectangles.
     for key in [ "top", "left", "bottom", "right" ]
-      arguments[key] = if arguments[key]? then parseInt(arguments[key]) else 0
+      slice_arguments[key] = if slice_arguments[key]? then parseInt(slice_arguments[key]) else 0
 
-    values = arguments.values
+    values = slice_arguments.values
 
-    left = arguments["left"]
-    top = arguments["top"]
-    right = arguments["right"]
-    bottom = arguments["bottom"]
+    left = slice_arguments["left"]
+    top = slice_arguments["top"]
+    right = slice_arguments["right"]
+    bottom = slice_arguments["bottom"]
 
     # determine fill method
-    fill = arguments["fill"] ? "1 0"
+    fill = slice_arguments["fill"] ? "1 0"
     fill = fill.trim().split(/\s+/)
     fill_width = parseInt(fill[0])
     fill_height = parseInt(fill[1])
 
     # skip control
-    skip = arguments["skip"]
+    skip = slice_arguments["skip"]
     if not skip?
       skip = []
     else
@@ -643,7 +643,7 @@ class ChanceParser
     skip_bottom = skip['bottom'] ? null
     skip_bottom_right = skip['bottom-right'] ? null
 
-    filename = @parse_string arguments[0]
+    filename = @parse_string slice_arguments[0]
 
     # we are going to form 9 slices. If any are empty we'll skip them
 
@@ -653,18 +653,18 @@ class ChanceParser
       top: 0
       width: left
       height: top
-      sprite_anchor: arguments["top-left-anchor"]
-      sprite_padding: arguments["top-left-padding"]
-      offset: arguments["top-left-offset"]
+      sprite_anchor: slice_arguments["top-left-anchor"]
+      sprite_padding: slice_arguments["top-left-padding"]
+      offset: slice_arguments["top-left-offset"]
       filename: filename
 
     left_slice =
       left: 0
       top: top
       width: left
-      sprite_anchor: arguments["left-anchor"]
-      sprite_padding: arguments["left-padding"]
-      offset: arguments["left-offset"]
+      sprite_anchor: slice_arguments["left-anchor"]
+      sprite_padding: slice_arguments["left-padding"]
+      offset: slice_arguments["left-offset"]
       filename: filename
       repeat: if fill_height is 0 then null else "repeat-y" # [TODO] using null where nil was in ruby
       # we fill in either height or bottom, depending on fill
@@ -674,18 +674,18 @@ class ChanceParser
       bottom: 0
       width: left
       height: bottom
-      sprite_anchor: arguments["bottom-left-anchor"]
-      sprite_padding: arguments["bottom-left-padding"]
-      offset: arguments["bottom-left-offset"]
+      sprite_anchor: slice_arguments["bottom-left-anchor"]
+      sprite_padding: slice_arguments["bottom-left-padding"]
+      offset: slice_arguments["bottom-left-offset"]
       filename: filename
 
     top_slice =
       left: left
       top: 0
       height: top
-      sprite_anchor: arguments["top-anchor"]
-      sprite_padding: arguments["top-padding"]
-      offset: arguments["top-offset"]
+      sprite_anchor: slice_arguments["top-anchor"]
+      sprite_padding: slice_arguments["top-padding"]
+      offset: slice_arguments["top-offset"]
       filename: filename
       repeat: if fill_width is 0 then null else "repeat-x"
       # we fill in either width or right, depending on fill
@@ -693,9 +693,9 @@ class ChanceParser
     middle_slice =
       left: left
       top: top
-      sprite_anchor: arguments["middle-anchor"]
-      sprite_padding: arguments["middle-padding"]
-      offset: arguments["middle-offset"]
+      sprite_anchor: slice_arguments["middle-anchor"]
+      sprite_padding: slice_arguments["middle-padding"]
+      offset: slice_arguments["middle-offset"]
       filename: filename
       repeat: if fill_height isnt 0 then (if fill_width isnt 0 then "repeat" else "repeat-y") else (if fill_width isnt 0 then "repeat-x" else null)
       # fill in width, height or right, bottom depending on fill settings
@@ -704,9 +704,9 @@ class ChanceParser
       left: left
       bottom: 0
       height: bottom
-      sprite_anchor: arguments["bottom-anchor"]
-      sprite_padding: arguments["bottom-padding"]
-      offset: arguments["bottom-offset"]
+      sprite_anchor: slice_arguments["bottom-anchor"]
+      sprite_padding: slice_arguments["bottom-padding"]
+      offset: slice_arguments["bottom-offset"]
       filename: filename
       repeat: if fill_width is 0 then null else "repeat-x"
       # we fill in width or right depending on fill settings
@@ -716,18 +716,18 @@ class ChanceParser
       top: 0
       width: right
       height: top
-      sprite_anchor: arguments["top-right-anchor"]
-      sprite_padding: arguments["top-right-padding"]
-      offset: arguments["top-right-offset"]
+      sprite_anchor: slice_arguments["top-right-anchor"]
+      sprite_padding: slice_arguments["top-right-padding"]
+      offset: slice_arguments["top-right-offset"]
       filename: filename
 
     right_slice =
       right: 0
       top: top
       width: right
-      sprite_anchor: arguments["right-anchor"]
-      sprite_padding: arguments["right-padding"]
-      offset: arguments["right-offset"]
+      sprite_anchor: slice_arguments["right-anchor"]
+      sprite_padding: slice_arguments["right-padding"]
+      offset: slice_arguments["right-offset"]
       filename: filename
       repeat: if fill_height is 0 then null else "repeat-y"
       # we fill in either height or top depending on fill settings
@@ -737,9 +737,9 @@ class ChanceParser
       bottom: 0
       width: right
       height: bottom
-      sprite_anchor: arguments["bottom-right-anchor"]
-      sprite_padding: arguments["bottom-right-padding"]
-      offset: arguments["bottom-right-offset"]
+      sprite_anchor: slice_arguments["bottom-right-anchor"]
+      sprite_padding: slice_arguments["bottom-right-padding"]
+      offset: slice_arguments["bottom-right-offset"]
       filename: filename
 
     if fill_width is 0
