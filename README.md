@@ -203,6 +203,12 @@ npm install colors
 
 npm install less
 
+npm install strscan
+
+npm install underscore
+
+npm install microtime
+
 npm install uglify-js
 
 These npm install steps will populate a node_modules directory in the busser
