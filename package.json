@@ -16,7 +16,7 @@
     "javascript"
   ],
   "bin": {
-    "busser": "./bin/cli.js"
+    "busser": "./bin/busser.js"
   },
   "dependencies": {
     "nconf": ">= 0.5.0",
