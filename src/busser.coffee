@@ -8,7 +8,7 @@ path_module  = require "path"
 nconf        = require "nconf"
 prompt       = require "prompt"
 colors       = require "colors"
-sass         = require "sass"
+#sass         = require "sass"
 stylus       = require "stylus"
 {exec}       = require "child_process"
 {spawn}      = require "child_process"
@@ -16,12 +16,12 @@ EventEmitter = require('events').EventEmitter
 uglify =
   parser: require("uglify-js").parser
   processor: require("uglify-js").uglify
-try
-  less = require("less")
-catch e
-  util.puts "WARNING: 'less' could not be required."
-  util.puts "         You won't be able to parse .less files."
-  util.puts "         Install it with `npm install less`."
+#try
+#  less = require("less")
+#catch e
+#  util.puts "WARNING: 'less' could not be required."
+#  util.puts "         You won't be able to parse .less files."
+#  util.puts "         Install it with `npm install less`."
 Chance                 = require("./chance").Chance
 ChanceProcessorFactory = require("./chance").ChanceProcessorFactory
 
@@ -812,21 +812,21 @@ class Busser
 
   # *sassify* is a static utility method that applies sass to data.
   #
-  @sassify: (path, data, callback) ->
-    sass.render data, (err, css) ->
-      if err?
-        util.puts "ERROR: initial " + err.message + path
-      else
-        callback css
+#  @sassify: (path, data, callback) ->
+#    sass.render data, (err, css) ->
+#      if err?
+#        util.puts "ERROR: initial " + err.message + path
+#      else
+#        callback css
 
   # *stylify* is a static utility method that applies stylus to data.
   #
-  @stylify: (path, data, callback) ->
-    stylus.render data, (err, css) ->
-      if err?
-        util.puts "ERROR: initial " + err.message + path
-      else
-        callback css
+#  @stylify: (path, data, callback) ->
+#    stylus.render data, (err, css) ->
+#      if err?
+#        util.puts "ERROR: initial " + err.message + path
+#      else
+#        callback css
 
   # *scssify* is a static utility method that applies scss to data.
   #
@@ -839,20 +839,20 @@ class Busser
 
   # *lessify* is a static utility method that applies less to data.
   #
-  @lessify: (path, data, callback) ->
-    parser = new less.Parser(
-      optimization: 0
-      paths: [ path ]
-    )
-    parser.parse data, (err, tree) =>
-      if err?
-        util.puts "ERROR: initial " + err.message + path
-      else
-        try
-          data = tree.toCSS()
-        catch e
-          util.puts "ERROR: toCSS " + e.message + path
-      callback data
+#  @lessify: (path, data, callback) ->
+#    parser = new less.Parser(
+#      optimization: 0
+#      paths: [ path ]
+#    )
+#    parser.parse data, (err, tree) =>
+#      if err?
+#        util.puts "ERROR: initial " + err.message + path
+#      else
+#        try
+#          data = tree.toCSS()
+#        catch e
+#          util.puts "ERROR: toCSS " + e.message + path
+#      callback data
 
   # The *scss* taskHandler applies the scss parser to file data.
   #
@@ -880,28 +880,28 @@ class Busser
 
   # The *less* taskHandler applies the less parser to file data.
   #
-  less:
-    exec: (file, request, callback) ->
-      if less? and extname(file.path) is ".css" # not .less, not .scss, not .styl
-        if @next?
-          @next.exec file, request, (response) ->
-            #Busser.lessify file.framework.path, response.data, (lessifiedData) ->
-            Busser.sassify file.framework.path, response.data, (lessifiedData) ->
-              callback data: lessifiedData
-        else
-          file.content file.path, (err, data) ->
-            if err
-              throw err
-            else
-              Busser.lessify file.framework.path, data, (lessifiedData) ->
-                callback data: lessifiedData
-      else
-        if @next?
-          @next.exec file, request, (response) ->
-            callback response
-        else
-          file.content file.path, (err, data) ->
-            throw err  if err else callback data: data
+#  less:
+#    exec: (file, request, callback) ->
+#      if less? and extname(file.path) is ".css" # not .less, not .scss, not .styl
+#        if @next?
+#          @next.exec file, request, (response) ->
+#            #Busser.lessify file.framework.path, response.data, (lessifiedData) ->
+#            Busser.sassify file.framework.path, response.data, (lessifiedData) ->
+#              callback data: lessifiedData
+#        else
+#          file.content file.path, (err, data) ->
+#            if err
+#              throw err
+#            else
+#              Busser.lessify file.framework.path, data, (lessifiedData) ->
+#                callback data: lessifiedData
+#      else
+#        if @next?
+#          @next.exec file, request, (response) ->
+#            callback response
+#        else
+#          file.content file.path, (err, data) ->
+#            throw err  if err else callback data: data
 
   # The *chance* taskHandler applies Chance parser to file data.
   #
@@ -982,7 +982,7 @@ busser = new Busser
 # list returned is filtered for known non-taskHandler properties and methods.
 #
 availableTaskHandlerNames  = ->
-  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "sassify", "lessify" ])
+  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic" ])
   #(h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "scssify", "sassify", "lessify" ])
 
 # **TaskHandlerSet** singletons are used in the specialized File subclasses defined
