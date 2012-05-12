@@ -8,6 +8,7 @@ path_module  = require "path"
 nconf        = require "nconf"
 prompt       = require "prompt"
 colors       = require "colors"
+sass         = require "sass"
 stylus       = require "stylus"
 {exec}       = require "child_process"
 {spawn}      = require "child_process"
@@ -829,12 +830,12 @@ class Busser
 
   # *scssify* is a static utility method that applies scss to data.
   #
-  @scssify: (path, data, callback) ->
-    scss.parse data, (err, css) ->
-      if err?
-        util.puts "ERROR: initial " + err + path
-      else
-        callback css
+#  @scssify: (path, data, callback) ->
+#    scss.parse data, (err, css) ->
+#      if err?
+#        util.puts "ERROR: initial " + err + path
+#      else
+#        callback css
 
   # *lessify* is a static utility method that applies less to data.
   #
@@ -855,27 +856,27 @@ class Busser
 
   # The *scss* taskHandler applies the scss parser to file data.
   #
-  scss:
-    exec: (file, request, callback) ->
-      if scss? and extname(file.path) is ".css" # not .less, not .scss, not .styl
-        if @next?
-          @next.exec file, request, (response) ->
-            Busser.scssify file.framework.path, response.data, (scssifiedData) ->
-              callback data: scssifiedData
-        else
-          file.content file.path, (err, data) ->
-            if err
-              throw err
-            else
-              Busser.scssify file.framework.path, data, (scssifiedData) ->
-                callback data: scssifiedData
-      else
-        if @next?
-          @next.exec file, request, (response) ->
-            callback response
-        else
-          file.content file.path, (err, data) ->
-            throw err  if err else callback data: data
+#  scss:
+#    exec: (file, request, callback) ->
+#      if scss? and extname(file.path) is ".css" # not .less, not .scss, not .styl
+#        if @next?
+#          @next.exec file, request, (response) ->
+#            Busser.scssify file.framework.path, response.data, (scssifiedData) ->
+#              callback data: scssifiedData
+#        else
+#          file.content file.path, (err, data) ->
+#            if err
+#              throw err
+#            else
+#              Busser.scssify file.framework.path, data, (scssifiedData) ->
+#                callback data: scssifiedData
+#      else
+#        if @next?
+#          @next.exec file, request, (response) ->
+#            callback response
+#        else
+#          file.content file.path, (err, data) ->
+#            throw err  if err else callback data: data
 
   # The *less* taskHandler applies the less parser to file data.
   #
@@ -981,7 +982,8 @@ busser = new Busser
 # list returned is filtered for known non-taskHandler properties and methods.
 #
 availableTaskHandlerNames  = ->
-  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "scssify", "sassify", "lessify" ])
+  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "sassify", "lessify" ])
+  #(h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "scssify", "sassify", "lessify" ])
 
 # **TaskHandlerSet** singletons are used in the specialized File subclasses defined
 # below. The names of the taskHandlerSets match the **File** subclasses, generally,
