@@ -9,6 +9,9 @@ stylus        = require "stylus"
 mkdirp        = require "mkdirp"
 StringScanner = require("strscan").StringScanner
 
+# PORTED FROM: SproutCore's Abbot build tool system, from the Chance css processing
+#              tool primarily written by Alex Iskander (all in Ruby).
+# 
 # PORTING NOTE: Porting the Ruby code in the original Chance proceeded by first
 # concatenating all code into this source file, followed by arrangment in several
 # CoffeeScript classes matching main Ruby modules, with some combining as noted:
