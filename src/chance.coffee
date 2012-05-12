@@ -5,7 +5,6 @@ microtime     = require "microtime"
 sys           = require "sys"
 _             = require "underscore"
 gm            = require "../node_modules/gm"
-scss          = require "scss"
 stylus        = require "stylus"
 mkdirp        = require "mkdirp"
 StringScanner = require("strscan").StringScanner
