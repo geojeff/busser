@@ -1142,15 +1142,6 @@ class Framework
     else
       @stylesheetFiles.push(new StylesheetFile({ path: path, framework: this }))
 
-  addChanceStylesheetFile: (path, options) ->
-    opts = { path: path, framework: this }
-    @opts[key] = options[key] for own key of options
-
-    if @minifyStylesheets
-      @stylesheetFiles.push(new MinifiedChanceStylesheetFile(opts))
-    else
-      @stylesheetFiles.push(new ChanceStylesheetFile(opts))
-
   addScriptFile: (path) ->
     if @minifyScripts
       @scriptFiles.push(new MinifiedScriptFile({ path: path, framework: this }))
