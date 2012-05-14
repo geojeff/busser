@@ -1,5 +1,3 @@
-sc_require('statechart');
-
 TodosThree.SHOWING_DESTROY_CONFIRMATION = SC.State.design({
   _panel: null,
 

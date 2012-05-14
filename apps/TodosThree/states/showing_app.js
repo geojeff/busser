@@ -1,5 +1,3 @@
-sc_require('statechart');
-
 TodosThree.SHOWING_APP = SC.State.design({
   enterState: function() {
     TodosThree.mainPage.get('mainPane').append();
