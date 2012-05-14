@@ -1953,14 +1953,18 @@ class App
                   throw err  if err
                   @count -= 1
                   console.log @count
-                  emit 'end' if @count <= 0
+                  @emit 'end' if @count <= 0
+              else
+                @count -= 1
+                console.log @count, '<<< bad response from staging handler'
+                @emit 'end' if @count <= 0
 
       stager = new Stager(this, files)
       stager.on "end", =>
         callbackAfterStage()
       stager.save()
 
-    # [TODO] the reduce can surely be replace by some use of [].concat a...
+    # [TODO] the reduce can surely be replaced by some use of [].concat a...
     #files = [files for files in [f.resourceFiles, f.stylesheetFiles, f.scriptFiles] when files.length > 0 for f in @frameworks]
     reducer = (prev,item) =>
       prev = prev.concat item.resourceFiles
