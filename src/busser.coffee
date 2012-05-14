@@ -1937,25 +1937,42 @@ class App
   # The contained **Stager** class is used to save frameworks and their files.
   #
   stage: (callbackAfterStage) =>
-    class Stager
-      constructor: (@app, @file) ->
+    stage_files = (files, callbackAfterStage) =>
+      class Stager extends process.EventEmitter
+        constructor: (@app, @files) ->
+          @count = @files.length
         
-      save: ->
-        @file.stagingTaskHandlerSet.exec @file, null, (response) =>
-          if response.data? and response.data.length > 0
-            path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), @file.pathForSave())
-            File.createDirectory path_module.dirname(path)
-            fs.writeFile path, response.data, (err) ->
-              throw err  if err
+        save: ->
+          console.log @count
+          for file in @files
+            file.stagingTaskHandlerSet.exec file, null, (response) =>
+              if response.data? and response.data.length > 0
+                path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), file.pathForSave())
+                File.createDirectory path_module.dirname(path)
+                fs.writeFile path, response.data, (err) =>
+                  throw err  if err
+                  @count -= 1
+                  console.log @count
+                  emit 'end' if @count <= 0
 
-    for framework in @frameworks
-      new Stager(this, file).save() for file in framework.resourceFiles
-      new Stager(this, file).save() for file in framework.stylesheetFiles
-      new Stager(this, file).save() for file in framework.scriptFiles
+      stager = new Stager(this, files)
+      stager.on "end", =>
+        callbackAfterStage()
+      stager.save()
 
-    callbackAfterStage()
+    # [TODO] the reduce can surely be replace by some use of [].concat a...
+    #files = [files for files in [f.resourceFiles, f.stylesheetFiles, f.scriptFiles] when files.length > 0 for f in @frameworks]
+    reducer = (prev,item) =>
+      prev = prev.concat item.resourceFiles
+      prev = prev.concat item.scriptFiles
+      prev = prev.concat item.stylesheetFiles
+      prev
+    files = @frameworks.reduce(reducer, [])
+    #console.log files
 
-  # The contained **Chancer** class is used to call Chance for css and slices. <-- Was this an idea? (See Stager)
+    stage_files files, callbackAfterStage
+
+  # The contained **Chancer** class is used to call Chance for css and slices. <-- [TODO] Was this an idea? (See Stager)
   #
   chance: (callbackAfterChance) =>
     for framework in @frameworks
