@@ -1,3 +1,5 @@
+sc_require('statechart');
+
 TodosThree.READY = SC.State.design({
   enterState: function() {
     if (SC.instanceOf(TodosThree.store.dataSource, SC.FixturesDataSource)) {

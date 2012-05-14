@@ -416,6 +416,7 @@
         { "name": "foundation",      "conf": "dev" },
         { "name": "datastore",       "conf": "dev" },
         { "name": "desktop",         "conf": "dev" },
+        { "name": "statechart",      "conf": "dev" },
         { "name": "template_view",   "conf": "dev" }
       ],
       "custom-frameworks": [

@@ -305,7 +305,7 @@ class ChanceParser
       output.push @handle_empty()
       break if scanner.hasTerminated()
 
-      #console.log 'rem', scanner.getPosition()
+      console.log 'rem', scanner.getPosition()
 
       if scanner.check ChanceParser.BEGIN_SCOPE
         output.push @handle_scope()
@@ -399,7 +399,7 @@ class ChanceParser
     output
 
   handle_theme: ->
-    #console.log 'handle_theme'
+    console.log 'handle_theme'
     scanner = @scanner
     scanner.scan ChanceParser.THEME_DIRECTIVE
 
@@ -1214,10 +1214,10 @@ class ChanceProcessor
     #console.log '_include_file -- does it end in .css', /\.css$/.test(file)
     return if not /\.css$/.test(file)
     
-    #console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)
+    #console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)?
 
     # skip _theme.css files
-    return if /_theme\.css$/.test(file)
+    return if /_theme\.css$/.test(file)?
 
     #console.log 'no, it is not a _theme.css file'
 
@@ -1247,6 +1247,7 @@ class ChanceProcessor
     @file_list.push(file)
 
   _convert_to_styl: (css) ->
+    console.log 'converting to styl'
     convertedLines = []
     for line in css.split('\n')
       trimmed = line.trim()
@@ -1322,10 +1323,11 @@ class ChanceProcessor
       header_file = @chance_header_for_file(relative_paths[file["path"]])
       
       content = "@_chance_file " + relative_paths[file["path"]] + ";\n"
+      console.log 'header_file content', header_file["content"]
       content += header_file["content"]
+      console.log 'file content', file["content"]
       content += file["content"]
 
-      #console.log 'content', content
       parser = new ChanceParser(content, @options)
       parser.parse()
       file["parsed_css"] = parser.css

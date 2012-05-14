@@ -1,3 +1,5 @@
+sc_require('statechart');
+
 TodosThree.statechart = SC.Statechart.create({
 
   trace: YES,

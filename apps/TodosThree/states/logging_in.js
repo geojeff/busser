@@ -1,3 +1,5 @@
+sc_require('statechart');
+
 TodosThree.LOGGING_IN = SC.State.design({             
   initialSubstate: "SHOWING_LOGIN",
  
