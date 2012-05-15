@@ -998,7 +998,8 @@ stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSin
 minifiedStylesheetTasksStaging = busser.taskHandlerSet("staging stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "file"])
 minifiedStylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify"])
 #virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
-virtualStylesheetTasksStaging = busser.taskHandlerSet("staging virtual stylesheet tasks", "/", ["file"])
+virtualStylesheetTasksStaging = busser.taskHandlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
+#virtualStylesheetTasksStaging = busser.taskHandlerSet("staging virtual stylesheet tasks", "/", ["file"])
 virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
 #virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "chance"])
 
@@ -1162,10 +1163,10 @@ class Framework
     console.log 'allFiles for:', @name
     all = []
     all.push @virtualStylesheetReference.file if @virtualStylesheetReference? # [TODO] if the following use OrderedS..Files, then these are redundant?
-    all.push(file) for file in @stylesheetFiles # [TODO] Should this be ordered?
+    all.push(file) for file in @orderedStylesheetFiles # [TODO] Should this be ordered? Changed to ordered 05/15/2012
     all.push @virtualScriptReference.file if @virtualScriptReference?
     console.log('pushing @virtualScriptReference.file', @virtualScriptReference.file.url()) if @virtualScriptReference?
-    all.push(file) for file in @scriptFiles
+    all.push(file) for file in @orderedScriptFiles # [TODO] Same, regarding ordered vs. not.
     all.push(file) for file in @testFiles
     all.push(file) for file in @resourceFiles
     all
@@ -1365,7 +1366,7 @@ class Framework
           opts[key] = options[key]
       try
         fs.statSync "frameworks/sproutcore/frameworks/jquery"
-        frameworkNames = [ "jquery", "runtime", "core_foundation", "datetime", "foundation", "datastore", "desktop", "template_view" ]
+        frameworkNames = [ "jquery", "runtime", "core_foundation", "datetime", "foundation", "statechart", "datastore", "desktop", "template_view" ]
       catch e
         frameworkNames = [ "runtime", "foundation", "datastore", "desktop", "animation" ]
 
@@ -1388,16 +1389,24 @@ class Framework
   # When done, *callbackAfterBuild* is called, if defined.
   #
   build: (callbackAfterBuild) =>
-    # The *createBasicFiles* method scans the framework directory for all files,
-    # filtering by *shouldExcludeFile*, and creates basic File objects: stylesheets, 
-    # scripts, tests, and resources.
+    # Scan the framework directory for all files, filtering by *shouldExcludeFile*, 
+    # and create basic File objects: stylesheets, scripts, tests, and resources.
     #
     createBasicFiles = (callbackAfterBuild) =>
-      class Scanner extends process.EventEmitter
+      class BasicFilesBuilder extends process.EventEmitter
         constructor: (@framework) ->
           @count = 0
-  
-        scan: (path) ->
+        
+        addFile: (file) =>
+          if not @framework.shouldExcludeFile(file)
+            console.log 'GOT STYLES.CSS' if file.indexOf('styles.css') isnt -1
+            switch fileType(file)
+              when "stylesheet" then @framework.addStylesheetFile(file)
+              when "script" then @framework.addScriptFile(file)
+              when "test" then @framework.addTestFile(file)
+              when "resource" then @framework.addResourceFile(file)
+
+        walk: (path) ->
           @count += 1
           fs.stat path, (err, stats) =>
             @count -= 1
@@ -1407,26 +1416,18 @@ class Framework
               fs.readdir path, (err, subpaths) =>
                 @count -= 1
                 throw err  if err
-                @scan path_module.join(path, subpath) for subpath in subpaths when subpath[0] isnt "." # [TODO] subpath[0] and not subpath[0..0]?
-              @emit "end" if @count <= 0
+                @walk path_module.join(path, subpath) for subpath in subpaths when subpath[0..0] isnt "."
             else
-              if not @framework.shouldExcludeFile(path)
-                switch fileType(path)
-                  when "stylesheet" then @framework.addStylesheetFile(path)
-                  when "script" then @framework.addScriptFile(path)
-                  when "test" then @framework.addTestFile(path)
-                  when "resource" then @framework.addResourceFile(path)
+              @addFile path
             @emit "end" if @count <= 0
-    
-      scanner = new Scanner(this)
-      scanner.on "end", =>
-        finalizeBuild callbackAfterBuild
-      scanner.scan @path
 
-    # The *finalizeBuild* method performs ordering and combining steps after
-    # basic files have been created.
-    #
+      builder = new BasicFilesBuilder(this)
+      builder.on 'end', =>
+        finalizeBuild callbackAfterBuild
+      builder.walk @path
+
     finalizeBuild = (callbackAfterBuild) =>
+      # Perform ordering and combining steps after basic files have been created.
       # Create a virtual stylesheets file if combineStylesheets is set, or sort
       # individual stylesheet files alphabetically. 
       #
@@ -1435,6 +1436,7 @@ class Framework
       #
       @orderedStylesheetFiles = []
 
+      console.log 'finalizing build, stylesheetFiles.length is', @stylesheetFiles.length
       if @stylesheetFiles.length > 0
         if @combineStylesheets is true
           virtualStylesheetFile = new VirtualStylesheetFile
@@ -1480,8 +1482,6 @@ class Framework
         console.log "  #{@name} ", "built.".red
         callbackAfterBuild() if callbackAfterBuild?
 
-    # Fire the build method, passing the provided *callbackAfterBuild*.
-    #
     createBasicFiles callbackAfterBuild
 
 # Reference
@@ -1899,9 +1899,10 @@ class App
 
       build: ->
         for framework in @frameworks
+          console.log 'building...', framework.name, framework.path
           framework.build =>
             @count -= 1
-            console.log @count
+            console.log 'framework build count:', @count
             @emit 'end'  if @count <= 0
 
     # Create a fresh unique *buildVersion* as a long **Date** instance for the current time.
@@ -1938,28 +1939,39 @@ class App
   #
   stage: (callbackAfterStage) =>
     stage_files = (files, callbackAfterStage) =>
-      class Stager extends process.EventEmitter
+
+      class FrameworkStager extends process.EventEmitter
         constructor: (@app, @files) ->
           @count = @files.length
         
-        save: ->
-          console.log @count
-          for file in @files
-            file.stagingTaskHandlerSet.exec file, null, (response) =>
-              if response.data? and response.data.length > 0
-                path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), file.pathForSave())
-                File.createDirectory path_module.dirname(path)
-                fs.writeFile path, response.data, (err) =>
-                  throw err  if err
-                  @count -= 1
-                  console.log @count
-                  @emit 'end' if @count <= 0
-              else
-                @count -= 1
-                console.log @count, '<<< bad response from staging handler'
-                @emit 'end' if @count <= 0
+        save: =>
+          emitEndIfDone = () =>
+            @emit 'end' if --@count <= 0
+            console.log @count
 
-      stager = new Stager(this, files)
+          class FileStager extends process.EventEmitter
+            constructor: (@app, @file) ->
+          
+            save: =>
+              @file.stagingTaskHandlerSet.exec @file, null, (response) =>
+                if response.data? and response.data.length > 0
+                  path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), @file.pathForSave())
+                  File.createDirectory path_module.dirname(path)
+                  console.log 'writing', path
+                  fs.writeFile path, response.data, (err) =>
+                    throw err  if err
+                    console.log 'path written', path
+                    @emit 'end'
+                else
+                  @emit 'end'
+  
+          console.log 'staging', @count, 'files'
+          for file in @files
+            fileStager = new FileStager(@app, file)
+            fileStager.on 'end', emitEndIfDone
+            fileStager.save()
+
+      stager = new FrameworkStager(this, files)
       stager.on "end", =>
         callbackAfterStage()
       stager.save()
@@ -1968,11 +1980,11 @@ class App
     #files = [files for files in [f.resourceFiles, f.stylesheetFiles, f.scriptFiles] when files.length > 0 for f in @frameworks]
     reducer = (prev,item) =>
       prev = prev.concat item.resourceFiles
-      prev = prev.concat item.scriptFiles
-      prev = prev.concat item.stylesheetFiles
+      prev = prev.concat item.orderedScriptFiles # [TODO] changed these to ordered 05/15/2012
+      prev = prev.concat item.orderedStylesheetFiles
       prev
     files = @frameworks.reduce(reducer, [])
-    #console.log files
+    console.log(f.path) for f in files
 
     stage_files files, callbackAfterStage
 
@@ -2015,10 +2027,10 @@ class App
       # Add stylesheet and resource files to Chance, and reset their taskHandlerSet to chanceTasks,
       # which will operate on staged files.
       #
-      for chanceFile in [framework.stylesheetFiles..., framework.resourceFiles...]
+      for chanceFile in [framework.orderedStylesheetFiles..., framework.resourceFiles...]
         #chance.add_file chanceFile.path
         #chance.add_file chanceFile.url()
-        chance.add_file chanceFile.path
+        chance.add_file chanceFile.pathForStage()
     
         # Remove source/ from the filename for sc_require and @import
         #@app.chanceFiles[chanceFile.path.replace(/^source\//, '')] = chanceFile.path
