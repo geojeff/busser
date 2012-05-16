@@ -1005,10 +1005,10 @@ rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", [ "symlink" ])
 
 # Task sets for staging to the tmp dir:
 #
-stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromStaged"])
+stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromOriginal"])
 minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromStaged"])
 virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
-resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "fileFromStaged" ])
+resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "fileFromOriginal" ])
 
 # Task sets for building the final response data (these operate on in-memory files from the build step):
 #
