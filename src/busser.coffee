@@ -1006,7 +1006,7 @@ rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", [ "symlink" ])
 # Task sets for staging to the tmp dir:
 #
 stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromOriginal"])
-minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromStaged"])
+minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromOriginal"])
 virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
 resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "fileFromOriginal" ])
 
@@ -2018,7 +2018,8 @@ class App
 
       chanceProcessorFactory.update_instance chanceKey, opts, framework.chanceFiles
       
-      # This code block is from Abbot -- so far not used in Busser for anything.
+      # [TODO] This code block is from Abbot... How to use chance from here...
+      #
       framework.chanceFilename = "chance" + (if framework.app.useSprites then "-sprited" else "") + ".css"
       if framework.app.useSprites
         framework.spriteNames.push("#{framework.name}-#{spriteName}") for spriteName in chance.sprite_names
