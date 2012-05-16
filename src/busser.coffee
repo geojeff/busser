@@ -804,29 +804,6 @@ class Busser
               count -= 1
               callback data: data.join("\n")  if count is 0
 
-  joinStaging:
-    exec: (file, request, callback) ->
-      data = []
-
-      console.log 'JOIN', file.path, file.children.length
-      if not file.children? or file.children.length is 0
-        file.taskHandlerSetStaging.exec file, request, (response) ->
-          callback data: response.data
-      else
-        filesForJoin = file.children
-
-        count = filesForJoin.length
-
-        if count is 0
-          callback data: ''
-        else
-          filesForJoin.forEach (file, i) ->
-            next = (if @next then @next else file.taskHandlerSetStaging)
-            next.exec file, request, (d) ->
-              data[i] = d.data
-              count -= 1
-              callback data: data.join("\n")  if count is 0
-            
   # The *symlink* taskHandler can only be run by itself or at the tail end 
   # of a sequence of taskHandlers.
   #
@@ -927,7 +904,7 @@ class Busser
 #          file.content file.path, (err, data) ->
 #            throw err  if err else callback data: data
 
-  # The *chance* taskHandler applies Chance parser to file data.
+  # The *chance* taskHandler gathers file data processed by Chance.
   #
   chance:
     exec: (file, request, callback) ->
@@ -988,17 +965,17 @@ class Busser
   # for simultaneously open files. (See the content method of the **File** class
   # and the global readFile() and related functions).
   #
-  file:
+  fileFromOriginal:
     exec: (file, request, callback) ->
-      file.content file.pathForStaging, (err, data) ->
+      file.content file.path, (err, data) ->
         if err
           throw err
         else
           callback data: if data.length is 0 then "" else data
 
-  fileStaging:
+  fileFromStaged:
     exec: (file, request, callback) ->
-      file.content file.path, (err, data) ->
+      file.content file.pathForStaging, (err, data) ->
         if err
           throw err
         else
@@ -1023,52 +1000,35 @@ availableTaskHandlerNames  = ->
 #
 # First, several for the root html file:
 #
-rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", [ "cache", "contentType", "file" ])
+rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", [ "cache", "contentType", "fileFromOriginal" ])
 rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", [ "symlink" ])
 
 # Task sets for staging to the tmp dir:
 #
-stylesheetTasksStaging = busser.taskHandlerSet("staging stylesheet tasks", "/", ["file"])
-minifiedStylesheetTasksStaging = busser.taskHandlerSet("staging stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "file"])
-virtualStylesheetTasksStaging = busser.taskHandlerSet("virtual stylesheet tasks", "/", [ "contentType", "join" ])
-scriptTasksStaging = busser.taskHandlerSet("staging script tasks", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-minifiedScriptTasksStaging = busser.taskHandlerSet("staging script tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptTasksStaging = busser.taskHandlerSet("staging virtual script tasks", "/", [ "contentType", "join" ])
-#virtualStylesheetTasksStaging = busser.taskHandlerSet("staging virtual stylesheet tasks", "/", ["file"])
-testTasksStaging = busser.taskHandlerSet("staging test tasks", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
-resourceFileTasksStaging = busser.taskHandlerSet("staging resource tasks", "/", [ "file" ])
-
-# Task sets for building the final response data:
-#
-stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType"])
-#stylesheetTasks = busser.taskHandlerSet("stylesheet", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "chance"])
-minifiedStylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify"])
-#virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet", "/", [ "contentType", "join" ])
+stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromStaged"])
+minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromStaged"])
 virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
+resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "fileFromStaged" ])
 
-scriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-minifiedScriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "file"])
-virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", "/", [ "contentType", "join" ])
-testTasks = busser.taskHandlerSet("test tasks", "/", [ "contentType", "rewriteFile", "wrapTest", "file" ])
-resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "chance" ])
-
-# Specialized task sets:
+# Task sets for building the final response data (these operate on in-memory files from the build step):
 #
-uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", "/", [ "contentType", "file" ])
+scriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
+minifiedScriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
+virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", "/", [ "contentType", "join" ])
+testTasks = busser.taskHandlerSet("test tasks", "/", [ "contentType", "rewriteFile", "wrapTest", "fileFromOriginal" ])
+
+# Specialized task set for use in the Bootstrap framework:
+#
+uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", "/", [ "contentType", "fileFromOriginal" ])
+
+# Join-only task set for use in combining stylesheets and scripts for save:
+#
 joinTasks = busser.taskHandlerSet("join only tasks", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
 # Chance task set:
 #
-chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance"])
+chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance" ])
 
-#stylesheetTasksChance = busser.taskHandlerSet("chance stylesheet tasks", "/", ["chance", "chanceFile"])
-#minifiedStylesheetTasksChance = busser.taskHandlerSet("chance stylesheet tasks", "/", ["chance", "chanceFile"])
-#virtualStylesheetTasksChance = busser.taskHandlerSet("chance virtual stylesheet tasks", "/", ["chance", "chanceFile"])
-#scriptTasksChance = busser.taskHandlerSet("chance script tasks", "/", ["chance", "chanceFile"])
-#minifiedScriptTasksChance = busser.taskHandlerSet("chance script tasks", "/", ["chance", "chanceFile"])
-#virtualScriptTasksChance = busser.taskHandlerSet("chance virtual script tasks", "/", [ "contentType", "join" ])
-#testTasksChance = busser.taskHandlerSet("chance test tasks", "/", [ "chance", "chanceFile" ])
-#resourceFileTasksChance = busser.taskHandlerSet("chance resource tasks", "/", [ "chance", "chanceFile" ])
 
 # -----
 
@@ -1678,7 +1638,6 @@ class RootHtmlFile extends File
 class StylesheetFile extends File
   constructor: (options={}) ->
     super options
-    @stagingTaskHandlerSet = stylesheetTasksStaging
     @taskHandlerSet = stylesheetTasks
     @[key] = options[key] for own key of options
 
@@ -1690,7 +1649,6 @@ class StylesheetFile extends File
 class MinifiedStylesheetFile extends File
   constructor: (options={}) ->
     super options
-    @stagingTaskHandlerSet = minifiedStylesheetTasksStaging
     @taskHandlerSet = minifiedStylesheetTasks
     @[key] = options[key] for own key of options
 
@@ -1702,7 +1660,6 @@ class MinifiedStylesheetFile extends File
 class ScriptFile extends File
   constructor: (options={}) ->
     super options
-    @stagingTaskHandlerSet = scriptTasksStaging
     @taskHandlerSet = scriptTasks
     @[key] = options[key] for own key of options
 
@@ -1714,7 +1671,6 @@ class ScriptFile extends File
 class MinifiedScriptFile extends File
   constructor: (options={}) ->
     super options
-    @stagingTaskHandlerSet = minifiedScriptTasksStaging
     @taskHandlerSet = minifiedScriptTasks
     @[key] = options[key] for own key of options
 
@@ -1727,7 +1683,6 @@ class MinifiedScriptFile extends File
 class TestFile extends File
   constructor: (options={}) ->
     super options
-    @stagingTaskHandlerSet = testTasksStaging
     @taskHandlerSet = testTasks
     @[key] = options[key] for own key of options
 
@@ -1740,7 +1695,6 @@ class TestFile extends File
 class ResourceFile extends File
   constructor: (options={}) ->
     super options
-    @stagingTaskHandlerSet = resourceFileTasksStaging
     @taskHandlerSet = resourceFileTasks
     @[key] = options[key] for own key of options
 
@@ -1760,7 +1714,6 @@ class VirtualStylesheetFile extends StylesheetFile
     super options
     @isVirtual = true
     @children = []
-    @stagingTaskHandlerSet = virtualStylesheetTasksStaging
     @taskHandlerSet = virtualStylesheetTasks
     @[key] = options[key] for own key of options
 
@@ -1781,7 +1734,6 @@ class VirtualScriptFile extends ScriptFile
     super options
     @isVirtual = true
     @children = []
-    @stagingTaskHandlerSet = virtualScriptTasksStaging
     @taskHandlerSet = virtualScriptTasks
     @[key] = options[key] for own key of options
 
@@ -1969,8 +1921,8 @@ class App
             constructor: (@app, @file) ->
           
             save: =>
-              console.log 'STAGING', @file.path, @file.stagingTaskHandlerSet
-              @file.stagingTaskHandlerSet.exec @file, null, (response) =>
+              console.log 'STAGING', @file.path, @file.taskHandlerSet
+              @file.taskHandlerSet.exec @file, null, (response) =>
                 if response.data? and response.data.length > 0
                   path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), @file.pathForSave())
                   File.createDirectory path_module.dirname(path)
