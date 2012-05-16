@@ -923,8 +923,8 @@ class Busser
         #css = file.framework.chanceProcessor.output_for file.framework.chanceFilename
         callback data: file.framework.chanceProcessor.output_for file.framework.chanceFilename
       else
-        console.log "output_for", file.pathForStaging()
-        callback data: file.framework.chanceProcessor.output_for file.pathForStaging()
+        console.log "output_for", file.pathForStage()
+        callback data: file.framework.chanceProcessor.output_for file.pathForStage()
 
   # The *handlebars* taskHandler treats handlebar template files by stringifying them
   # to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
@@ -975,7 +975,7 @@ class Busser
 
   fileFromStaged:
     exec: (file, request, callback) ->
-      file.content file.pathForStaging, (err, data) ->
+      file.content file.pathForStage(), (err, data) ->
         if err
           throw err
         else
@@ -1528,6 +1528,8 @@ class File
   pathForSave: ->
     if @isHtml then "#{@url()}.html" else @url()
   
+  # [TODO] This is a property for app and a method for file -- be consistent
+  #
   pathForStage: ->
     "#{@framework.app.pathForStage}/#{@framework.app.buildVersion}/#{@pathForSave()}"
 
@@ -1949,8 +1951,7 @@ class App
     #files = [files for files in [f.resourceFiles, f.stylesheetFiles, f.scriptFiles] when files.length > 0 for f in @frameworks]
     reducer = (prev,item) =>
       prev = prev.concat item.resourceFiles
-      prev = prev.concat item.orderedScriptFiles # [TODO] changed these to ordered 05/15/2012
-      prev = prev.concat item.orderedStylesheetFiles
+      prev = prev.concat item.orderedStylesheetFiles # [TODO] changed this to ordered 05/15/2012
       prev
     files = @frameworks.reduce(reducer, [])
     console.log(f.path) for f in files
