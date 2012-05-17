@@ -2317,8 +2317,21 @@ exec = (appTargets, actionItems) ->
         padSpritesForDebugging: appConf['padSpritesForDebugging']
   
       myApp.frameworks = []
+
+      # Add the special bootstrap framework that sets up the SC namespace, and
+      # does browser-specific configuration.
+      #
       myApp.frameworks.push new BootstrapFramework(myApp)
   
+      # Add SproutCore frameworks that are specified in the app configuration.
+      #
+      # [TODO] There is a call to addSproutCoreFrameworks that needs attention. Perhaps
+      #        a "useStandardFrameworks" property needs to be added to app config. Otherwise,
+      #        they would have to be specified explicitly in the sc-frameworks config. This
+      #        can be enhanced with a sub-level of sc-frameworks to give bundle functionality,
+      #        e.g. sc-frameworks/minimalLoad, sc-frameworks/mapPanel, etc. (investigate use
+      #        of bundles and loading for this).
+      #
       for fwConf in appConf["sc-frameworks"]
         console.log 'fwConf.conf', fwConf.conf, fwConf.name, defaultFrameworksDevConf[fwConf.name]
         switch fwConf.conf
@@ -2329,12 +2342,14 @@ exec = (appTargets, actionItems) ->
           when fwConf.conf instanceof Object
             myApp.frameworks.push new Framework(myApp, fwConf.conf)
   
+      # Add custom frameworks, such as theme frameworks.
+      #
       for fwConf in appConf["custom-frameworks"]
         if fwConf.conf instanceof Object
           myApp.frameworks.push new Framework(myApp, fwConf.conf)
-    
-      console.log(f.name, f.combineScripts) for f in myApp.frameworks
 
+      # Add a framework for the SproutCore app itself.
+      #
       myApp.frameworks.push new Framework myApp,
         name: myApp.name
         path: "apps/#{myApp.name}"
@@ -2342,6 +2357,9 @@ exec = (appTargets, actionItems) ->
         combineStylesheets: true
         minifyScripts: false
         minifyStylesheets: false
+    
+      console.log 'Frameworks:'
+      console.log('    ', f.name, f.combineScripts) for f in myApp.frameworks
         
       switch actionItems
         when "build" then myApp.build()
