@@ -2013,6 +2013,7 @@ class App
       # master .css file for the framework. The chanceTasks handlers will map the names of
       # framework .css files used in Busser to those used in Chance, e.g. ../Desktop.css will
       # be mapped to chance.css.
+      #
       if framework.virtualStylesheetReference?
         framework.virtualStylesheetReference.file.taskHandlerSet = chanceTasks
 
@@ -2070,7 +2071,7 @@ class App
 
     if @combineScripts
       virtualScriptFile = new VirtualScriptFile
-        path: "{@name}.js"
+        path: "#{@name}.js"
         framework: this
         taskHandlerSet: joinTasks
         children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
