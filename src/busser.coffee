@@ -1100,9 +1100,7 @@ chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance" ])
 # excluded for a production build.
 #
 class Framework
-  constructor: (app, options={}) ->
-    console.log 'APP INSTANCE', app
-    @app = app
+  constructor: (options={}) ->
     @name = null
     @path = null
 
@@ -1112,6 +1110,14 @@ class Framework
     @minifyScripts = false
 
     @buildLanguage = "english"
+    @buildVersion = ''
+    @pathForSave = "./build"
+    @pathForStage = "./stage"
+    @pathForChance = "./chance"
+    @cssTheme = ''
+    @useSprites = false
+    @optimizeSprites = false
+    @padSpritesForDebugging = false
 
     @stylesheetFiles = []
     @scriptFiles = []
@@ -1190,7 +1196,7 @@ class Framework
   #
   urlFor: (path) ->
     console.log 'urlFor', path, @name
-    path_module.join @app.buildVersion, @reducedPathFor(path)
+    path_module.join @buildVersion, @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
   #
@@ -1354,7 +1360,7 @@ class Framework
   # either with or without jquery, testing for jquery in the project. This method is used
   # in testing, or when a build configuration file is not provided to the build process.
   #
-  @sproutcoreFrameworks: (app, options) ->
+  @sproutcoreFrameworks: (options) ->
     if not @_sproutcoreFrameworks?
       opts =
         combineScripts: true
@@ -1373,11 +1379,11 @@ class Framework
       catch e
         frameworkNames = [ "runtime", "foundation", "datastore", "desktop", "animation" ]
 
-      @_sproutcoreFrameworks = [ new BootstrapFramework(app) ]
+      @_sproutcoreFrameworks = [ new BootstrapFramework() ]
       for frameworkName in frameworkNames
         opts.name = frameworkName
         opts.path = "frameworks/sproutcore/frameworks/#{frameworkName}"
-        @_sproutcoreFrameworks.push(new Framework(app, opts))
+        @_sproutcoreFrameworks.push(new Framework(opts))
 
     @_sproutcoreFrameworks
   
@@ -1533,7 +1539,7 @@ class File
   # [TODO] This is a property for app and a method for file -- be consistent
   #
   pathForStage: ->
-    "#{@framework.app.pathForStage}/#{@framework.app.buildVersion}/#{@pathForSave()}"
+    "#{@framework.pathForStage}/#{@framework.buildVersion}/#{@pathForSave()}"
 
   # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
@@ -1754,11 +1760,11 @@ class VirtualScriptFile extends ScriptFile
 # setting up the body of the main app html page.
 #
 class BootstrapFramework extends Framework
-  constructor: (app, options={}) ->
+  constructor: (options={}) ->
     options.name = "bootstrap"
     options.path = "frameworks/sproutcore/frameworks/bootstrap"
     options.combineScripts = true
-    super(app, options)
+    super(options)
 
   headFile: =>
     new File
@@ -1794,14 +1800,18 @@ class BootstrapFramework extends Framework
 #
 class App
   constructor: (options={}) ->
-    @name = null
     @title = null
+
+    # Properties shared with Framework:
+    #
+    @name = null
     @path = null
-    @buildLanguage = "english"
     @combineStylesheets = true
     @combineScripts = true
     @minifyScripts = false
     @minifyStylesheets = false
+    @buildLanguage = "english"
+
     @cssTheme = ""
     @useSprites = false
     @optimizeSprites = false
@@ -1835,7 +1845,7 @@ class App
   # *sproutcoreFrameworks* defined in the **Framework** class.
   #
   addSproutCore: (options={}) ->
-    @frameworks.push framework for framework in Framework.sproutcoreFrameworks(this, options)
+    @frameworks.push framework for framework in Framework.sproutcoreFrameworks(options)
   
   # *buildRoot* creates the root html file and a symlink to it.
   #
@@ -1864,7 +1874,7 @@ class App
   # 
   build: (callbackAfterBuild) ->
     class FrameworksBuilder extends process.EventEmitter
-      constructor: (@frameworks) ->
+      constructor: (@frameworks, @buildVersion) ->
         console.log 'FrameworksBuilder', @frameworks.length
         @count = @frameworks.length
 
@@ -1879,6 +1889,12 @@ class App
     # Create a fresh unique *buildVersion* as a long **Date** instance for the current time.
     #
     @buildVersion = new Date().getTime()
+
+    # Set buildVersion in each framework.
+    #
+    for framework in @frameworks
+      framework.buildVersion = @buildVersion
+      console.log framework.path, 'NOW HAS BV', framework.buildVersion
 
     @buildRoot()
     builder = new FrameworksBuilder(@frameworks)
@@ -1912,7 +1928,7 @@ class App
     stage_files = (files, callbackAfterStage) =>
 
       class FrameworkStager extends process.EventEmitter
-        constructor: (@app, @files) ->
+        constructor: (@app, @files, @pathForStage, @buildVersion) ->
           @count = @files.length
         
         save: =>
@@ -1921,13 +1937,13 @@ class App
             console.log @count
 
           class FileStager extends process.EventEmitter
-            constructor: (@app, @file) ->
+            constructor: (@app, @file, @pathForStage, @buildVersion) ->
           
             save: =>
               console.log 'STAGING', @file.path, @file.taskHandlerSet
               @file.taskHandlerSet.exec @file, null, (response) =>
                 if response.data? and response.data.length > 0
-                  path = path_module.join(@app.pathForStage, @app.buildVersion.toString(), @file.pathForSave())
+                  path = path_module.join(@pathForStage, @buildVersion.toString(), @file.pathForSave())
                   File.createDirectory path_module.dirname(path)
                   console.log 'writing', path
                   fs.writeFile path, response.data, (err) =>
@@ -1939,11 +1955,11 @@ class App
   
           console.log 'staging', @count, 'files'
           for file in @files
-            fileStager = new FileStager(@app, file)
+            fileStager = new FileStager(@app, file, @pathForStage, @buildVersion)
             fileStager.on 'end', emitEndIfDone
             fileStager.save()
 
-      stager = new FrameworkStager(this, files)
+      stager = new FrameworkStager(this, files, @pathForStage, @buildVersion)
       stager.on "end", =>
         callbackAfterStage()
       stager.save()
@@ -1980,7 +1996,7 @@ class App
       # framework, as used in busser, can be an app.
       #
       #chanceKey = path_module.join(@app.pathForSave, @app.buildVersion.toString(), "#{@name}.css")
-      chanceKey = path_module.join(framework.app.pathForStage, framework.app.buildVersion.toString(), "#{framework.path}.css")
+      chanceKey = path_module.join(@pathForStage, @buildVersion.toString(), "#{framework.path}.css")
       console.log 'chanceKey', chanceKey
       #chanceKey = @url()
       #@chanceKey = @path
@@ -1988,10 +2004,10 @@ class App
       # Create the ChanceProcessor instance for this framework, with general options for the app.
       #
       opts =
-        theme: framework.app.cssTheme
-        minifyStylesheets: framework.app.minifyStylesheets
-        optimizeSprites: framework.app.optimizeSprites
-        padSpritesForDebugging: framework.app.padSpritesForDebugging
+        theme: framework.cssTheme
+        minifyStylesheets: framework.minifyStylesheets
+        optimizeSprites: framework.optimizeSprites
+        padSpritesForDebugging: framework.padSpritesForDebugging
         instanceId: framework.name
       framework.chanceProcessor = chanceProcessorFactory.instance_for_key chanceKey, opts
     
@@ -2022,9 +2038,9 @@ class App
       
       # [TODO] This code block is from Abbot... How to use chance from here...
       #
-      framework.chanceFilename = "chance" + (if framework.app.useSprites then "-sprited" else "") + ".css"
-      if framework.app.useSprites
-        framework.spriteNames.push("#{framework.name}-#{spriteName}") for spriteName in chance.sprite_names
+      framework.chanceFilename = "chance" + (if framework.useSprites then "-sprited" else "") + ".css"
+      if framework.useSprites
+        framework.spriteNames.push("#{framework.name}-#{spriteName}") for spriteName in framework.chanceProcessor.sprite_names()
 
     callbackAfterChance()
 
@@ -2036,27 +2052,27 @@ class App
   save: =>
     console.log('in save')
     class Saver
-      constructor: (@app, @file) ->
+      constructor: (@app, @file, @pathForSave, @buildVersion) ->
         
       save: ->
         @file.taskHandlerSet.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            path = path_module.join(@app.pathForSave, @app.buildVersion.toString(), @file.pathForSave())
+            path = path_module.join(@pathForSave, @buildVersion.toString(), @file.pathForSave())
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
 
     for framework in @frameworks
       for file in framework.resourceFiles
-        new Saver(this, file).save()
+        new Saver(this, file, @pathForSave, @buildVersion).save()
       if framework.combineStylesheets
-        new Saver(this, framework.virtualStylesheetReference.file).save() if framework.virtualStyleSheetReference?
+        new Saver(this, framework.virtualStylesheetReference.file, @pathForSave, @buildVersion).save() if framework.virtualStyleSheetReference?
       else
-        new Saver(this, file).save() for file in framework.orderedStylesheetFiles
+        new Saver(this, file, @pathForSave, @buildVersion).save() for file in framework.orderedStylesheetFiles
       if framework.combineScripts
-        new Saver(this, framework.virtualScriptReference.file).save() if framework.virtualScriptReference?
+        new Saver(this, framework.virtualScriptReference.file, @pathForSave, @buildVersion).save() if framework.virtualScriptReference?
       else
-        new Saver(this, file).save() for file in framework.orderedScriptFiles
+        new Saver(this, file, @pathForSave, @buildVersion).save() for file in framework.orderedScriptFiles
 
     if @combineStylesheets
       virtualStylesheetFile = new VirtualStylesheetFile
@@ -2064,11 +2080,11 @@ class App
         framework: this
         taskHandlerSet: joinTasks
         children: (fw.virtualStylesheetReference.file for fw in @frameworks when fw.virtualStylesheetReference?)
-      new Saver(this, virtualStylesheetFile).save()
+      new Saver(this, virtualStylesheetFile, @pathForSave, @buildVersion).save()
     else
       for framework in @frameworks
         for file in framework.orderedStylesheetFiles
-          new Saver(this, file).save()
+          new Saver(this, file, @pathForSave, @buildVersion).save()
 
     if @combineScripts
       virtualScriptFile = new VirtualScriptFile
@@ -2077,11 +2093,11 @@ class App
         taskHandlerSet: joinTasks
         children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
       console.log 'about to save, at:', virtualScriptFile.pathForSave()
-      new Saver(this, virtualScriptFile).save()
+      new Saver(this, virtualScriptFile, @pathForSave, @buildVersion).save()
     else
       for framework in @frameworks
         for file in framework.orderedScriptFiles
-          new Saver(this, file).save()
+          new Saver(this, file, @pathForSave, @buildVersion).save()
 
     if virtualStylesheetFile?
       htmlStylesheetLinks = "<link href=\"#{@urlPrefix + virtualStylesheetFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
@@ -2312,16 +2328,13 @@ exec = (appTargets, actionItems) ->
         minifyScripts: appConf["minifyScripts"]
         minifyStylesheets: appConf["minifyStylesheets"]
         cssTheme: appConf["cssTheme"]
-        useSprites: appConf['useSprites']
-        optimizeSprites: appConf['optimizeSprites']
-        padSpritesForDebugging: appConf['padSpritesForDebugging']
   
       myApp.frameworks = []
 
       # Add the special bootstrap framework that sets up the SC namespace, and
       # does browser-specific configuration.
       #
-      myApp.frameworks.push new BootstrapFramework(myApp)
+      myApp.frameworks.push new BootstrapFramework()
   
       # Add SproutCore frameworks that are specified in the app configuration.
       #
@@ -2335,28 +2348,28 @@ exec = (appTargets, actionItems) ->
       for fwConf in appConf["sc-frameworks"]
         console.log 'fwConf.conf', fwConf.conf, fwConf.name, defaultFrameworksDevConf[fwConf.name]
         switch fwConf.conf
-          when "dev" then myApp.frameworks.push new Framework(myApp, defaultFrameworksDevConf[fwConf.name])
-          when "prod" then myApp.frameworks.push new Framework(myApp, defaultFrameworksProdConf[fwConf.name])
+          when "dev" then myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
+          when "prod" then myApp.frameworks.push new Framework(defaultFrameworksProdConf[fwConf.name])
           when fwConf.conf instanceof String # The default for unknown is dev.
-            myApp.frameworks.push new Framework(myApp, defaultFrameworksDevConf[fwConf.name])
+            myApp.frameworks.push new Framework(defaultFrameworksDevConf[fwConf.name])
           when fwConf.conf instanceof Object
-            myApp.frameworks.push new Framework(myApp, fwConf.conf)
+            myApp.frameworks.push new Framework(fwConf.conf)
   
-      # Add custom frameworks, such as theme frameworks.
+      # Add custom frameworks, such as theme frameworks. [TODO] This now includes app framework. Clarify in docs.
       #
       for fwConf in appConf["custom-frameworks"]
         if fwConf.conf instanceof Object
-          myApp.frameworks.push new Framework(myApp, fwConf.conf)
+          myApp.frameworks.push new Framework(fwConf.conf)
 
       # Add a framework for the SproutCore app itself.
       #
-      myApp.frameworks.push new Framework myApp,
-        name: myApp.name
-        path: "apps/#{myApp.name}"
-        combineScripts: true
-        combineStylesheets: true
-        minifyScripts: false
-        minifyStylesheets: false
+#      myApp.frameworks.push new Framework
+#        name: myApp.name
+#        path: "apps/#{myApp.name}"
+#        combineScripts: true
+#        combineStylesheets: true
+#        minifyScripts: false
+#        minifyStylesheets: false
     
       console.log 'Frameworks:'
       console.log('    ', f.name, f.combineScripts) for f in myApp.frameworks
@@ -2432,7 +2445,7 @@ if process.argv.length is 2
         config_file = fs.readFileSync(result.configPath, "utf-8")
         nconf.argv().env().file file: result.configPath
       catch err
-        console.log "Problem reading custom config file"
+        console.log "Problem reading custom config file", err
     
     if result.appTargets? and result.actions?
       appTargets = parseAppTargetsArgument result.appTargets
