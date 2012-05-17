@@ -136,7 +136,6 @@ fileClassType = (file) ->
   return "ResourceFile" if file instanceof ResourceFile
   return "TestFile" if file instanceof TestFile
   return "RootHtmlFile" if file instanceof RootHtmlFile
-  return "BootstrapVirtualScriptFile" if file instanceof BootstrapVirtualScriptFile
   return "File" if file instanceof File
 
 # Language Handling
@@ -919,11 +918,11 @@ class Busser
       # add_file calls, so it will do lookups on that.
       #
       if file instanceof VirtualStylesheetFile
-        console.log "output_for", file.framework.chanceFilename
+        #console.log "output_for", file.framework.chanceFilename
         #css = file.framework.chanceProcessor.output_for file.framework.chanceFilename
         callback data: file.framework.chanceProcessor.output_for file.framework.chanceFilename
       else
-        console.log "output_for", file.pathForStage()
+        #console.log "output_for", file.pathForStage()
         callback data: file.framework.chanceProcessor.output_for file.pathForStage()
 
   # The *handlebars* taskHandler treats handlebar template files by stringifying them
@@ -1028,6 +1027,10 @@ joinTasks = busser.taskHandlerSet("join only tasks", "/", [ "join" ]) # [TODO] u
 # Chance task set:
 #
 chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance" ])
+
+# Save task sets:
+#
+saveFromStagedTasks = busser.taskHandlerSet("save tasks from staged", "/", ["fileFromStaged" ])
 
 
 # -----
@@ -1569,7 +1572,7 @@ class SymlinkFile extends File
     @[key] = options[key] for own key of options
 
 # RootHtmlFile
-# -------------------
+# -------------
 #
 # The **RootHtmlFile** contains the html with main links to a project's stylesheets,
 # scripts, and resources. Its rootContentHtmlTasks has cache, contentType, and file
@@ -1801,23 +1804,12 @@ class App
   constructor: (options={}) ->
     @title = null
 
-    # Properties shared with Framework:
-    #
     @name = null
-    @path = null
-    @combineStylesheets = true
-    @combineScripts = true
-    @minifyScripts = false
-    @minifyStylesheets = false
-    @buildLanguage = "english"
 
-    @cssTheme = ""
-    @useSprites = false
-    @optimizeSprites = false
-    @padSpritesForDebugging = false
+    @pathForSave = "./build"
 
     @urlPrefix = "/"
-    @theme = "sc-theme"
+
     @buildVersion = ""
 
     @frameworks = []
@@ -1970,7 +1962,7 @@ class App
 
     stage_files files, callbackAfterStage
 
-  # The contained **Chancer** class is used to call Chance for css and slices. <-- [TODO] Was this an idea? (See Stager)
+  # chance() is used to call Chance for css and slices.
   #
   chance: (callbackAfterChance) =>
     for framework in @frameworks
@@ -2047,82 +2039,34 @@ class App
   save: =>
     console.log('in save')
     class Saver
-      constructor: (@app, @file, @pathForSave, @buildVersion) ->
+      constructor: (@app, @file, @saveTasks) ->
         
       save: ->
-        @file.taskHandlerSet.exec @file, null, (response) =>
+        console.log 'saving', @file.path
+        @saveTasks.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            path = path_module.join(@pathForSave, @buildVersion.toString(), @file.pathForSave())
+            path = path_module.join(@app.pathForSave, @app.buildVersion.toString(), @file.pathForSave())
+            console.log 'writing', path
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
 
     for framework in @frameworks
       for file in framework.resourceFiles
-        new Saver(this, file, @pathForSave, @buildVersion).save()
-      if framework.combineStylesheets
-        new Saver(this, framework.virtualStylesheetReference.file, @pathForSave, @buildVersion).save() if framework.virtualStyleSheetReference?
-      else
-        new Saver(this, file, @pathForSave, @buildVersion).save() for file in framework.orderedStylesheetFiles
-      if framework.combineScripts
-        new Saver(this, framework.virtualScriptReference.file, @pathForSave, @buildVersion).save() if framework.virtualScriptReference?
-      else
-        new Saver(this, file, @pathForSave, @buildVersion).save() for file in framework.orderedScriptFiles
+        new Saver(this, file, saveFromStagedTasks).save()
+      new Saver(this, file, saveFromStagedTasks).save() for file in framework.orderedStylesheetFiles
 
-    if @combineStylesheets
-      virtualStylesheetFile = new VirtualStylesheetFile
-        path: "#{@name}.css"
-        framework: this
-        taskHandlerSet: joinTasks
-        children: (fw.virtualStylesheetReference.file for fw in @frameworks when fw.virtualStylesheetReference?)
-      new Saver(this, virtualStylesheetFile, @pathForSave, @buildVersion).save()
-    else
-      for framework in @frameworks
-        for file in framework.orderedStylesheetFiles
-          new Saver(this, file, @pathForSave, @buildVersion).save()
-
-    if @combineScripts
-      virtualScriptFile = new VirtualScriptFile
-        path: "#{@name}.js"
-        framework: this
-        taskHandlerSet: joinTasks
-        children: (fw.virtualScriptReference.file for fw in @frameworks when fw.virtualScriptReference?)
-      console.log 'about to save, at:', virtualScriptFile.pathForSave()
-      new Saver(this, virtualScriptFile, @pathForSave, @buildVersion).save()
-    else
-      for framework in @frameworks
-        for file in framework.orderedScriptFiles
-          new Saver(this, file, @pathForSave, @buildVersion).save()
-
-    if virtualStylesheetFile?
-      htmlStylesheetLinks = "<link href=\"#{@urlPrefix + virtualStylesheetFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
-    else
-      htmlStylesheetLinks = []
-      for fw in @frameworks
-        for file in fw.orderedStylesheetFiles
-          htmlStylesheetLinks.push "<link href=\"#{@urlPrefix + file.url()}\" rel=\"stylesheet\" type=\"text/css\">"
-      htmlStylesheetLinks.join('\n')
-
-    if virtualScriptFile?
-      htmlScriptLinks = "<script type=\"text/javascript\" src=\"#{@urlPrefix + virtualScriptFile.url()}\"></script>"
-    else
-      htmlScriptLinks = []
-      for fw in @frameworks
-        if fw.virtualScriptFile?
-          htmlScriptLinks.push "<link href=\"#{@urlPrefix + fw.virtualScriptFile.url()}\" rel=\"stylesheet\" type=\"text/css\">"
-      htmlScriptLinks.join('\n')
-
-    htmlFile = new RootHtmlFile
-      path: @name
-      app: this
-      framework: this
-
-    path = path_module.join(@pathForSave, @buildVersion.toString(), htmlFile.pathForSave())
-
-    File.createDirectory path_module.dirname(path)
-    htmlFile.content htmlFile.path, (data) ->
-      fs.writeFile path, data, (err) ->
+    for file in framework.orderedScriptFiles
+      path = path_module.join(@pathForSave, @buildVersion.toString(), file.pathForSave())
+      File.createDirectory path_module.dirname(path)
+      fs.writeFile path, @files[file.url()], (err) ->
         throw err  if err
+
+    path = path_module.join(@pathForSave, @buildVersion.toString(), @htmlFileReference.file.pathForSave())
+    File.createDirectory path_module.dirname(path)
+    fs.writeFile path, @files[@htmlFileReference.file.url()], (err) ->
+      throw err  if err
+
 
 # Proxy
 # =====
@@ -2312,14 +2256,8 @@ exec = (appTargets, actionItems) ->
       myApp = new App
         name: appConf["name"]
         title: appConf["title"]
-        path: appConf["path"]
-        theme: appConf["theme"]
+        pathForSave: appConf["pathForSave"]
         buildLanguage: appConf["buildLanguage"]
-        combineScripts: appConf["combineScripts"]
-        combineStylesheets: appConf["combineStylesheets"]
-        minifyScripts: appConf["minifyScripts"]
-        minifyStylesheets: appConf["minifyStylesheets"]
-        cssTheme: appConf["cssTheme"]
   
       myApp.frameworks = []
 
@@ -2373,8 +2311,8 @@ exec = (appTargets, actionItems) ->
             myApp.chance()
         when "buildstagesave" then myApp.build ->
           myApp.stage ->
-            myApp.chance()
-          myApp.save()
+            myApp.chance ->
+              myApp.save()
         when "buildstagerun" then myApp.build ->
           myApp.stage ->
             myApp.chance ->

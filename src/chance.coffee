@@ -990,7 +990,7 @@ class ChanceProcessor
     @chance.get_file(@mapped_files[path])
 
   output_for: (file) ->
-    console.log 'output_for', @chance.files[file]?, file
+    #console.log 'output_for', @chance.files[file]?, file
     return @chance.files[file] if @chance.files[file]?
 
     # small hack: we are going to determine whether it is x2 by whether it has
@@ -1898,7 +1898,6 @@ class ChanceProcessor
 
       output
 
-    console.log 'ggggggg', css
     re = /-chance-offset:\s?"(.*?)" (-?[0-9]+) (-?[0-9]+)/
     css = css.gsub re, (match) ->
       slice = @slices[match[1]]

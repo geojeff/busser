@@ -822,7 +822,7 @@
     "TodosThree-dev": {
       "name": "TodosThree",
       "title": "Todos Three",
-      "cssTheme": "ace.todosthree",
+      "pathForSave": "./build",
       "proxies": [],
       "sc-frameworks": [
         { "name": "jquery",          "conf": "dev" },
