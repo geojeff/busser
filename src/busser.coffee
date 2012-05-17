@@ -1101,6 +1101,7 @@ chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance" ])
 #
 class Framework
   constructor: (app, options={}) ->
+    console.log 'APP INSTANCE', app
     @app = app
     @name = null
     @path = null
@@ -1188,6 +1189,7 @@ class Framework
   # A url consists of the joined buildVersion and reducedPath.
   #
   urlFor: (path) ->
+    console.log 'urlFor', path, @name
     path_module.join @app.buildVersion, @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
@@ -1469,7 +1471,7 @@ class Framework
               #path: if /\.js$/.test(@path) then @path else "#{@path}.js" # added for temporary special theme.js case [TODO] keep or delete.
               framework: this
               children: (child for child in [@headFile(), @scriptFiles..., @tailFile()] when child?)
-            console.log '@path + .js', @path + ".js"
+            console.log "@path + .js", @path + ".js"
             @virtualScriptReference = new Reference(virtualScriptFile.url(), virtualScriptFile)
             @orderedScriptFiles = [ virtualScriptFile ]
           else
@@ -1792,7 +1794,6 @@ class BootstrapFramework extends Framework
 #
 class App
   constructor: (options={}) ->
-    @app = this
     @name = null
     @title = null
     @path = null
