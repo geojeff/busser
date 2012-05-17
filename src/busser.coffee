@@ -1195,7 +1195,6 @@ class Framework
   # A url consists of the joined buildVersion and reducedPath.
   #
   urlFor: (path) ->
-    console.log 'urlFor', path, @name
     path_module.join @buildVersion, @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
@@ -1820,9 +1819,6 @@ class App
     @urlPrefix = "/"
     @theme = "sc-theme"
     @buildVersion = ""
-    @pathForSave = "./build"
-    @pathForStage = "./stage"
-    @pathForChance = "./chance"
 
     @frameworks = []
 
@@ -1894,7 +1890,7 @@ class App
     #
     for framework in @frameworks
       framework.buildVersion = @buildVersion
-      console.log framework.path, 'NOW HAS BV', framework.buildVersion
+      console.log framework.path, 'NOW HAS BUILDVERSION', framework.buildVersion
 
     @buildRoot()
     builder = new FrameworksBuilder(@frameworks)
@@ -1927,23 +1923,22 @@ class App
   stage: (callbackAfterStage) =>
     stage_files = (files, callbackAfterStage) =>
 
-      class FrameworkStager extends process.EventEmitter
-        constructor: (@app, @files, @pathForStage, @buildVersion) ->
+      class FilesStager extends process.EventEmitter
+        constructor: (@app, @files, @buildVersion) ->
           @count = @files.length
         
         save: =>
           emitEndIfDone = () =>
             @emit 'end' if --@count <= 0
-            console.log @count
 
           class FileStager extends process.EventEmitter
-            constructor: (@app, @file, @pathForStage, @buildVersion) ->
+            constructor: (@app, @file, @buildVersion) ->
           
             save: =>
               console.log 'STAGING', @file.path, @file.taskHandlerSet
               @file.taskHandlerSet.exec @file, null, (response) =>
                 if response.data? and response.data.length > 0
-                  path = path_module.join(@pathForStage, @buildVersion.toString(), @file.pathForSave())
+                  path = path_module.join(@file.framework.pathForStage, @buildVersion.toString(), @file.pathForSave())
                   File.createDirectory path_module.dirname(path)
                   console.log 'writing', path
                   fs.writeFile path, response.data, (err) =>
@@ -1955,11 +1950,11 @@ class App
   
           console.log 'staging', @count, 'files'
           for file in @files
-            fileStager = new FileStager(@app, file, @pathForStage, @buildVersion)
+            fileStager = new FileStager(@app, file, @buildVersion)
             fileStager.on 'end', emitEndIfDone
             fileStager.save()
 
-      stager = new FrameworkStager(this, files, @pathForStage, @buildVersion)
+      stager = new FilesStager(this, files, @buildVersion)
       stager.on "end", =>
         callbackAfterStage()
       stager.save()
@@ -1996,7 +1991,7 @@ class App
       # framework, as used in busser, can be an app.
       #
       #chanceKey = path_module.join(@app.pathForSave, @app.buildVersion.toString(), "#{@name}.css")
-      chanceKey = path_module.join(@pathForStage, @buildVersion.toString(), "#{framework.path}.css")
+      chanceKey = path_module.join(framework.pathForStage, @buildVersion.toString(), "#{framework.path}.css")
       console.log 'chanceKey', chanceKey
       #chanceKey = @url()
       #@chanceKey = @path
@@ -2042,7 +2037,7 @@ class App
       if framework.useSprites
         framework.spriteNames.push("#{framework.name}-#{spriteName}") for spriteName in framework.chanceProcessor.sprite_names()
 
-    callbackAfterChance()
+    callbackAfterChance() if callbackAfterChance?
 
   # The contained **Saver** class is used to save child
   # frameworks and usually some combination of combined virtual files. The logic for
@@ -2318,9 +2313,6 @@ exec = (appTargets, actionItems) ->
         name: appConf["name"]
         title: appConf["title"]
         path: appConf["path"]
-        pathForSave: appConf["pathForSave"]
-        pathForStage: appConf["pathForStage"]
-        pathForChance: appConf["pathForChance"]
         theme: appConf["theme"]
         buildLanguage: appConf["buildLanguage"]
         combineScripts: appConf["combineScripts"]
