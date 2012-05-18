@@ -1896,15 +1896,14 @@ class App
     #
     for framework in @frameworks
       framework.buildVersion = @buildVersion
-      console.log framework.path, 'NOW HAS BUILDVERSION', framework.buildVersion
 
     @buildRoot()
     builder = new FrameworksBuilder(@frameworks)
     builder.on 'end', =>
-      console.log "Build for #{@path} is complete.  Registering files."
+      console.log "Build for #{@name} is complete.  Registering files."
       @registerFiles()
       callbackAfterBuild() if callbackAfterBuild?
-    console.log "Build for #{@path} has started."
+    console.log "Build for #{@name} has started."
     builder.build()
     
   # *registerFile* sets the url of the file as the key in the files associative
@@ -2054,7 +2053,7 @@ class App
       constructor: (@app, @file, @saveTasks) ->
         
       save: ->
-        console.log 'saving', @file.path
+        console.log 'saving', @file.pathForSave()
         @saveTasks.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
             path = path_module.join(@app.pathForSave, @app.buildVersion.toString(), @file.pathForSave())
