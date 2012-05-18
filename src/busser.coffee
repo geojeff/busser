@@ -394,8 +394,6 @@ class TaskHandler
 #     @name -- for reference in labeling each TaskHandlerSet singleton instance, e.g.
 #              stylesheetTasks or joinTasks.
 #
-#     @urlPrefix -- to be prepended to resulting paths.
-#
 #   Each **TaskHandler** instance has exec and next, which are called during traversal
 #   from a TaskHandlerSet exec call.
 #
@@ -406,7 +404,7 @@ class TaskHandler
 #   performed one or more operations, finally returning the data via the head callback.
 #
 class TaskHandlerSet
-  constructor: (@name, @urlPrefix="/") ->
+  constructor: (@name) ->
     @taskHandlers  = []
 
   # *head* returns the first taskHandler.
@@ -430,6 +428,8 @@ class TaskHandlerSet
 # taskHandlers, instantiated and returned as a singly-linked-list.
 #
 class Busser
+  @urlPrefix: "../" # Set by the app.
+
   constructor ->
 
   # *availableTaskHandlerNames* is a convenience method for use by developers in listing
@@ -448,13 +448,13 @@ class Busser
   #
   #    name -- taskHandlerSet instance label.
   #
-  #    urlPrefix -- default is "/", and is customizable for apps.
+  #    urlPrefix -- default is "../", and is customizable for apps, but must be set here.
   #
   #    taskHandlerNames -- an array of taskHandler names from the list of those available.
   #                    These are the names of taskHandlers, keys to properties of the Busser
   #                    class.
   #
-  # A new **TaskHandlerSet** instance is created with the name and urlPrefix. Then
+  # A new **TaskHandlerSet** instance is created with the name. Then
   # a list of taskHandlers is created from taskHandlerNames, setting taskHandlerSet.taskHandlers, the
   # linked-list of taskHandlers. All but the last taskHandler have their next property set.
   # The @[taskHandlerName].exec reference, seen in TaskHandler creation calls, is a lookup to the
@@ -464,10 +464,8 @@ class Busser
   # 
   # The completed **TaskHandlerSet** instance, with linked-list of taskHandlers, is returned.
   #
-  taskHandlerSet: (name, urlPrefix, taskHandlerNames) ->
-    urlPrefix ?= "/"
-
-    taskHandlerSet = new TaskHandlerSet name, urlPrefix
+  taskHandlerSet: (name, taskHandlerNames) ->
+    taskHandlerSet = new TaskHandlerSet name
 
     for taskHandlerName in taskHandlerNames
       taskHandlerSet.taskHandlers.push new TaskHandler
@@ -697,9 +695,9 @@ class Busser
           unless path in resourceUrls
             util.puts "WARNING: #{path} referenced in #{file.path} but was not found."
 
-        console.log('urlPrefix', @urlPrefix, path)
+        console.log('urlPrefix', Busser.urlPrefix, path)
 
-        format.replace "%@", path_module.join(@urlPrefix, path)
+        format.replace "%@", path_module.join(Busser.urlPrefix, path)
 
   # The *rewriteStaticInStylesheet* taskHandler calls the *rewriteStatic* method with the
   # format url('%@') for url references in stylesheets.
@@ -998,51 +996,51 @@ busser = new Busser
 #
 # First, several for the root html file:
 #
-rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", \
+rootContentHtmlTasks = busser.taskHandlerSet("root content html", \
   [ "cache", "contentType", "fileFromOriginal" ])
-rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", \
+rootSymlinkTasks = busser.taskHandlerSet("root symlink", \
   [ "symlink" ])
 
 # Task sets for staging to the tmp dir:
 #
-stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", \
+stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", \
   ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromOriginal"])
-minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", \
+minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", \
   ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromOriginal"])
-virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", \
+virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", \
   ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
-resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", \
+resourceFileTasks = busser.taskHandlerSet("resource tasks", \
   [ "ifModifiedSince", "contentType", "fileFromOriginal" ])
 
 # Task sets for building the final response data (these operate on in-memory files from the build step):
 #
-scriptTasks = busser.taskHandlerSet("script tasks", "/", \
+scriptTasks = busser.taskHandlerSet("script tasks", \
   ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
-minifiedScriptTasks = busser.taskHandlerSet("script tasks", "/", \
+minifiedScriptTasks = busser.taskHandlerSet("script tasks", \
   ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
-virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", "/", \
+virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", \
   [ "contentType", "join" ])
-testTasks = busser.taskHandlerSet("test tasks", "/", \
+testTasks = busser.taskHandlerSet("test tasks", \
   [ "contentType", "rewriteFile", "wrapTest", "fileFromOriginal" ])
 
 # Specialized task set for use in the Bootstrap framework:
 #
-uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", "/", \
+uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", \
   [ "contentType", "fileFromOriginal" ])
 
 # Join-only task set for use in combining stylesheets and scripts for save:
 #
-joinTasks = busser.taskHandlerSet("join only tasks", "/", \
+joinTasks = busser.taskHandlerSet("join only tasks", \
   [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
 # Chance task set:
 #
-chanceTasks = busser.taskHandlerSet("chance tasks", "/", \
+chanceTasks = busser.taskHandlerSet("chance tasks", \
   ["chance" ])
 
 # Save task sets:
 #
-saveFromStagedTasks = busser.taskHandlerSet("save tasks from staged", "/", \
+saveFromStagedTasks = busser.taskHandlerSet("save tasks from staged", \
   ["fileFromStaged" ])
 
 # -----
@@ -1889,6 +1887,10 @@ class App
     # Create a fresh unique *buildVersion* as a long **Date** instance for the current time.
     #
     @buildVersion = new Date().getTime()
+
+    # Set the app's urlPrefix in the Busser class variable, for use in handlers that need to
+    # prepend it to paths.
+    Busser.urlPrefix = @urlPrefix
 
     # Set buildVersion in each framework.
     #
