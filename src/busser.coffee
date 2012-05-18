@@ -2068,11 +2068,7 @@ class App
       new Saver(this, file, saveFromStagedTasks).save() for file in framework.orderedStylesheetFiles
       new Saver(this, file, file.taskHandlerSet).save() for file in framework.orderedScriptFiles
 
-    path = path_module.join(@pathForSave, @buildVersion.toString(), @htmlFileReference.file.pathForSave())
-    File.createDirectory path_module.dirname(path)
-    fs.writeFile path, @files[@htmlFileReference.file.url()], (err) ->
-      throw err  if err
-
+    new Saver(this, file, @htmlFileReference.file.taskHandlerSet).save()
 
 # Proxy
 # =====
