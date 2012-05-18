@@ -432,6 +432,15 @@ class TaskHandlerSet
 class Busser
   constructor ->
 
+  # *availableTaskHandlerNames* is a convenience method for use by developers in listing
+  # taskHandlers defined in the **Busser** class. The global instance of busser is queried
+  # for its own properties, which will include variables and methods, and the
+  # list returned is filtered for known non-taskHandler properties and methods.
+  #
+  availableTaskHandlerNames: ->
+    (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic" ])
+    #(h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "scssify", "sassify", "lessify" ])
+    
   # The taskHandlerSet method returns a TaskHandlerSet instance that contains a linked-list
   # of TaskHandler objects, instantiated and ready for processing.
   #
@@ -439,8 +448,7 @@ class Busser
   #
   #    name -- taskHandlerSet instance label.
   #
-  #    urlPrefix -- default is "/"... [TODO] should be customizable for apps? 
-  #                                          Also, check when this should be used...
+  #    urlPrefix -- default is "/", and is customizable for apps.
   #
   #    taskHandlerNames -- an array of taskHandler names from the list of those available.
   #                    These are the names of taskHandlers, keys to properties of the Busser
@@ -983,55 +991,59 @@ class Busser
 # The global **Busser** instance is created.
 #
 busser = new Busser
-
-# *availableTaskHandlerNames* is a convenience method for use by developers in listing
-# taskHandlers defined in the **Busser** class. The global instance of busser is queried
-# for its own properties, which will include variables and methods, and the
-# list returned is filtered for known non-taskHandler properties and methods.
-#
-availableTaskHandlerNames  = ->
-  (h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic" ])
-  #(h for own h of busser when h not in [ "constructor", "taskHandlerSet", "mtimeScanner", "minifyStylesheet", "minifyScript", "rewriteStatic", "stylify", "scssify", "sassify", "lessify" ])
-
+    
 # **TaskHandlerSet** singletons are used in the specialized File subclasses defined
 # below. The names of the taskHandlerSets match the **File** subclasses, generally,
 # and there are several with descriptive names.
 #
 # First, several for the root html file:
 #
-rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", [ "cache", "contentType", "fileFromOriginal" ])
-rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", [ "symlink" ])
+rootContentHtmlTasks = busser.taskHandlerSet("root content html", "/", \
+  [ "cache", "contentType", "fileFromOriginal" ])
+rootSymlinkTasks = busser.taskHandlerSet("root symlink", "/", \
+  [ "symlink" ])
 
 # Task sets for staging to the tmp dir:
 #
-stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromOriginal"])
-minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromOriginal"])
-virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
-resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", [ "ifModifiedSince", "contentType", "fileFromOriginal" ])
+stylesheetTasks = busser.taskHandlerSet("stylesheet tasks", "/", \
+  ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "fileFromOriginal"])
+minifiedStylesheetTasks = busser.taskHandlerSet("minified stylesheet tasks", "/", \
+  ["ifModifiedSince", "contentType", "minify", "rewriteStaticInStylesheet", "fileFromOriginal"])
+virtualStylesheetTasks = busser.taskHandlerSet("virtual stylesheet tasks", "/", \
+  ["ifModifiedSince", "contentType", "rewriteStaticInStylesheet", "join"])
+resourceFileTasks = busser.taskHandlerSet("resource tasks", "/", \
+  [ "ifModifiedSince", "contentType", "fileFromOriginal" ])
 
 # Task sets for building the final response data (these operate on in-memory files from the build step):
 #
-scriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
-minifiedScriptTasks = busser.taskHandlerSet("script tasks", "/", ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
-virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", "/", [ "contentType", "join" ])
-testTasks = busser.taskHandlerSet("test tasks", "/", [ "contentType", "rewriteFile", "wrapTest", "fileFromOriginal" ])
+scriptTasks = busser.taskHandlerSet("script tasks", "/", \
+  ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
+minifiedScriptTasks = busser.taskHandlerSet("script tasks", "/", \
+  ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
+virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", "/", \
+  [ "contentType", "join" ])
+testTasks = busser.taskHandlerSet("test tasks", "/", \
+  [ "contentType", "rewriteFile", "wrapTest", "fileFromOriginal" ])
 
 # Specialized task set for use in the Bootstrap framework:
 #
-uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", "/", [ "contentType", "fileFromOriginal" ])
+uncombinedScriptTasks = busser.taskHandlerSet("uncombined script tasks", "/", \
+  [ "contentType", "fileFromOriginal" ])
 
 # Join-only task set for use in combining stylesheets and scripts for save:
 #
-joinTasks = busser.taskHandlerSet("join only tasks", "/", [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
+joinTasks = busser.taskHandlerSet("join only tasks", "/", \
+  [ "join" ]) # [TODO] urlPrefix needs to be custom for app?
 
 # Chance task set:
 #
-chanceTasks = busser.taskHandlerSet("chance tasks", "/", ["chance" ])
+chanceTasks = busser.taskHandlerSet("chance tasks", "/", \
+  ["chance" ])
 
 # Save task sets:
 #
-saveFromStagedTasks = busser.taskHandlerSet("save tasks from staged", "/", ["fileFromStaged" ])
-
+saveFromStagedTasks = busser.taskHandlerSet("save tasks from staged", "/", \
+  ["fileFromStaged" ])
 
 # -----
 
@@ -1808,7 +1820,7 @@ class App
 
     @pathForSave = "./build"
 
-    @urlPrefix = "/"
+    @urlPrefix = ""
 
     @buildVersion = ""
 
@@ -2248,6 +2260,7 @@ exec = (appTargets, actionItems) ->
       myApp = new App
         name: appConf["name"]
         title: appConf["title"]
+        urlPrefix: appConf["urlPrefix"]
         pathForSave: appConf["pathForSave"]
         buildLanguage: appConf["buildLanguage"]
   
