@@ -2032,9 +2032,7 @@ class App
     callbackAfterChance() if callbackAfterChance?
 
   # The contained **Saver** class is used to save child
-  # frameworks and usually some combination of combined virtual files. The logic for
-  # combining and bundling frameworks and application code flows in a series of if
-  # else blocks until the main root html file is writen.
+  # frameworks and usually some combination of combined virtual files.
   #
   save: =>
     console.log('in save')
@@ -2052,15 +2050,9 @@ class App
               throw err  if err
 
     for framework in @frameworks
-      for file in framework.resourceFiles
-        new Saver(this, file, saveFromStagedTasks).save()
+      new Saver(this, file, saveFromStagedTasks).save() for file in framework.resourceFiles
       new Saver(this, file, saveFromStagedTasks).save() for file in framework.orderedStylesheetFiles
-
-    for file in framework.orderedScriptFiles
-      path = path_module.join(@pathForSave, @buildVersion.toString(), file.pathForSave())
-      File.createDirectory path_module.dirname(path)
-      fs.writeFile path, @files[file.url()], (err) ->
-        throw err  if err
+      new Saver(this, file, file.taskHandlerSet).save() for file in framework.orderedScriptFiles
 
     path = path_module.join(@pathForSave, @buildVersion.toString(), @htmlFileReference.file.pathForSave())
     File.createDirectory path_module.dirname(path)
