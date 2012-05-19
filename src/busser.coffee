@@ -790,7 +790,7 @@ class Busser
     exec: (file, request, callback) ->
       data = []
 
-      console.log 'JOIN', file.path, file.children.length
+      console.log 'JOIN', file.path, file.children.length, f.path for f in file.children
       if not file.children? or file.children.length is 0
         file.taskHandlerSet.exec file, request, (response) ->
           callback data: response.data
@@ -972,6 +972,7 @@ class Busser
   #
   fileFromOriginal:
     exec: (file, request, callback) ->
+      console.log 'fileFromOriginal, in', file.taskHandlerSet.name
       file.content file.path, (err, data) ->
         if err
           throw err
@@ -1016,7 +1017,7 @@ resourceFileTasks = busser.taskHandlerSet("resource tasks", \
 #
 scriptTasks = busser.taskHandlerSet("script tasks", \
   ["ifModifiedSince", "contentType", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
-minifiedScriptTasks = busser.taskHandlerSet("script tasks", \
+minifiedScriptTasks = busser.taskHandlerSet("minified script tasks", \
   ["ifModifiedSince", "contentType", "minify", "rewriteSuper", "rewriteStaticInScript", "handlebars", "fileFromOriginal"])
 virtualScriptTasks = busser.taskHandlerSet("virtual script tasks", \
   [ "contentType", "join" ])
@@ -1238,6 +1239,7 @@ class Framework
     null
 
   tailFile: ->
+    console.log 'new File for after.js', @reducedPath()
     new File
       path: path_module.join(@path, "after.js")
       framework: this
@@ -2057,7 +2059,7 @@ class App
         @saveTasks.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
             path = path_module.join(@app.pathForSave, @app.buildVersion.toString(), @file.pathForSave())
-            console.log 'writing', path
+            console.log('writing for save', path)
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
@@ -2067,7 +2069,7 @@ class App
       new Saver(this, file, saveFromStagedTasks).save() for file in framework.orderedStylesheetFiles
       new Saver(this, file, file.taskHandlerSet).save() for file in framework.orderedScriptFiles
 
-    new Saver(this, file, @htmlFileReference.file.taskHandlerSet).save()
+    new Saver(this, @htmlFileReference.file, @htmlFileReference.file.taskHandlerSet).save()
 
 # Proxy
 # =====
