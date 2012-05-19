@@ -838,25 +838,6 @@
         { "name": "template_view",   "conf": "dev" }
       ],
       "custom-frameworks": [
-        { "name": "TodosThree",     
-          "conf": { 
-            "name": "TodosThree",
-            "buildLanguage": "english",
-            "path": "apps/TodosThree",
-            "pathForSave": "./build",
-            "pathForStage": "./stage",
-            "pathForChance": "./chance",
-            "theme": "sc-theme",
-            "cssTheme": "ace.todosthree",
-            "useSprites": true,
-            "optimizeSprites": false,
-            "padSpritesForDebugging": false,
-            "combineScripts": true,
-            "combineStylesheets": true,
-            "minifyScripts": false,
-            "minifyStylesheets": false 
-          }
-        },
         { "name": "empty_theme",     
           "conf": { 
             "name": "empty_theme",
@@ -892,6 +873,25 @@
             "combineStylesheets": true,
             "minifyScripts": false,
             "minifyStylesheets": false
+          }
+        },
+        { "name": "TodosThree",     
+          "conf": { 
+            "name": "TodosThree",
+            "buildLanguage": "english",
+            "path": "apps/TodosThree",
+            "pathForSave": "./build",
+            "pathForStage": "./stage",
+            "pathForChance": "./chance",
+            "theme": "sc-theme",
+            "cssTheme": "ace.todosthree",
+            "useSprites": true,
+            "optimizeSprites": false,
+            "padSpritesForDebugging": false,
+            "combineScripts": true,
+            "combineStylesheets": true,
+            "minifyScripts": false,
+            "minifyStylesheets": false 
           }
         }
       ]
