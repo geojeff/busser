@@ -822,6 +822,7 @@
     "TodosThree-dev": {
       "name": "TodosThree",
       "title": "Todos Three",
+      "path": "TodosThree",
       "urlPrefix": "../",
       "pathForSave": "./build",
       "proxies": [],

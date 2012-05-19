@@ -790,7 +790,7 @@ class Busser
     exec: (file, request, callback) ->
       data = []
 
-      console.log 'JOIN', file.path, file.children.length, f.path for f in file.children
+      #console.log 'JOIN', file.path, file.children.length, f.path for f in file.children
       if not file.children? or file.children.length is 0
         file.taskHandlerSet.exec file, request, (response) ->
           callback data: response.data
@@ -972,7 +972,6 @@ class Busser
   #
   fileFromOriginal:
     exec: (file, request, callback) ->
-      console.log 'fileFromOriginal, in', file.taskHandlerSet.name
       file.content file.path, (err, data) ->
         if err
           throw err
@@ -1187,7 +1186,6 @@ class Framework
     all.push @virtualStylesheetReference.file if @virtualStylesheetReference? # [TODO] if the following use OrderedS..Files, then these are redundant?
     all.push(file) for file in @orderedStylesheetFiles # [TODO] Should this be ordered? Changed to ordered 05/15/2012
     all.push @virtualScriptReference.file if @virtualScriptReference?
-    console.log('pushing @virtualScriptReference.file', @virtualScriptReference.file.url()) if @virtualScriptReference?
     all.push(file) for file in @orderedScriptFiles # [TODO] Same, regarding ordered vs. not.
     all.push(file) for file in @testFiles
     all.push(file) for file in @resourceFiles
@@ -1209,7 +1207,7 @@ class Framework
   # A url consists of the joined buildVersion and reducedPath.
   #
   urlFor: (path) ->
-    path_module.join @buildVersion, @reducedPathFor(path)
+    path_module.join @buildVersion.toString(), @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
   #
@@ -1576,6 +1574,10 @@ class File
 # -----------
 #
 # **SymlinkFile** is used for the instance of a symlink to the root html file.
+# 
+# The symlink handler calls the handler chain on the symlinked file
+# making it possible to have localhost:port/appname forward to localhost:port/appname.html,
+# without having to create an extra file.
 #
 class SymlinkFile extends File
   constructor: (options={}) ->
@@ -1818,6 +1820,8 @@ class App
 
     @name = null
 
+    @path = ""
+
     @pathForSave = "./build"
 
     @urlPrefix = ""
@@ -1833,13 +1837,26 @@ class App
 
     @[key] = options[key] for own key of options
 
-  # The *reducedPathFor*, *urlFor*, and *url* methods are the same as those for
-  # the **Framework** class, tied here to the prototype definitions.
+  # See class Framework -- copy of that function.
   #
-  reducedPathFor: Framework::reducedPathFor
-  reducedPath: Framework::reducedPath
-  urlFor: Framework::urlFor
-  url: -> Framework::urlFor(@name)
+  reducedPathFor: (path) ->
+    path.replace /(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g, ""
+  
+  # See class Framework -- copy of that function.
+  #
+  urlFor: (path) ->
+    console.log 'urlFor app', path, this.name
+    path_module.join @buildVersion.toString(), @reducedPathFor(path)
+  
+  # See class Framework -- copy of that function.
+  #
+  reducedPath: ->
+    @reducedPathFor(@path)
+  
+  # See class Framework -- copy of that function.
+  #
+  url: ->
+    @urlFor(@reducedPath())
   
   # The *addSproutCore* convenience method adds frameworks returned by the static function
   # *sproutcoreFrameworks* defined in the **Framework** class.
@@ -1892,6 +1909,7 @@ class App
 
     # Set the app's urlPrefix in the Busser class variable, for use in handlers that need to
     # prepend it to paths.
+    #
     Busser.urlPrefix = @urlPrefix
 
     # Set buildVersion in each framework.
@@ -1900,6 +1918,7 @@ class App
       framework.buildVersion = @buildVersion
 
     @buildRoot()
+
     builder = new FrameworksBuilder(@frameworks)
     builder.on 'end', =>
       console.log "Build for #{@name} is complete.  Registering files."
@@ -1973,7 +1992,6 @@ class App
       prev = prev.concat item.orderedStylesheetFiles # [TODO] changed this to ordered 05/15/2012
       prev
     files = @frameworks.reduce(reducer, [])
-    console.log(f.path) for f in files
 
     stage_files files, callbackAfterStage
 
@@ -2050,16 +2068,13 @@ class App
   # frameworks and usually some combination of combined virtual files.
   #
   save: =>
-    console.log('in save')
     class Saver
       constructor: (@app, @file, @saveTasks) ->
         
       save: ->
-        console.log 'saving', @file.pathForSave()
         @saveTasks.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            path = path_module.join(@app.pathForSave, @app.buildVersion.toString(), @file.pathForSave())
-            console.log('writing for save', path)
+            path = path_module.join(@app.pathForSave, @file.pathForSave())
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
@@ -2260,6 +2275,7 @@ exec = (appTargets, actionItems) ->
         name: appConf["name"]
         title: appConf["title"]
         urlPrefix: appConf["urlPrefix"]
+        path: appConf["path"]
         pathForSave: appConf["pathForSave"]
         buildLanguage: appConf["buildLanguage"]
   
