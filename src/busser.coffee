@@ -911,7 +911,7 @@ class Busser
   #
   chance:
     exec: (file, request, callback) ->
-      #chanceKey = path_module.join(file.framework.app.pathForSave, file.framework.app.buildVersion.toString(), file.path)
+      #chanceKey = path_module.join(file.framework.app.saveDir, file.framework.app.buildVersion.toString(), file.path)
       #console.log file.framework.chanceProcessor.output_for chanceKey
       #callback data: file.framework.chanceProcessor.output_for chanceKey
       #callback data: file.framework.chanceProcessor.css file.path
@@ -921,13 +921,17 @@ class Busser
       # instance creation calls. The key passed here, file.path, was given to Chance in
       # add_file calls, so it will do lookups on that.
       #
-      if file instanceof VirtualStylesheetFile
+      if not (file instanceof VirtualStylesheetFile or file instanceof ResourceFile)
         #console.log "output_for", file.framework.chanceFilename
         #css = file.framework.chanceProcessor.output_for file.framework.chanceFilename
-        callback data: file.framework.chanceProcessor.output_for file.framework.chanceFilename
-      else
+        #callback data: file.framework.chanceProcessor.output_for file.framework.chanceFilename
+        #chanceKey = path_module.join(file.framework.stageDir, file.framework.buildVersion.toString(), "#{framework.path}.css")
+        #callback data: file.framework.chanceProcessor.output_for chanceKey
+        #callback data: file.framework.chanceProcessor.output_for file.pathForStage()
+      #else
         #console.log "output_for", file.pathForStage()
-        callback data: file.framework.chanceProcessor.output_for file.pathForStage()
+        #callback data: file.framework.chanceProcessor.output_for file.pathForStage()
+        callback data: file.framework.chanceProcessor.output_for file.path
 
   # The *handlebars* taskHandler treats handlebar template files by stringifying them
   # to prepare for a call to SC.Handlebars.compile(), by wrapping the stringified
@@ -1034,12 +1038,12 @@ joinTasks = busser.taskHandlerSet("join only tasks", \
 # Chance task set:
 #
 chanceTasks = busser.taskHandlerSet("chance tasks", \
-  ["chance" ])
+  [ "contentType", "fileFromStaged" ])
 
 # Save task sets:
 #
 saveFromStagedTasks = busser.taskHandlerSet("save tasks from staged", \
-  ["fileFromStaged" ])
+  [ "contentType", "fileFromStaged" ])
 
 # -----
 
@@ -1122,9 +1126,8 @@ class Framework
 
     @buildLanguage = "english"
     @buildVersion = ''
-    @pathForSave = "./build"
-    @pathForStage = "./stage"
-    @pathForChance = "./chance"
+    @saveDir = "./build"
+    @stageDir = "./stage"
     @cssTheme = ''
     @useSprites = false
     @optimizeSprites = false
@@ -1551,7 +1554,7 @@ class File
   # [TODO] This is a property for app and a method for file -- be consistent
   #
   pathForStage: ->
-    "#{@framework.pathForStage}/#{@framework.buildVersion}/#{@pathForSave()}"
+    "#{@framework.stageDir}/#{@framework.buildVersion}/#{@pathForSave()}"
 
   # The *content* method is coordinated with the queue system for managing the number
   # of open files, via the call to readFile to read an on-disk file. This method is 
@@ -1822,7 +1825,7 @@ class App
 
     @path = ""
 
-    @pathForSave = "./build"
+    @saveDir = "./build"
 
     @urlPrefix = "/"
 
@@ -1966,7 +1969,7 @@ class App
               console.log 'STAGING', @file.path, @file.taskHandlerSet
               @file.taskHandlerSet.exec @file, null, (response) =>
                 if response.data? and response.data.length > 0
-                  path = path_module.join(@file.framework.pathForStage, @buildVersion.toString(), @file.pathForSave())
+                  path = path_module.join(@file.framework.stageDir, @buildVersion.toString(), @file.pathForSave())
                   File.createDirectory path_module.dirname(path)
                   console.log 'writing', path
                   fs.writeFile path, response.data, (err) =>
@@ -2017,11 +2020,13 @@ class App
       # generated images include this key. We'll use the framework name, recalling that a 
       # framework, as used in busser, can be an app.
       #
-      #chanceKey = path_module.join(@app.pathForSave, @app.buildVersion.toString(), "#{@name}.css")
-      chanceKey = path_module.join(framework.pathForStage, @buildVersion.toString(), "#{framework.path}.css")
-      console.log 'chanceKey', chanceKey
+      # chanceKey is the path to the staged css file.
+      # 
+      #chanceKey = path_module.join(@app.saveDir, @app.buildVersion.toString(), "#{@name}.css")
+      chanceKey = path_module.join(framework.stageDir, @buildVersion.toString(), "#{framework.path}.css")
       #chanceKey = @url()
       #@chanceKey = @path
+      console.log 'chanceKey', chanceKey
     
       # Create the ChanceProcessor instance for this framework, with general options for the app.
       #
@@ -2031,6 +2036,7 @@ class App
         optimizeSprites: framework.optimizeSprites
         padSpritesForDebugging: framework.padSpritesForDebugging
         instanceId: framework.name
+
       framework.chanceProcessor = chanceProcessorFactory.instance_for_key chanceKey, opts
     
       # Add stylesheet and resource files to Chance, and reset their taskHandlerSet to chanceTasks,
@@ -2038,13 +2044,16 @@ class App
       #
       for chanceFile in [framework.orderedStylesheetFiles..., framework.resourceFiles...]
         #chance.add_file chanceFile.path
-        #chance.add_file chanceFile.url()
         chance.add_file chanceFile.pathForStage()
     
         # Remove source/ from the filename for sc_require and @import
         #@app.chanceFiles[chanceFile.path.replace(/^source\//, '')] = chanceFile.path
         #@chanceFiles[chanceFile.url()] = chanceFile
-        framework.chanceFiles[chanceFile.path] = chanceFile.path
+        if chanceFile instanceof  VirtualStylesheetFile or chanceFile instanceof ResourceFile
+          framework.chanceFiles[chanceFile.pathForStage()] = chanceFile.pathForStage()
+        else
+          framework.chanceFiles[chanceFile.url()] = chanceFile.path
+        #framework.chanceFiles[chanceFile.url()] = chanceFile.path
 
         chanceFile.taskHandlerSet = chanceTasks
 
@@ -2053,9 +2062,10 @@ class App
       # framework .css files used in Busser to those used in Chance, e.g. ../Desktop.css will
       # be mapped to chance.css.
       #
-      if framework.virtualStylesheetReference?
+      if framework.virtualStylesheetReference? # [TODO] ref check -- Does this set the object in orderedStylesheets?
         framework.virtualStylesheetReference.file.taskHandlerSet = chanceTasks
 
+      console.log 'update_instance', framework.name
       chanceProcessorFactory.update_instance chanceKey, opts, framework.chanceFiles
       
       # [TODO] This code block is from Abbot... How to use chance from here...
@@ -2076,12 +2086,12 @@ class App
       save: ->
         @saveTasks.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            path = path_module.join(@app.pathForSave, @buildVersion.toString(), @file.pathForSave())
+            path = path_module.join(@app.saveDir, @buildVersion.toString(), @file.pathForSave())
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
 
-    # Set urlPrefix to '', because we are writing to @pathForSave/buildVersion/ where the
+    # Set urlPrefix to '', because we are writing to @saveDir/buildVersion/ where the
     # root html file and app content and directories will live.
     #
     @urlPrefix = ''
@@ -2226,6 +2236,7 @@ class Server
         if request.headers["access-control-request-headers"]
           headers["Access-Control-Allow-Headers"] = request.headers["access-control-request-headers"]
       response.writeHead status, headers
+      console.log r.data
       response.write r.data, "utf8"  if r.data?
       response.end()
   
@@ -2287,7 +2298,7 @@ exec = (appTargets, actionItems) ->
         title: appConf["title"]
         urlPrefix: appConf["urlPrefix"]
         path: appConf["path"]
-        pathForSave: appConf["pathForSave"]
+        saveDir: appConf["saveDir"]
         buildLanguage: appConf["buildLanguage"]
   
       myApp.frameworks = []

@@ -265,20 +265,20 @@ class ChanceParser
     # all units which make sense
 
     # it must have either a left or a right, no matter what
-    rect["left"] = 0 if not rect["left"]? and not rect["right"]?
+    rect["left"] = 0 if not rect["left"] and not rect["right"]
 
     # if there is no width, it must have a both left and right
-    if not rect["width"]?
-      rect["left"] = 0 if not rect["left"]?
-      rect["right"] = 0 if not rect["right"]?
+    if not rect["width"]
+      rect["left"] ?= 0
+      rect["right"] ?= 0
 
     # it must have either a top or a bottom, no matter what
-    rect["top"] = 0 if not rect["top"]? and not rect["bottom"]?
+    rect["top"] = 0 if not rect["top"] and not rect["bottom"]
 
     # if there is no height, it must have _both_ top and bottom
-    if not rect["height"]?
-      rect["top"] = 0 if not rect["top"]?
-      rect["bottom"] = 0 if not rect["bottom"]?
+    if not rect["height"]
+      rect["top"] ?= 0
+      rect["bottom"] ?= 0
 
     rect
 
@@ -1479,7 +1479,7 @@ class ChanceProcessor
       if must_slice or slice["x2"]
         if not canvas?
           # [TODO] mention of RMagick, which will be replaced
-          throw TypeError("ChanceProcessor could not load file '#{slice["path"]}'. If it is not a PNG, RMagick is required to slice or use @2x mode.")
+          throw new TypeError("ChanceProcessor could not load file '#{slice["path"]}'. If it is not a PNG, RMagick is required to slice or use @2x mode.")
 
         f = slice["proportion"]
 
@@ -1715,7 +1715,7 @@ class ChanceProcessor
     
       # TODO: MAKE A BETTER ERROR.
       unless canvas
-        throw TypeError("Could not sprite image #{slice["path"]}; if it is not a PNG, make sure you have rmagick installed")
+        throw new TypeError("Could not sprite image #{slice["path"]}; if it is not a PNG, make sure you have rmagick installed")
           
       gm(canvas).size (err, data) ->
         if err
