@@ -2234,7 +2234,6 @@ class Server
         if request.headers["access-control-request-headers"]
           headers["Access-Control-Allow-Headers"] = request.headers["access-control-request-headers"]
       response.writeHead status, headers
-      console.log r.data
       response.write r.data, "utf8"  if r.data?
       response.end()
   
