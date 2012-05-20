@@ -11,7 +11,7 @@ StringScanner = require("strscan").StringScanner
 
 # PORTED FROM: SproutCore's Abbot build tool system, from the Chance css processing
 #              tool primarily written by Alex Iskander (all in Ruby).
-# 
+#
 # PORTING NOTE: Porting the Ruby code in the original Chance proceeded by first
 # concatenating all code into this source file, followed by arrangment in several
 # CoffeeScript classes matching main Ruby modules, with some combining as noted:
@@ -26,7 +26,7 @@ StringScanner = require("strscan").StringScanner
 # * **Chance**, from the *abbot/vendor/chance/lib/chance* main module, and chance.rb
 #
 # Comments and function names were kept largely intact. Ruby and CoffeeScript are
-# similar in many respects, so the port was fairly direct, leaving only a few 
+# similar in many respects, so the port was fairly direct, leaving only a few
 # challenging conversions.
 #
 # Javascript code examples and projects were found to match those used in Ruby Chance:
@@ -40,8 +40,8 @@ StringScanner = require("strscan").StringScanner
 # * microtime.nowDouble(), replacing Time.now.to_f in Ruby
 # * underscore sortBy, a convenience array sorting function, replacing the Ruby sortBy
 #
-# The graphics handling parts of Ruby Chance were more challenging to write in 
-# CoffeeScript Chance, not just for the style of programming, but for finding a 
+# The graphics handling parts of Ruby Chance were more challenging to write in
+# CoffeeScript Chance, not just for the style of programming, but for finding a
 # suitable easy-to-install replacement system. At the time of this writing, the node.js
 # graphicsmagick wrapper, gm, is being tried as the main workhorse.
 #
@@ -88,7 +88,7 @@ class LCMCalculator
   gcd: ->
     a = Math.abs(@a)
     b = Math.abs(@b)
-    t = undefined
+    t = 0
     if a < b
       t = b
       b = a
@@ -765,7 +765,7 @@ class ChanceParser
     output = ""
 
     # LEFT
-    # NOTE: we write it even if we are supposed to skip; we only wrap the slice include portion in 
+    # NOTE: we write it even if we are supposed to skip; we only wrap the slice include portion in
     if @should_include_slice top_left_slice  # [TODO] in ruby was, should_include_slice?(top_left_slice), but it is just a boolean call?
       output += "& > .top-left {\n"
       # IF we are skipping the top left slice, we don't want the actual slice include-- but the layout
@@ -1035,7 +1035,7 @@ class ChanceProcessor
 
   # Generates output for tests.
   chance_test: (opts) ->
-     ".hello { background: static_url('test.png'); }"
+    ".hello { background: static_url('test.png'); }"
 
   # Processes the input CSS, producing CSS ready for post-processing.
   # This is the first step in the ChanceProcessor build process, and is usually
@@ -1057,7 +1057,7 @@ class ChanceProcessor
       Chance._current_instance = @
 
       # Step 1: preprocess CSS, determining order and parsing the slices out.
-      # The output of this process is a "virtual" file that imports all of the 
+      # The output of this process is a "virtual" file that imports all of the
       # SCSS files used by this ChanceProcessor instance. This also sets up the @slices hash.
       #
       import_css = @_preprocess()
@@ -1165,7 +1165,7 @@ class ChanceProcessor
     css = css.gsub re, ""
     css
 
-  # 
+  #
   # COMBINING CSS
   #
   
@@ -1479,7 +1479,7 @@ class ChanceProcessor
       if must_slice or slice["x2"]
         if not canvas?
           # [TODO] mention of RMagick, which will be replaced
-          throw "ChanceProcessor could not load file '#{slice["path"]}'. If it is not a PNG, RMagick is required to slice or use @2x mode."
+          throw TypeError("ChanceProcessor could not load file '#{slice["path"]}'. If it is not a PNG, RMagick is required to slice or use @2x mode.")
 
         f = slice["proportion"]
 
@@ -1622,7 +1622,7 @@ class ChanceProcessor
   # out within the sprites, and generating the final sprite images.
 
   # Performs the spriting process on all of the @slices, creating sprite
-  # images in the class's @sprites property and updating the individual slices 
+  # images in the class's @sprites property and updating the individual slices
   # with a :sprite property containing the identifier of the sprite, and offset
   # properties for the offsets within the image.
   generate_sprite_definitions: (opts) ->
@@ -1715,7 +1715,7 @@ class ChanceProcessor
     
       # TODO: MAKE A BETTER ERROR.
       unless canvas
-        throw "Could not sprite image #{slice["path"]}; if it is not a PNG, make sure you have rmagick installed"
+        throw TypeError("Could not sprite image #{slice["path"]}; if it is not a PNG, make sure you have rmagick installed")
           
       gm(canvas).size (err, data) ->
         if err
@@ -1828,7 +1828,7 @@ class ChanceProcessor
           sprite["width"] = if is_horizontal then pos else size
           sprite["height"] = if is_horizontal then size else pos
       
-  # Generates the image for the specified sprite, putting it in the sprite's 
+  # Generates the image for the specified sprite, putting it in the sprite's
   # canvas property.
   generate_sprite: (sprite) ->
     canvas = @canvas_for_sprite(sprite)
