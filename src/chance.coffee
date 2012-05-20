@@ -633,17 +633,17 @@ class ChanceParser
     else
       skip = skip.split /\s+/
 
-    skip_top_left = skip['top-left'] ? null
-    skip_top = skip['top'] ? null
-    skip_top_right = skip['top-right'] ? null
+    skip_top_left = 'top-left' not in skip
+    skip_top = 'top' not in skip
+    skip_top_right = 'top-right' not in skip
 
-    skip_left = skip['left'] ? null
-    skip_middle = skip['middle'] ? null
-    skip_right = skip['right'] ? null
+    skip_left = 'left' not in skip
+    skip_middle = 'middle' not in skip
+    skip_right = 'right' not in skip
 
-    skip_bottom_left = skip['bottom-left'] ? null
-    skip_bottom = skip['bottom'] ? null
-    skip_bottom_right = skip['bottom-right'] ? null
+    skip_bottom_left = 'bottom-left' not in skip
+    skip_bottom = 'bottom' not in skip
+    skip_bottom_right = 'bottom-right' not in skip
 
     filename = @parse_string slice_arguments[0]
 
