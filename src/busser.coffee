@@ -428,7 +428,7 @@ class TaskHandlerSet
 # taskHandlers, instantiated and returned as a singly-linked-list.
 #
 class Busser
-  @urlPrefix: "../" # Set by the app.
+  @urlPrefix: "/"
 
   constructor ->
 
@@ -447,8 +447,6 @@ class Busser
   # Parameters:
   #
   #    name -- taskHandlerSet instance label.
-  #
-  #    urlPrefix -- default is "../", and is customizable for apps, but must be set here.
   #
   #    taskHandlerNames -- an array of taskHandler names from the list of those available.
   #                    These are the names of taskHandlers, keys to properties of the Busser
@@ -1826,7 +1824,7 @@ class App
 
     @pathForSave = "./build"
 
-    @urlPrefix = ""
+    @urlPrefix = "/"
 
     @buildVersion = ""
 
@@ -1914,7 +1912,7 @@ class App
     # Set the app's urlPrefix in the Busser class variable, for use in handlers that need to
     # prepend it to paths.
     #
-    Busser.urlPrefix = @urlPrefix
+    Busser.urlPrefix = @urlPrefix # [TODO] Does this need to be configurable, or should this be set to '/'?
 
     # Set buildVersion in each framework.
     #
@@ -2083,8 +2081,13 @@ class App
             fs.writeFile path, response.data, (err) ->
               throw err  if err
 
-    @urlPrefix = @urlPrefix + @buildVersion + '/'
+    # Set urlPrefix to '', because we are writing to @pathForSave/buildVersion/ where the
+    # root html file and app content and directories will live.
+    #
+    @urlPrefix = ''
 
+    # Rebuild the root html file to have urls with buildVersion in them.
+    #
     @buildRoot()
 
     for framework in @frameworks
