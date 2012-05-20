@@ -331,7 +331,7 @@ class ChanceParser
       else
         output.push res
 
-    #console.log 'output', output.length
+    console.log 'output', output.length
 
     output = output.join("")
     output
@@ -344,7 +344,7 @@ class ChanceParser
     scanner.scanUntil /\*\//
 
   parse_string: (cssString) ->
-    #console.log 'parse_string', cssString, 'that was cssString'
+    console.log 'parse_string', cssString, 'that was cssString'
     # I cheat: to parse strings, I use JSON.
     if cssString[0..0] is "'" #[TODO] indices?
       # We should still be able to use json to parse single-quoted strings
@@ -356,11 +356,11 @@ class ChanceParser
       #console.log 'ERROR string is not delimited by quotes!', cssString # This is not an error -- if not in quotes, just return cssString.
       return cssString
 
-    #console.log 'JSON parsed string', JSON.parse("[#{cssString}]")[0]
+    console.log 'JSON parsed string', JSON.parse("[#{cssString}]")[0]
     JSON.parse("[#{cssString}]")[0]
 
   handle_string: ->
-    #console.log 'handle_string'
+    console.log 'handle_string'
     scanner = @scanner
 
     str = scanner.scanChar()
@@ -368,7 +368,7 @@ class ChanceParser
     str
 
   handle_empty: ->
-    #console.log 'handle_empty'
+    console.log 'handle_empty'
     scanner = @scanner
     output = ""
 
@@ -387,7 +387,7 @@ class ChanceParser
     output
 
   handle_scope: ->
-    #console.log 'handle_scope'
+    console.log 'handle_scope'
     scanner = @scanner
 
     scanner.scan /\{/
@@ -426,7 +426,7 @@ class ChanceParser
     output
 
   handle_theme_variable: ->
-    #console.log 'handle_theme_variable'
+    console.log 'handle_theme_variable'
     scanner = @scanner
     scanner.scan ChanceParser.SELECTOR_THEME_VARIABLE
 
@@ -438,19 +438,19 @@ class ChanceParser
   # rather than the individual pieces, yet we have paths relative to the original
   # files.
   handle_file_change: ->
-    #console.log 'handle_file_change'
+    console.log 'handle_file_change'
     scanner = @scanner
     scanner.scan ChanceParser.CHANCE_FILE_DIRECTIVE
 
     path = scanner.scanUntil /;/
     path = path[0..path.length]
 
-    #console.log 'path', path
+    console.log 'path', path
 
     @path = path
 
   parse_argument: ->
-    #console.log 'parse_argument'
+    console.log 'parse_argument'
     scanner = @scanner
 
     # We do not care for whitespace or comments
@@ -490,31 +490,31 @@ class ChanceParser
     # at ')'
     parsing_value += @handle_empty()
 
-    #console.log 'parsing_value_1', parsing_value
+    console.log 'parsing_value_1', parsing_value
 
     until scanner.check(/[,)]/) or scanner.hasTerminated()
       if scanner.check(/["']/)
         parsing_value += @handle_string()
-        #console.log 'parsing_value_2', parsing_value
+        console.log 'parsing_value_2', parsing_value
         parsing_value += @handle_empty()
-        #console.log 'parsing_value_3', parsing_value
+        console.log 'parsing_value_3', parsing_value
         continue
 
       parsing_value += scanner.scanChar()
-      #console.log 'parsing_value_4', parsing_value
+      console.log 'parsing_value_4', parsing_value
       parsing_value += @handle_empty()
-      #console.log 'parsing_value_5', parsing_value
+      console.log 'parsing_value_5', parsing_value
 
     value = parsing_value unless parsing_value.length is 0
 
-    #console.log "key: #{key}, value: #{value}"
+    console.log "key: #{key}, value: #{value}"
 
     { key: key, value: value }
 
   # Parses a list of arguments, INCLUDING beginning AND ending parentheses.
   #
   parse_argument_list: ->
-    #console.log 'parse_argument_list'
+    console.log 'parse_argument_list'
     scanner = @scanner
 
     console.log "Expected ( to begin argument list." unless scanner.scan /\(/
@@ -527,7 +527,7 @@ class ChanceParser
         arg["key"] = idx
         idx += 1
 
-      #console.log "key: #{arg['key']}, value: #{arg['value']}"
+      console.log "key: #{arg['key']}, value: #{arg['value']}"
       args[arg["key"]] = arg["value"].trim()
 
       scanner.scan /,/
@@ -578,7 +578,7 @@ class ChanceParser
 
     # now that we have all of the info, we can get the actual slice information.
     # This process will create a slice entry if needed.
-    #console.log 'handle_slice_include'
+    console.log 'handle_slice_include'
     @generate_slice_include(slice)
 
   should_include_slice: (slice) ->
@@ -897,13 +897,13 @@ class ChanceProcessor
     if options["theme"]? and options["theme"].length > 0 and options["theme"][0] isnt "."
       @options["theme"] = ".#{options["theme"]}"
 
-    #console.log 'cssTheme', @options["theme"]
+    console.log 'cssTheme', @options["theme"]
 
     ChanceProcessor.uid += 1
     @uid = ChanceProcessor.uid
     @options["instance_id"] ?= @uid
 
-    #console.log 'options[instance_id] is', @options["instance_id"]
+    console.log 'options[instance_id] is', @options["instance_id"]
       
     # The mapped files are a map from file names in the ChanceProcessor instance to
     # their identifiers in the system.
@@ -992,7 +992,7 @@ class ChanceProcessor
     @chance.get_file(@mapped_files[path])
 
   output_for: (file) ->
-    #console.log 'output_for', @chance.files[file]?, file
+    console.log 'output_for', @chance.files[file]?, file
     return @chance.files[file] if @chance.files[file]?
 
     # small hack: we are going to determine whether it is x2 by whether it has
@@ -1016,13 +1016,13 @@ class ChanceProcessor
   #   :sprited    If true, will use sprites rather than data uris.
   #
   css: (opts) ->
-    #console.log 'chance css called'
+    console.log 'chance css called'
     @_render()
-    #console.log 'after _render()'
+    console.log 'after _render()'
     @slice_images opts
-    #console.log 'after slice_images'
+    console.log 'after slice_images'
     ret = @_postprocess_css opts
-    #console.log 'after _postprocess_css', ret
+    console.log 'after _postprocess_css', ret
     ret
 
   # Looks up a slice that has been found by parsing the CSS. This is used by
@@ -1043,7 +1043,7 @@ class ChanceProcessor
   # This is the first step in the ChanceProcessor build process, and is usually
   # called by the output_for() method. It produces a raw, unfinished CSS file.
   _render: ->
-    #console.log '_render, has_rendered is', @has_rendered
+    console.log '_render, has_rendered is', @has_rendered
     return if @has_rendered
 
     # Update the render cycle to invalidate sprites, slices, etc.
@@ -1052,7 +1052,7 @@ class ChanceProcessor
     @files = {}
 
     try
-      #console.log 'in the try'
+      console.log 'in the try'
       # SCSS code executing needs to know what the current instance of ChanceProcessor is,
       # so that lookups for slices, etc. work.
       #
@@ -1064,7 +1064,7 @@ class ChanceProcessor
       #
       import_css = @_preprocess()
 
-      #console.log 'import_css', import_css
+      console.log 'import_css', import_css
       
       # Because we encapsulate with instance_id, we should not have collisions even IF another chance
       # instance were running at the same time (which it couldn't; if it were, there'd be MANY other issues)
@@ -1091,14 +1091,14 @@ class ChanceProcessor
       #
       # Step 3: Apply Sass Engine
       #
-      #console.log 'about to stylus', cssWithImports
+      console.log 'about to stylus', cssWithImports
 
       stylus.render cssWithImports, (err, stylusResult) =>
         if err?
           util.puts "ERROR: stylus " + err.message
         else
           @cssParsed = stylusResult
-          #console.log "stylus.parse css: ", @cssParsed
+          console.log "stylus.parse css: ", @cssParsed
           @has_rendered = true
 
       #engine = Sass::Engine.new(css, Compass.sass_engine_options.merge
@@ -1122,7 +1122,7 @@ class ChanceProcessor
   # slicing operation has not yet taken place. The postprocessing portion
   # receives sliced versions.
   _css_for_slices: ->
-    #console.log '_css_for_slices'
+    console.log '_css_for_slices'
     output = []
     slices = @slices
 
@@ -1149,7 +1149,7 @@ class ChanceProcessor
   # :sprited => whether to use spriting instead of data uris.
   #
   _postprocess_css: (opts) ->
-    #console.log '_postprocess_css'
+    console.log '_postprocess_css'
     if opts["sprited"]
       ret = @postprocess_css_sprited(opts)
     else
@@ -1162,7 +1162,7 @@ class ChanceProcessor
   # but which are no longer needed.
   #
   _strip_slice_class_names: (css) ->
-    #console.log '_strip_slice_class_names'
+    console.log '_strip_slice_class_names'
     re = /\.__chance_slice[^{]*?,/
     css = css.gsub re, ""
     css
@@ -1184,7 +1184,7 @@ class ChanceProcessor
   chance_header_for_file: (file) ->
     # 'file' is the name of a file, so we actually need to start at dirname(file)
     dir = path_module.dirname(file)
-    #console.log 'chance_header_for_file', dir
+    console.log 'chance_header_for_file', dir
     
     # This should not be slow, as this is just a hash lookup
     while dir.length > 0 and dir isnt "."
@@ -1213,39 +1213,39 @@ class ChanceProcessor
   # The list is created in the variable @file_list.
   #
   _include_file: (file) ->
-    #console.log '_include_file -- does it end in .css', /\.css$/.test(file)
+    console.log '_include_file -- does it end in .css', /\.css$/.test(file)
     return if not /\.css$/.test(file)
     
-    #console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)?
+    console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)?
 
     # skip _theme.css files
     return if /_theme\.css$/.test(file)?
 
-    #console.log 'no, it is not a _theme.css file'
+    console.log 'no, it is not a _theme.css file'
 
     file = @get_file(file)
 
-    #console.log 'get_file returned a file?', file?
+    console.log 'get_file returned a file?', file?
     return if not file?
 
-    #console.log 'file[included] is @generation?', file["included"] is @generation
+    console.log 'file[included] is @generation?', file["included"] is @generation
     return if file["included"] is ChanceProcessor.generation
 
-    #console.log 'setting requires'
+    console.log 'setting requires'
     requires = file["requires"]
 
     file["included"] = ChanceProcessor.generation
 
-    #console.log 'do we have any requries?', requires?
+    console.log 'do we have any requries?', requires?
 
     if requires?
       for r in requires
         # Add the .css extension if needed. it is optional for sc_require
         r = "#{r}.css" if not /\.css$/.test(r)
-        #console.log 'including the require', r
+        console.log 'including the require', r
         @_include_file(@mapped_files[r])
 
-    #console.log 'including the file in the file_list'
+    console.log 'including the file in the file_list'
     @file_list.push(file)
 
   _convert_to_styl: (css) ->
@@ -1364,7 +1364,7 @@ class ChanceProcessor
   # PORTING NOTE: from the original Chance data_url module within the instance module
   #
   postprocess_css_dataurl: (opts) ->
-    #console.log 'postprocess_css_dataurl', @cssParsed
+    console.log 'postprocess_css_dataurl', @cssParsed
     re = /_sc_chance\:\s*["'](.*?)["']\s*/
     css = @cssParsed.gsub re, (match) =>
       slice = @slices[match[1]]
@@ -1679,7 +1679,7 @@ class ChanceProcessor
   # Performs the layout operation, laying either up-to-down, or "
   # (for repeat-y slices) left-to-right.
   layout_slices_in_sprite: (sprite, opts) ->
-    #console.log 'layout_slices_in_sprite', sprite, opts
+    console.log 'layout_slices_in_sprite', sprite, opts
     # The position is the position in the layout direction. In vertical mode
     # (the usual) it is the Y position.
     pos = 0
@@ -1918,7 +1918,7 @@ class ChanceProcessor
     css
 
   sprite_data: (opts) ->
-    #console.log 'sprite_data', opts
+    console.log 'sprite_data', opts
     @_render()
     @slice_images opts
     @generate_sprite_definitions opts
@@ -1942,7 +1942,7 @@ class ChanceProcessor
     ret
 
   sprite_names: (opts={}) ->
-    #console.log 'sprite_names', opts
+    console.log 'sprite_names', opts
     @_render()
     @slice_images opts
     @generate_sprite_definitions opts
@@ -1975,6 +1975,7 @@ class ChanceProcessorFactory
   # Call with a hash that maps instance paths to absolute paths. This will compare with the last.
   #
   update_instance: (key, opts, files) ->
+    console.log 'in update_instance'
     instance = @instance_for_key(key, opts)
     last_hash = @file_hashes[key] ? {}
       
@@ -1982,7 +1983,7 @@ class ChanceProcessorFactory
     # ChanceProcessor re-running, and it will have to anyway.
     #
     if last_hash isnt files
-      #console.log 'update_instance last_hash isnt files'
+      console.log 'update_instance last_hash isnt files'
       instance.unmap_all
       instance.map_file path, identifier for own path,identifier of files
       @file_hashes[key] = files
@@ -2023,10 +2024,10 @@ class Chance
       preprocessed: false
       
     @files[path] = file
-    #console.log 'chance added', path
+    console.log 'chance added', path
 
   update_file: (@path, @content=null) ->
-    #console.log 'update_file'
+    console.log 'update_file'
     if not @files[path]?
       console.log "Could not update #{path} because it is not in system."
       return
@@ -2052,7 +2053,7 @@ class Chance
   # if the path is a valid filesystem path and the mtime has changed, this invalidates
   # the file. Returns the mtime if the file was updated.
   update_file_if_needed: (path, content=null) ->
-    #console.log 'update_file_if_needed'
+    console.log 'update_file_if_needed'
     if @files[path]?
         #      fs.stat path, (err, stats) =>  # [TODO] should use sync version?
         #if err
@@ -2114,14 +2115,14 @@ class Chance
 
   _preprocess_image: (file) ->
     # [TODO] was from_blob?  the Rmagick one needed file["content"][0]
-    #console.log 'preprocessing image', file
-    #console.log file["content"]
+    console.log 'preprocessing image', file
+    console.log file["content"]
     file["canvas"] = new Buffer(file["content"], 'binary').toString('base64') # replaces Base64.encode64(contents) in ruby
 
   _preprocess_css: (file) ->
     content = file["content"]
 
-    #console.log 'preprocessing css'
+    console.log 'preprocessing css'
 
     requires = []
     re = /(sc_)?require\(['"]?(.*?)['"]?\);?/
