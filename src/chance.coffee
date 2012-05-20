@@ -265,18 +265,18 @@ class ChanceParser
     # all units which make sense
 
     # it must have either a left or a right, no matter what
-    rect["left"] = 0 if not rect["left"] and not rect["right"]
+    rect["left"] = 0 if not rect["left"]? and not rect["right"]?
 
     # if there is no width, it must have a both left and right
-    if not rect["width"]
+    if not rect["width"]?
       rect["left"] ?= 0
       rect["right"] ?= 0
 
     # it must have either a top or a bottom, no matter what
-    rect["top"] = 0 if not rect["top"] and not rect["bottom"]
+    rect["top"] = 0 if not rect["top"]? and not rect["bottom"]?
 
     # if there is no height, it must have _both_ top and bottom
-    if not rect["height"]
+    if not rect["height"]?
       rect["top"] ?= 0
       rect["bottom"] ?= 0
 

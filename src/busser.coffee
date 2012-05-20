@@ -1551,8 +1551,6 @@ class File
   pathForSave: ->
     if @isHtml then "#{@url()}.html" else @url()
   
-  # [TODO] This is a property for app and a method for file -- be consistent
-  #
   pathForStage: ->
     "#{@framework.stageDir}/#{@framework.buildVersion}/#{@pathForSave()}"
 
