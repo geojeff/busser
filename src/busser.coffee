@@ -1201,13 +1201,18 @@ class Framework
   #
   #     '/sproutcore/runtime/system/index_set.js'
   #
+  # This simplifies the urls for use with sc_require and static urls.
+  #
   reducedPathFor: (path) ->
     path.replace /(^apps|frameworks|^themes|([a-z]+)\.lproj|resources)\//g, ""
   
   # A url consists of the joined buildVersion and reducedPath.
   #
-  urlFor: (path) ->
-    path_module.join @buildVersion.toString(), @reducedPathFor(path)
+  urlFor: (path, action) ->
+    switch action
+      when '' then return path_module.join @reducedPathFor(path)
+      when 'save' then return path_module.join @buildVersion.toString(), @reducedPathFor(path)
+      when 'run' then return path_module.join @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
   #
@@ -1216,8 +1221,8 @@ class Framework
   
   # The url for this framework is made by urlFor @path, reduced.
   #
-  url: ->
-    @urlFor(@reducedPath())
+  url: (action='') ->
+    @urlFor(@reducedPath(), action)
   
   # *shouldExcludeFile* first operates on *pathsToExclude*, checking if the path 
   # matches any exluded path. Then it checks if *buildLanguage* is in allowed
@@ -1537,8 +1542,8 @@ class File
 
     @[key] = options[key] for own key of options
 
-  url: ->
-    @framework.urlFor(@path)
+  url: (action='') ->
+    @framework.urlFor(@path, action)
   
   # In *pathForSave*, we see the use of url(), which by itself is used in file lookup,
   # but the file that is saved for *RootHtmlFile* needs a ".html" extension to allow
@@ -1844,9 +1849,11 @@ class App
   
   # See class Framework -- copy of that function.
   #
-  urlFor: (path) ->
-    console.log 'urlFor app', path, this.name
-    path_module.join @buildVersion.toString(), @reducedPathFor(path)
+  urlFor: (path, action) ->
+    switch action
+      when '' then return path_module.join @buildVersion.toString(), @reducedPathFor(path)
+      when 'save' then return path_module.join @buildVersion.toString(), @reducedPathFor(path)
+      when 'run' then return path_module.join @reducedPathFor(path)
   
   # See class Framework -- copy of that function.
   #
@@ -1855,8 +1862,8 @@ class App
   
   # See class Framework -- copy of that function.
   #
-  url: ->
-    @urlFor(@reducedPath())
+  url: (action='') ->
+    @urlFor(@reducedPath(), action)
   
   # The *addSproutCore* convenience method adds frameworks returned by the static function
   # *sproutcoreFrameworks* defined in the **Framework** class.
@@ -1874,7 +1881,10 @@ class App
       framework: this
     @htmlFileReference = new Reference(file.url(), file)
 
-    # Set a file for a symlink to the root html file.
+    # Set a file for a symlink to the root html file. This makes it possible to have 
+    # localhost:port/appname forward to localhost:port/appname.html, without having to 
+    # create an extra file.
+    #
     symlink = new SymlinkFile
       path: @name
       app: this
