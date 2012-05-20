@@ -1288,17 +1288,17 @@ class ChanceProcessor
 
     ChanceProcessor.generation += 1
 
-    #console.log '_preprocess, generation:', ChanceProcessor.generation
+    console.log '_preprocess, generation:', ChanceProcessor.generation
 
     files = (@mapped_files[key] for own key of @mapped_files) # [TODO] files is not used here.
     
-    #console.log 'sorting...'
+    console.log 'sorting...'
 
     # We have to sort alphabetically first...
     tmp_file_list = ({path: p, file: f} for own p,f of @mapped_files)
     tmp_file_list = _.sortBy tmp_file_list, (pf) -> pf.path
 
-    #console.log 'updating mtimes, and _including_files...'
+    console.log 'updating mtimes, and _including_files...'
 
     # Empty file_list then refresh it with _include_file calls.
     @file_list = []
@@ -1306,17 +1306,17 @@ class ChanceProcessor
       # Save the mtime for caching
       mtime = @chance.update_file_if_needed(path_and_file.file)
       @file_mtimes[path_and_file.path] = mtime
-      #console.log path_and_file.path, mtime
+      console.log path_and_file.path, mtime
       @_include_file(path_and_file.file)
 
-    #console.log 'setting relative_paths'
+    console.log 'setting relative_paths'
 
     relative_paths = {}
     relative_paths[value] = key for own key,value of @mapped_files
 
     cssImportStatements = []
 
-    #console.log 'after update_file_if_needed, and sorting', @file_list.length
+    console.log 'after update_file_if_needed, and sorting', @file_list.length
 
     for file in @file_list
       # NOTE: WE MUST CALL CHANCE PARSER NOW, because it generates our slices.
