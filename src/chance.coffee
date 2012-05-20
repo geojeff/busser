@@ -1124,9 +1124,8 @@ class ChanceProcessor
   _css_for_slices: ->
     console.log '_css_for_slices'
     output = []
-    slices = @slices
 
-    for name,slice of slices
+    for name,slice of @slices
       # Write out comments specifying all the files the slice is used from
       output = []
       output.push "/* Slice #{name}, used in: \n"
@@ -1216,10 +1215,10 @@ class ChanceProcessor
     console.log '_include_file -- does it end in .css', /\.css$/.test(file)
     return if not /\.css$/.test(file)
     
-    console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)?
+    console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)
 
     # skip _theme.css files
-    return if /_theme\.css$/.test(file)?
+    return if /_theme\.css$/.test(file)
 
     console.log 'no, it is not a _theme.css file'
 
@@ -1292,13 +1291,13 @@ class ChanceProcessor
 
     files = (@mapped_files[key] for own key of @mapped_files) # [TODO] files is not used here.
     
-    console.log 'sorting...'
+    console.log 'sorting... @mapped_files', @mapped_files
 
     # We have to sort alphabetically first...
     tmp_file_list = ({path: p, file: f} for own p,f of @mapped_files)
     tmp_file_list = _.sortBy tmp_file_list, (pf) -> pf.path
 
-    console.log 'updating mtimes, and _including_files...'
+    console.log 'updating mtimes, and _including_files...', tmp_file_list.length
 
     # Empty file_list then refresh it with _include_file calls.
     @file_list = []
@@ -1985,7 +1984,7 @@ class ChanceProcessorFactory
     if last_hash isnt files
       console.log 'update_instance last_hash isnt files'
       instance.unmap_all
-      instance.map_file path, identifier for own path,identifier of files
+      instance.map_file(path, identifier) for own path,identifier of files
       @file_hashes[key] = files
 
 # PORTING NOTE: simplified from the original Chance version.
