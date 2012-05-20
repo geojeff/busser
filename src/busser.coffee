@@ -921,7 +921,16 @@ class Busser
       # instance creation calls. The key passed here, file.path, was given to Chance in
       # add_file calls, so it will do lookups on that.
       #
-      if not (file instanceof VirtualStylesheetFile or file instanceof ResourceFile)
+
+      # In abbot, when output_for returns the file, it decides what to do, whether
+      # it is a css file or an image. It also calls rewrite_inline_code for css.
+      #
+      # https://github.com/sproutcore/abbot/blob/master/lib/sproutcore/builders/chance_file.rb
+      #
+      #
+      #
+      if file instanceof VirtualStylesheetFile
+      #if not (file instanceof VirtualStylesheetFile or file instanceof ResourceFile)
         #console.log "output_for", file.framework.chanceFilename
         #css = file.framework.chanceProcessor.output_for file.framework.chanceFilename
         #callback data: file.framework.chanceProcessor.output_for file.framework.chanceFilename
@@ -931,6 +940,14 @@ class Busser
       #else
         #console.log "output_for", file.pathForStage()
         #callback data: file.framework.chanceProcessor.output_for file.pathForStage()
+        chanceFile = file.framework.chanceProcessor.output_for file.pathForStage()
+        file.content chanceFile.path, (err, data) ->
+          if err
+            throw err
+          else
+            console.log 'CSS', data
+            callback data: if data.length is 0 then "" else data
+      else
         callback data: file.framework.chanceProcessor.output_for file.path
 
   # The *handlebars* taskHandler treats handlebar template files by stringifying them
@@ -1038,7 +1055,7 @@ joinTasks = busser.taskHandlerSet("join only tasks", \
 # Chance task set:
 #
 chanceTasks = busser.taskHandlerSet("chance tasks", \
-  [ "contentType", "fileFromStaged" ])
+  [ "contentType", "chance" ])
 
 # Save task sets:
 #

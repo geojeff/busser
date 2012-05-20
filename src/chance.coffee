@@ -285,6 +285,7 @@ class ChanceParser
   # PARSING
   # -----------------------
   parse: ->
+    console.log 'parse'
     @scanner = new StringScanner(@input)
     @image_names = {}
     @css = @_parse()
@@ -297,6 +298,7 @@ class ChanceParser
   # an unmatched ending brace. An unmatched ending brace is assumed
   # to mean that this is a recursive call.
   _parse: ->
+    console.log '_parse'
     scanner = @scanner
 
     output = []
