@@ -1208,11 +1208,8 @@ class Framework
   
   # A url consists of the joined buildVersion and reducedPath.
   #
-  urlFor: (path, action) ->
-    switch action
-      when '' then return path_module.join @reducedPathFor(path)
-      when 'save' then return path_module.join @buildVersion.toString(), @reducedPathFor(path)
-      when 'run' then return path_module.join @reducedPathFor(path)
+  urlFor: (path) ->
+    path_module.join @reducedPathFor(path)
   
   # Same as *reducedPathFor*, as a convenience call for reducedPathFor(@path).
   #
@@ -1221,8 +1218,8 @@ class Framework
   
   # The url for this framework is made by urlFor @path, reduced.
   #
-  url: (action='') ->
-    @urlFor(@reducedPath(), action)
+  url: () ->
+    @urlFor(@reducedPath())
   
   # *shouldExcludeFile* first operates on *pathsToExclude*, checking if the path 
   # matches any exluded path. Then it checks if *buildLanguage* is in allowed
@@ -1542,8 +1539,8 @@ class File
 
     @[key] = options[key] for own key of options
 
-  url: (action='') ->
-    @framework.urlFor(@path, action)
+  url: () ->
+    @framework.urlFor(@path)
   
   # In *pathForSave*, we see the use of url(), which by itself is used in file lookup,
   # but the file that is saved for *RootHtmlFile* needs a ".html" extension to allow
@@ -1849,11 +1846,8 @@ class App
   
   # See class Framework -- copy of that function.
   #
-  urlFor: (path, action) ->
-    switch action
-      when '' then return path_module.join @buildVersion.toString(), @reducedPathFor(path)
-      when 'save' then return path_module.join @buildVersion.toString(), @reducedPathFor(path)
-      when 'run' then return path_module.join @reducedPathFor(path)
+  urlFor: (path) ->
+    path_module.join @reducedPathFor(path)
   
   # See class Framework -- copy of that function.
   #
@@ -1862,8 +1856,8 @@ class App
   
   # See class Framework -- copy of that function.
   #
-  url: (action='') ->
-    @urlFor(@reducedPath(), action)
+  url: () ->
+    @urlFor(@reducedPath())
   
   # The *addSproutCore* convenience method adds frameworks returned by the static function
   # *sproutcoreFrameworks* defined in the **Framework** class.
@@ -2079,22 +2073,26 @@ class App
   #
   save: =>
     class Saver
-      constructor: (@app, @file, @saveTasks) ->
+      constructor: (@app, @file, @saveTasks, @buildVersion) ->
         
       save: ->
         @saveTasks.exec @file, null, (response) =>
           if response.data? and response.data.length > 0
-            path = path_module.join(@app.pathForSave, @file.pathForSave())
+            path = path_module.join(@app.pathForSave, @buildVersion.toString(), @file.pathForSave())
             File.createDirectory path_module.dirname(path)
             fs.writeFile path, response.data, (err) ->
               throw err  if err
 
-    for framework in @frameworks
-      new Saver(this, file, saveFromStagedTasks).save() for file in framework.resourceFiles
-      new Saver(this, file, saveFromStagedTasks).save() for file in framework.orderedStylesheetFiles
-      new Saver(this, file, file.taskHandlerSet).save() for file in framework.orderedScriptFiles
+    @urlPrefix = @urlPrefix + @buildVersion + '/'
 
-    new Saver(this, @htmlFileReference.file, @htmlFileReference.file.taskHandlerSet).save()
+    @buildRoot()
+
+    for framework in @frameworks
+      new Saver(this, file, saveFromStagedTasks, @buildVersion).save() for file in framework.resourceFiles
+      new Saver(this, file, saveFromStagedTasks, @buildVersion).save() for file in framework.orderedStylesheetFiles
+      new Saver(this, file, file.taskHandlerSet, @buildVersion).save() for file in framework.orderedScriptFiles
+
+    new Saver(this, @htmlFileReference.file, @htmlFileReference.file.taskHandlerSet, @buildVersion).save()
 
 # Proxy
 # =====
