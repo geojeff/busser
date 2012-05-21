@@ -1513,7 +1513,9 @@ class ChanceProcessor
   # Opts specify if x2, etc. is allowed.
   #
   canvas_for: (slice, opts) ->
+    console.log 'canvas_for', slice, opts
     file = @file_for(slice, opts)
+    console.log 'canvas_for ... file from file_for call', file
     file["canvas"]
 
   # Returns the file to use for the specified slice (normal, or @2x)
