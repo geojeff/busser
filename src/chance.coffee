@@ -443,9 +443,9 @@ class ChanceParser
     scanner.scan ChanceParser.CHANCE_FILE_DIRECTIVE
 
     path = scanner.scanUntil /;/
-    path = path[0..path.length]
+    path = path[0...path.length-1]
 
-    console.log 'path', path
+    console.log 'HANDLE_FILE_CHANGE path', path
 
     @path = path
 
