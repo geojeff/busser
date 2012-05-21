@@ -196,6 +196,8 @@ class ChanceParser
   create_slice: (opts) ->
     filename = opts["filename"]
 
+    console.log 'CREATE_SLICE', filename
+
     # get current relative path
     relative = path_module.dirname(@path)
 
@@ -235,7 +237,7 @@ class ChanceParser
       slice["max_offset_x"] = Math.max [slice["max_offset_x"], opts["offset_x"]]...
       slice["max_offset_y"] = Math.max [slice["max_offset_y"], opts["offset_y"]]...
     else
-      modified_path = "#{@opts["instance_id"]}".replace(/[^a-zA-Z0-9]/, '_') + "_" + slice_path.replace(/[^a-zA-Z0-9]/, '_')
+      modified_path = "#{@opts["instance_id"]}".replace(/[^a-zA-Z0-9]/, '_', 'g') + "_" + slice_path.replace(/[^a-zA-Z0-9]/, '_', 'g')
       css_name = "__chance_slice_#{modified_path}"
 
       newOpts =
@@ -350,8 +352,8 @@ class ChanceParser
       # We should still be able to use json to parse single-quoted strings
       # if we replace the quotes with double-quotes. The methodology should
       # be identical so long as we replace any unescaped quotes...
-      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\1\\"')}\"" # [TODO] Added temporary / in front of the 1 (Grok this).
-      #console.log 'replaced double with single quotes:', cssString
+      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\"', 'g')}\"" # [TODO] BROKEN: Added temporary \ in front of the 1 (bug in CS).
+      console.log 'REPLACED DOUBLE QUOTES:', cssString
     else if cssString[0..0] isnt '"'
       #console.log 'ERROR string is not delimited by quotes!', cssString # This is not an error -- if not in quotes, just return cssString.
       return cssString
@@ -443,7 +445,7 @@ class ChanceParser
     scanner.scan ChanceParser.CHANCE_FILE_DIRECTIVE
 
     path = scanner.scanUntil /;/
-    path = path[0...path.length-1]
+    path = path[0...path.length-1] # -1 to trim semicolon from end
 
     console.log 'HANDLE_FILE_CHANGE path', path
 
@@ -1339,7 +1341,7 @@ class ChanceProcessor
       # Instead, we sanitize the path.
       #
       re = /[^a-zA-Z0-9\-_\\\/]/
-      path_safe = file["path"].replace(re, '-')
+      path_safe = file["path"].replace(re, '-', 'g')
 
       tmp_path = "./tmp/chance/#{path_safe}.styl"
 
@@ -1369,7 +1371,7 @@ class ChanceProcessor
       slice = @slices[match[1]]
 
       url = 'data:' + @type_for(slice["path"]) + ";base64,"
-      url += @base64_for(slice).replace("\n", "")
+      url += @base64_for(slice).replace('\n', '', 'g')
 
       output = "background-image: url(\"#{url}\");"
 
@@ -1462,10 +1464,9 @@ class ChanceProcessor
   # and use them to replace the originals.
   #
   slice_images: (opts) ->
-    slices = @slices
     output = ""
 
-    for name,slice of slices
+    for name,slice of @slices
       # If we modify the canvas, we'll place the modified canvas here.
       # Otherwise, consumers will use slice["file"] ["canvas"] or ["contents"]
       # to get the original data as needed.
@@ -1473,6 +1474,7 @@ class ChanceProcessor
           
       # In any case, if there is one, we need to get the original file and canvas;
       # this process also tells us if the slice is 2x, etc.
+      console.log 'slice_images... calling canvas_for slice, opts'
       canvas = @canvas_for slice, opts
 
       # Check if a canvas is required
