@@ -298,7 +298,7 @@ class ChanceParser
   # an unmatched ending brace. An unmatched ending brace is assumed
   # to mean that this is a recursive call.
   _parse: ->
-    console.log '_parse'
+    #console.log '_parse'
     scanner = @scanner
 
     output = []
@@ -307,7 +307,7 @@ class ChanceParser
       output.push @handle_empty()
       break if scanner.hasTerminated()
 
-      console.log 'rem', scanner.getPosition()
+      #console.log 'rem', scanner.getPosition()
 
       if scanner.check ChanceParser.BEGIN_SCOPE
         output.push @handle_scope()
@@ -331,7 +331,7 @@ class ChanceParser
       else
         output.push res
 
-    console.log 'output', output.length
+    #console.log 'output', output.length
 
     output = output.join("")
     output
@@ -360,7 +360,7 @@ class ChanceParser
     JSON.parse("[#{cssString}]")[0]
 
   handle_string: ->
-    console.log 'handle_string'
+    #console.log 'handle_string'
     scanner = @scanner
 
     str = scanner.scanChar()
@@ -368,7 +368,7 @@ class ChanceParser
     str
 
   handle_empty: ->
-    console.log 'handle_empty'
+    #console.log 'handle_empty'
     scanner = @scanner
     output = ""
 
@@ -387,7 +387,7 @@ class ChanceParser
     output
 
   handle_scope: ->
-    console.log 'handle_scope'
+    #console.log 'handle_scope'
     scanner = @scanner
 
     scanner.scan /\{/
@@ -1098,7 +1098,7 @@ class ChanceProcessor
           util.puts "ERROR: stylus " + err.message
         else
           @cssParsed = stylusResult
-          console.log "stylus.parse css: ", @cssParsed
+          console.log "stylus.render cssParsed result: ", @cssParsed
           @has_rendered = true
 
       #engine = Sass::Engine.new(css, Compass.sass_engine_options.merge
@@ -1324,9 +1324,9 @@ class ChanceProcessor
       header_file = @chance_header_for_file(relative_paths[file["path"]])
       
       content = "@_chance_file " + relative_paths[file["path"]] + ";\n"
-      console.log 'header_file content', header_file["content"]
+      #console.log 'header_file content', header_file["content"]
       content += header_file["content"]
-      console.log 'file content', file["content"]
+      #console.log 'file content', file["content"]
       content += file["content"]
 
       parser = new ChanceParser(content, @options)
