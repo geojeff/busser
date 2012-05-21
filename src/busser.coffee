@@ -2047,10 +2047,9 @@ class App
       #
       opts =
         theme: framework.cssTheme
-        minifyStylesheets: framework.minifyStylesheets
         optimizeSprites: framework.optimizeSprites
         padSpritesForDebugging: framework.padSpritesForDebugging
-        instanceId: framework.name
+        frameworkName: framework.name
 
       framework.chanceProcessor = chanceProcessorFactory.instance_for_key chanceKey, opts
     

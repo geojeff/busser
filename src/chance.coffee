@@ -601,7 +601,6 @@ class ChanceParser
 
     # now that we have all of the info, we can get the actual slice information.
     # This process will create a slice entry if needed.
-    console.log 'handle_slice_include'
     @generate_slice_include(slice)
 
   should_include_slice: (slice) ->
@@ -915,8 +914,9 @@ class ChanceProcessor
     @options = {}
     @options[key] = options[key] for own key of options
     @options["theme"] ?= ""
-    @options["pad_sprites_for_debugging"] ?= true
-    @options["optimize_sprites"] ?= true
+    @options["optimizeSprites"] ?= true
+    @options["padSpritesForDebugging"] ?= true
+    @options["frameworkName"] ?= ""
     if options["theme"]? and options["theme"].length > 0 and options["theme"][0] isnt "."
       @options["theme"] = ".#{options["theme"]}"
 
@@ -1712,7 +1712,7 @@ class ChanceProcessor
     # CSS is wrong.
     # NOTE: though this is only in debug mode, we DO need to make sure it is on a 2px boundary.
     # This makes sure 2x works properly.
-    padding = if @options["pad_sprites_for_debugging"] then 2 else 0
+    padding = if @options["padSpritesForDebugging"] then 2 else 0
     
     # The position within a row. It starts at 0 even if we have padding,
     # because we always just add padding when we set the individual x/y pos.
@@ -1793,7 +1793,7 @@ class ChanceProcessor
             slice_length = if is_horizontal then slice_width else slice_height
             slice_size = if is_horizontal then slice_height else slice_width
                 
-            if slice["repeat"] isnt "no-repeat" or inset + slice_size + padding * 2 > size or not @options["optimize_sprites"]
+            if slice["repeat"] isnt "no-repeat" or inset + slice_size + padding * 2 > size or not @options["optimizeSprites"]
               pos += row_length
               inset = 0
               row_length = 0
@@ -1863,7 +1863,7 @@ class ChanceProcessor
     # If we are padding sprites, we should paint the background something really
     # obvious & obnoxious. Say, magenta. That's obnoxious. A nice light purple wouldn't
     # be bad, but magenta... that will stick out like a sore thumb (I hope)
-    if @options["pad_sprites_for_debugging"]
+    if @options["padSpritesForDebugging"]
       canvas.region(sprite["width"], sprite["height"], 0, 0).stroke("magenta").fill("magenta")
 
     for slice in sprite["slices"]
