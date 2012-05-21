@@ -929,7 +929,7 @@ class Busser
       #
       #
       #
-      if file instanceof VirtualStylesheetFile
+      if file instanceof VirtualStylesheetFile or file instanceof ResourceFile
       #if not (file instanceof VirtualStylesheetFile or file instanceof ResourceFile)
         #console.log "output_for", file.framework.chanceFilename
         #css = file.framework.chanceProcessor.output_for file.framework.chanceFilename
@@ -945,7 +945,6 @@ class Busser
           if err
             throw err
           else
-            console.log 'CSS', data
             callback data: if data.length is 0 then "" else data
       else
         callback data: file.framework.chanceProcessor.output_for file.path

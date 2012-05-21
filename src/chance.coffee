@@ -9,6 +9,10 @@ stylus        = require "stylus"
 mkdirp        = require "mkdirp"
 StringScanner = require("strscan").StringScanner
 
+# Tidbit: nice trick Maurits uses to count blanks at start of line
+# /\s+/.exec(line)[0].length
+#
+
 # PORTED FROM: SproutCore's Abbot build tool system, from the Chance css processing
 #              tool primarily written by Alex Iskander (all in Ruby).
 #
@@ -199,7 +203,7 @@ class ChanceParser
   create_slice: (opts) ->
     filename = opts["filename"]
 
-    console.log 'CREATE_SLICE', filename
+    #console.log 'CREATE_SLICE', filename
 
     # get current relative path
     relative = path_module.dirname(@path)
@@ -290,7 +294,7 @@ class ChanceParser
   # PARSING
   # -----------------------
   parse: ->
-    console.log 'parse'
+    #console.log 'parse'
     @scanner = new StringScanner(@input)
     @image_names = {}
     @css = @_parse()
@@ -342,7 +346,7 @@ class ChanceParser
     output
 
   handle_comment: ->
-    console.log 'handle_comment'
+    #console.log 'handle_comment'
     scanner = @scanner
     scanner.scanChar() # /
     scanner.scanChar() # *
@@ -369,7 +373,7 @@ class ChanceParser
     result
 
   parse_string: (cssString) ->
-    console.log 'parse_string', cssString, 'that was cssString'
+    #console.log 'parse_string', cssString, 'that was cssString'
     # I cheat: to parse strings, I use JSON.
     if cssString[0..0] is "'" #[TODO] indices?
       # We should still be able to use json to parse single-quoted strings
@@ -377,12 +381,12 @@ class ChanceParser
       # be identical so long as we replace any unescaped quotes...
       #cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\"', 'g')}\"" # [TODO] BROKEN: Added temporary \ in front of the 1 (bug in CS).
       cssString = "\"#{@replace_unescaped_quotes cssString[1...cssString.length-1]}\""
-      console.log 'REPLACED DOUBLE QUOTES:', cssString
+      #console.log 'REPLACED DOUBLE QUOTES:', cssString
     else if cssString[0..0] isnt '"'
       #console.log 'ERROR string is not delimited by quotes!', cssString # This is not an error -- if not in quotes, just return cssString.
       return cssString
 
-    console.log 'JSON parsed string', JSON.parse("[#{cssString}]")[0]
+    #console.log 'JSON parsed string', JSON.parse("[#{cssString}]")[0]
     JSON.parse("[#{cssString}]")[0]
 
   handle_string: ->
@@ -427,7 +431,7 @@ class ChanceParser
     output
 
   handle_theme: ->
-    console.log 'handle_theme'
+    #console.log 'handle_theme'
     scanner = @scanner
     scanner.scan ChanceParser.THEME_DIRECTIVE
 
@@ -452,7 +456,7 @@ class ChanceParser
     output
 
   handle_theme_variable: ->
-    console.log 'handle_theme_variable'
+    #console.log 'handle_theme_variable'
     scanner = @scanner
     scanner.scan ChanceParser.SELECTOR_THEME_VARIABLE
 
@@ -464,19 +468,19 @@ class ChanceParser
   # rather than the individual pieces, yet we have paths relative to the original
   # files.
   handle_file_change: ->
-    console.log 'handle_file_change'
+    #console.log 'handle_file_change'
     scanner = @scanner
     scanner.scan ChanceParser.CHANCE_FILE_DIRECTIVE
 
     path = scanner.scanUntil /;/
     path = path[0...path.length-1] # -1 to trim semicolon from end
 
-    console.log 'HANDLE_FILE_CHANGE path', path
+    #console.log 'HANDLE_FILE_CHANGE path', path
 
     @path = path
 
   parse_argument: ->
-    console.log 'parse_argument'
+    #console.log 'parse_argument'
     scanner = @scanner
 
     # We do not care for whitespace or comments
@@ -516,31 +520,31 @@ class ChanceParser
     # at ')'
     parsing_value += @handle_empty()
 
-    console.log 'parsing_value_1', parsing_value
+    #console.log 'parsing_value_1', parsing_value
 
     until scanner.check(/[,)]/) or scanner.hasTerminated()
       if scanner.check(/["']/)
         parsing_value += @handle_string()
-        console.log 'parsing_value_2', parsing_value
+        #console.log 'parsing_value_2', parsing_value
         parsing_value += @handle_empty()
-        console.log 'parsing_value_3', parsing_value
+        #console.log 'parsing_value_3', parsing_value
         continue
 
       parsing_value += scanner.scanChar()
-      console.log 'parsing_value_4', parsing_value
+      #console.log 'parsing_value_4', parsing_value
       parsing_value += @handle_empty()
-      console.log 'parsing_value_5', parsing_value
+      #console.log 'parsing_value_5', parsing_value
 
     value = parsing_value unless parsing_value.length is 0
 
-    console.log "key: #{key}, value: #{value}"
+    #console.log "key: #{key}, value: #{value}"
 
     { key: key, value: value }
 
   # Parses a list of arguments, INCLUDING beginning AND ending parentheses.
   #
   parse_argument_list: ->
-    console.log 'parse_argument_list'
+    #console.log 'parse_argument_list'
     scanner = @scanner
 
     console.log "Expected ( to begin argument list." unless scanner.scan /\(/
@@ -553,7 +557,7 @@ class ChanceParser
         arg["key"] = idx
         idx += 1
 
-      console.log "key: #{arg['key']}, value: #{arg['value']}"
+      #console.log "key: #{arg['key']}, value: #{arg['value']}"
       args[arg["key"]] = arg["value"].trim()
 
       scanner.scan /,/
@@ -582,7 +586,7 @@ class ChanceParser
     slice = @create_slice slice
 
     output = ""
-    output += "@extend .#{slice["css_name"].replace(/\//g, '|')};\n" # [TODO] hack to replace / with |, because stylus errors on /
+    output += "@extend .#{slice["css_name"].replace(/\//g, '_')};\n" # [TODO] hack to replace / with _, because stylus errors on /
 
     # We prefix with -chance; this should let everything be passed through more
     # or less as-is. Postprocessing will turn it into -background-position.
@@ -600,6 +604,7 @@ class ChanceParser
     # the image could be quoted or not; in any case, use parse_string to
     # parse it. Sure, at the moment, we don't parse quoted strings properly,
     # but it should work for most cases. single-quoted strings are out, though...
+    console.log 'ADDING FRAMEWORK NAME', @frameworkName, @parse_string slice[0]
     slice["filename"] = "#{@frameworkName}/#{@parse_string slice[0]}"
 
     # now that we have all of the info, we can get the actual slice information.
@@ -672,7 +677,8 @@ class ChanceParser
     skip_bottom = 'bottom' in skip
     skip_bottom_right = 'bottom-right' in skip
 
-    filename = @parse_string slice_arguments[0]
+    console.log 'ADDING FRAMEWORK NAME - plural slices', @frameworkName, @parse_string slice[0]
+    filename = "#{@frameworkName}/#{@parse_string slice_arguments[0]}"
 
     # we are going to form 9 slices. If any are empty we'll skip them
 
@@ -914,7 +920,7 @@ class ChanceProcessor
 
   constructor: (@chance, @options={}) ->
     console.log 'ChanceProcessor...', @options
-    #@options[key] = options[key] for own key of options
+    @options[key] = options[key] for own key of options
     @options["theme"] ?= ""
     @options["optimizeSprites"] ?= true
     @options["padSpritesForDebugging"] ?= true
@@ -923,14 +929,14 @@ class ChanceProcessor
 
     @frameworkName = @options["frameworkName"]
 
-    console.log 'ChanceProcessor...', @frameworkName
-    console.log 'cssTheme', @options["theme"]
+    #console.log 'ChanceProcessor...', @frameworkName
+    #console.log 'cssTheme', @options["theme"]
 
     ChanceProcessor.uid += 1
     @uid = ChanceProcessor.uid
     @options["instance_id"] ?= @uid
 
-    console.log 'options[instance_id] is', @options["instance_id"]
+    #console.log 'options[instance_id] is', @options["instance_id"]
       
     # The mapped files are a map from file names in the ChanceProcessor instance to
     # their identifiers in the system.
@@ -1019,7 +1025,7 @@ class ChanceProcessor
     @chance.get_file(@mapped_files[path])
 
   output_for: (file) ->
-    console.log 'output_for', @chance.files[file]?, file
+    #console.log 'output_for', @chance.files[file]?, file
     return @chance.files[file] if @chance.files[file]?
 
     # small hack: we are going to determine whether it is x2 by whether it has
@@ -1160,7 +1166,7 @@ class ChanceProcessor
         output.push "\t#{used_by["path"]}\n"
       output.push "*/\n"
 
-      output.push "." + slice["css_name"] + " { "
+      output.push ".#{slice["css_name"]} { "
       output.push "_sc_chance: \"#{name}\";"
       output.push "} \n"
 
@@ -1542,7 +1548,7 @@ class ChanceProcessor
   canvas_for: (slice, opts) ->
     console.log 'canvas_for', slice, opts
     file = @file_for(slice, opts)
-    console.log 'canvas_for ... file from file_for call', file
+    #console.log 'canvas_for ... file from file_for call', file
     file["canvas"]
 
   # Returns the file to use for the specified slice (normal, or @2x)
@@ -1707,7 +1713,7 @@ class ChanceProcessor
   # Performs the layout operation, laying either up-to-down, or "
   # (for repeat-y slices) left-to-right.
   layout_slices_in_sprite: (sprite, opts) ->
-    console.log 'layout_slices_in_sprite', sprite, opts
+    #console.log 'layout_slices_in_sprite', sprite, opts
     # The position is the position in the layout direction. In vertical mode
     # (the usual) it is the Y position.
     pos = 0
@@ -2143,8 +2149,8 @@ class Chance
 
   _preprocess_image: (file) ->
     # [TODO] was from_blob?  the Rmagick one needed file["content"][0]
-    console.log 'preprocessing image', file
-    console.log file["content"]
+    #console.log 'preprocessing image', file
+    #console.log file["content"]
     file["canvas"] = new Buffer(file["content"], 'binary').toString('base64') # replaces Base64.encode64(contents) in ruby
 
   _preprocess_css: (file) ->
