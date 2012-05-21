@@ -102,13 +102,13 @@ exists = (path) ->
 
 # Use the node.js path module to pull the file extension from the path.
 #
-extname = (path) ->
-  path_module.extname(path)
+#extname = (path) ->
+#  path_module.extname(path)
 
 # The *fileType* function is used to identify paths by their file extension.
 #
 fileType = (path) ->
-  ext = extname(path)
+  ext = path_module.extname(path)
   return "stylesheet" if /^\.(css|less|scss|styl)$/.test ext
   return "script"     if (ext is ".js") or (ext is ".handlebars") and not /tests\//.test(path)
   return "test"       if ext is ".js" and /tests\//.test(path)
@@ -575,11 +575,11 @@ class Busser
     
       if @next?
         @next.exec file, request, (response) ->
-          response.contentType = contentTypes[extname(file.path)]
+          response.contentType = contentTypes[path_module.extname(file.path)]
           callback response
       else
         # [TODO] does this make any sense? (There should always be a next? because contentType is never last)
-        callback contentType: contentTypes[extname(file.path)]
+        callback contentType: contentTypes[path_module.extname(file.path)]
 
   # *minifyStylesheet* is a static utility method that uses yuicompressor
   # to minify data. 
@@ -684,8 +684,8 @@ class Busser
 
         if path not in resourceUrls
           for prefix in [ "", "images" ]
-            for extname in ResourceFile.resourceExtensions
-              alternatePath = path_module.join(dirname, prefix, match[3] + extname)
+            for extension in ResourceFile.resourceExtensions
+              alternatePath = path_module.join(dirname, prefix, match[3] + extension)
               if alternatePath in resourceUrls
                 path = alternatePath
                 break
@@ -862,7 +862,7 @@ class Busser
   #
 #  scss:
 #    exec: (file, request, callback) ->
-#      if scss? and extname(file.path) is ".css" # not .less, not .scss, not .styl
+#      if scss? and path_module.extname(file.path) is ".css" # not .less, not .scss, not .styl
 #        if @next?
 #          @next.exec file, request, (response) ->
 #            Busser.scssify file.framework.path, response.data, (scssifiedData) ->
@@ -886,7 +886,7 @@ class Busser
   #
 #  less:
 #    exec: (file, request, callback) ->
-#      if less? and extname(file.path) is ".css" # not .less, not .scss, not .styl
+#      if less? and path_module.extname(file.path) is ".css" # not .less, not .scss, not .styl
 #        if @next?
 #          @next.exec file, request, (response) ->
 #            #Busser.lessify file.framework.path, response.data, (lessifiedData) ->
@@ -958,7 +958,7 @@ class Busser
     exec: (file, request, callback) ->
       if @next?
         @next.exec file, request, (response) ->
-          if extname(file.path) is ".handlebars"
+          if path_module.extname(file.path) is ".handlebars"
             re = /[^\/]+\/templates\/(.+)\.handlebars/
             filename = re.exec(file.url())[1]
             response.data = "SC.TEMPLATES['#{filename}'] = SC.Handlebars.compile(#{JSON.stringify(response.data.toString("utf8"))});"
@@ -966,7 +966,7 @@ class Busser
           else
             callback response
       else
-        if extname(file.path) is ".handlebars"
+        if path_module.extname(file.path) is ".handlebars"
           re = /[^\/]+\/templates\/(.+)\.handlebars/
           filename = re.exec(file.url())[1]
           file.content file.path, (err, data) ->

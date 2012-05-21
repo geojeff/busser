@@ -179,6 +179,9 @@ class ChanceParser
 
     @slices = @opts["slices"]  # we update the slices given to us
     @theme = @opts["theme"]
+    @frameworkName = @opts["frameworkName"]
+
+    console.log 'ChanceParser...', @frameworkName
 
   @UNTIL_SINGLE_QUOTE: /(?!\\)'/
   @UNTIL_DOUBLE_QUOTE: /(?!\\)"/
@@ -597,7 +600,7 @@ class ChanceParser
     # the image could be quoted or not; in any case, use parse_string to
     # parse it. Sure, at the moment, we don't parse quoted strings properly,
     # but it should work for most cases. single-quoted strings are out, though...
-    slice["filename"] = @parse_string slice[0]
+    slice["filename"] = "#{@frameworkName}/#{@parse_string slice[0]}"
 
     # now that we have all of the info, we can get the actual slice information.
     # This process will create a slice entry if needed.
@@ -909,17 +912,18 @@ class ChanceProcessor
   @uid: 0
   @generation: 0
 
-  constructor: (chance, options={}) ->
-    @chance = chance
-    @options = {}
-    @options[key] = options[key] for own key of options
+  constructor: (@chance, @options={}) ->
+    console.log 'ChanceProcessor...', @options
+    #@options[key] = options[key] for own key of options
     @options["theme"] ?= ""
     @options["optimizeSprites"] ?= true
     @options["padSpritesForDebugging"] ?= true
-    @options["frameworkName"] ?= ""
     if options["theme"]? and options["theme"].length > 0 and options["theme"][0] isnt "."
       @options["theme"] = ".#{options["theme"]}"
 
+    @frameworkName = @options["frameworkName"]
+
+    console.log 'ChanceProcessor...', @frameworkName
     console.log 'cssTheme', @options["theme"]
 
     ChanceProcessor.uid += 1
