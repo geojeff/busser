@@ -345,6 +345,26 @@ class ChanceParser
     scanner.scanChar() # *
     scanner.scanUntil /\*\//
 
+  replace_unescaped_quotes: (target) ->
+    result = ''
+    cursor = 0
+    while cursor < target.length-2
+      pair = target[cursor...cursor+2]
+      if cursor is 0 and pair[0] is '"'
+        result += "\\\""
+        cursor += 1
+      else if pair[1] is '"' and pair[0] isnt '\\'
+        result += "#{target[cursor]}\\\""
+        cursor += 2
+      else
+        result += target[cursor]
+        cursor += 1
+    if target[target.length-1] is '"' and target[target.length-2] isnt '\\'
+      result += "\\#{target[target.length-1]}"
+    else
+      result += target[target.length-2..target.length-1]
+    result
+
   parse_string: (cssString) ->
     console.log 'parse_string', cssString, 'that was cssString'
     # I cheat: to parse strings, I use JSON.
@@ -352,7 +372,8 @@ class ChanceParser
       # We should still be able to use json to parse single-quoted strings
       # if we replace the quotes with double-quotes. The methodology should
       # be identical so long as we replace any unescaped quotes...
-      cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\"', 'g')}\"" # [TODO] BROKEN: Added temporary \ in front of the 1 (bug in CS).
+      #cssString = "\"#{cssString[1...cssString.length-1].replace(/^"|([^\\]")/, '\\"', 'g')}\"" # [TODO] BROKEN: Added temporary \ in front of the 1 (bug in CS).
+      cssString = "\"#{@replace_unescaped_quotes cssString[1...cssString.length-1]}\""
       console.log 'REPLACED DOUBLE QUOTES:', cssString
     else if cssString[0..0] isnt '"'
       #console.log 'ERROR string is not delimited by quotes!', cssString # This is not an error -- if not in quotes, just return cssString.
