@@ -7,6 +7,7 @@ _             = require "underscore"
 gm            = require "../node_modules/gm"
 stylus        = require "stylus"
 mkdirp        = require "mkdirp"
+SC            = require "sc-runtime"
 StringScanner = require("strscan").StringScanner
 
 # Tidbit: nice trick Maurits uses to count blanks at start of line
@@ -43,6 +44,7 @@ StringScanner = require("strscan").StringScanner
 # * extname, a function which uses the node.js path module
 # * microtime.nowDouble(), replacing Time.now.to_f in Ruby
 # * underscore sortBy, a convenience array sorting function, replacing the Ruby sortBy
+# * sc-runtime, SproutCore runtime utility methods
 #
 # The graphics handling parts of Ruby Chance were more challenging to write in
 # CoffeeScript Chance, not just for the style of programming, but for finding a
@@ -129,6 +131,38 @@ String::gsub = (re, callback) ->
       result += source
       source = ""
   result
+
+# An async gsub from Maurits Lamers
+#
+#   https://gist.github.com/981bae47adaf3f8ae7d2
+#
+String::async_gsub = (source,regex,matcher,matchertarget,callback,callbacktarget) ->
+  result = []
+  matchercalls = []
+  count = 0
+    
+  report_creator = (match,index) ->
+    reporter = (newdata) ->
+      result[index] = newdata
+      if count is matchercalls.length
+        callback.call callbacktarget,result.join("")
+      
+    return () ->
+      matcher.call(matchertarget,SC.copy(match),reporter)
+        
+  while source.length > 0
+    match = regex.exec source
+    if match?
+      result.push source.slice(0, match.index)
+      result_index = result.push "" # placeholder
+      matchercalls.push report_creator
+      source = source.slice match.index + match[0].length # strip the match from source
+    else
+      result.push source
+      source = ""
+    
+  callback.call(callbacktarget, result.join("")) if matchercalls.length is 0 else m() for m in matchercalls
+  
 
 String::beginsWith = (str) -> if @match(new RegExp "^#{str}") then true else false
 String::endsWith = (str) -> if @match(new RegExp "#{str}$") then true else false
@@ -1145,7 +1179,7 @@ class ChanceProcessor
       #@css = css
       #@has_rendered = true
     catch err
-      console.log 'ERROR in scss', err
+      console.log 'ERROR in stylus', err
     finally
       Chance._current_instance = null
 
