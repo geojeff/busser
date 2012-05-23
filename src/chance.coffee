@@ -218,7 +218,7 @@ class ChanceParser
     @theme = @opts["theme"]
     @frameworkName = @opts["frameworkName"]
 
-    console.log 'ChanceParser...', @frameworkName
+    #console.log 'ChanceParser...', @frameworkName
 
   @UNTIL_SINGLE_QUOTE: /(?!\\)'/
   @UNTIL_DOUBLE_QUOTE: /(?!\\)"/
@@ -349,7 +349,7 @@ class ChanceParser
       output.push @handle_empty()
       break if scanner.hasTerminated()
 
-      #console.log 'rem', scanner.getPosition()
+      #console.log 'rem', scanner.getPosition(), output
 
       if scanner.check ChanceParser.BEGIN_SCOPE
         output.push @handle_scope()
@@ -373,13 +373,12 @@ class ChanceParser
       else
         output.push res
 
-    #console.log 'output', output.length
-
     output = output.join("")
+    #console.log 'final parsed output', output.length
     output
 
   handle_comment: ->
-    #console.log 'handle_comment'
+      #console.log 'handle_comment'
     scanner = @scanner
     scanner.scanChar() # /
     scanner.scanChar() # *
@@ -406,7 +405,7 @@ class ChanceParser
     result
 
   parse_string: (cssString) ->
-    #console.log 'parse_string', cssString, 'that was cssString'
+      #console.log 'parse_string', cssString
     # I cheat: to parse strings, I use JSON.
     if cssString[0..0] is "'" #[TODO] indices?
       # We should still be able to use json to parse single-quoted strings
@@ -423,7 +422,7 @@ class ChanceParser
     JSON.parse("[#{cssString}]")[0]
 
   handle_string: ->
-    #console.log 'handle_string'
+      #console.log 'handle_string'
     scanner = @scanner
 
     str = scanner.scanChar()
@@ -431,7 +430,7 @@ class ChanceParser
     str
 
   handle_empty: ->
-    #console.log 'handle_empty'
+      #console.log 'handle_empty'
     scanner = @scanner
     output = ""
 
@@ -447,6 +446,7 @@ class ChanceParser
         continue
       break
 
+    #console.log 'handle_empty', output
     output
 
   handle_scope: ->
@@ -629,6 +629,7 @@ class ChanceParser
     output
     
   handle_slice_include: ->
+    #console.log 'handle_slice_include'
     scanner = @scanner
     scanner.scan /@include slice\s*/
 
@@ -952,7 +953,7 @@ class ChanceProcessor
   @generation: 0
 
   constructor: (@chance, @options={}) ->
-    console.log 'ChanceProcessor...', @options
+    #console.log 'ChanceProcessor...', @options
     @options[key] = options[key] for own key of options
     @options["theme"] ?= ""
     @options["optimizeSprites"] ?= true
@@ -1397,6 +1398,7 @@ class ChanceProcessor
 
       parser = new ChanceParser(content, @options)
       parser.parse()
+      console.log 'after parser'
       file["parsed_css"] = parser.css
 
       # We used to use an md5 hash here, but this hides the original file name
@@ -1598,7 +1600,7 @@ class ChanceProcessor
       try
         path_2x = path[0..(-1 - extname(path).length)] + "@2x.png" # [TODO] check end index; in ruby, was: path_2x = path[0..(-1 - File.extname(path).length)] + "@2x.png"
 
-        file = get_file(path_2x)
+        file = @get_file(path_2x)
         slice["x2"] = true
         slice["proportion"] = 2
       catch err
