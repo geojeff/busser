@@ -3,7 +3,6 @@ fs            = require "fs"
 path_module   = require "path"
 microtime     = require "microtime"
 sys           = require "sys"
-_             = require "underscore"
 gm            = require "../node_modules/gm"
 stylus        = require "stylus"
 mkdirp        = require "mkdirp"
@@ -1362,7 +1361,7 @@ class ChanceProcessor
 
     # We have to sort alphabetically first...
     tmp_file_list = ({path: p, file: f} for own p,f of @mapped_files)
-    tmp_file_list = _.sortBy tmp_file_list, (pf) -> pf.path
+    tmp_file_list = tmp_file_list.sortProperty 'path'
 
     console.log 'updating mtimes, and _including_files...', tmp_file_list.length
 
