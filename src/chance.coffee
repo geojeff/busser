@@ -1128,9 +1128,9 @@ class ChanceProcessor
       # The output of this process is a "virtual" file that imports all of the
       # SCSS files used by this ChanceProcessor instance. This also sets up the @slices hash.
       #
-      import_css = @_preprocess()
+      cssImportStatements = @_preprocess()
 
-      #console.log 'import_css', import_css
+      #console.log 'cssImportStatements', cssImportStatements
       
       # Because we encapsulate with instance_id, we should not have collisions even IF another chance
       # instance were running at the same time (which it couldn't; if it were, there'd be MANY other issues)
@@ -1151,7 +1151,7 @@ class ChanceProcessor
       # slices (the details will be postprocessed out).
       # After that, all of the individual files (using the import CSS generated in Step 1)
       #
-      cssWithImports = "@import \"#{image_css_path}\";\n" + import_css
+      cssWithImports = "@import \"#{image_css_path}\";\n" + cssImportStatements
 
       # [TODO] Replace #3 with ... something... stylus?
       #
