@@ -1188,8 +1188,6 @@ class ChanceProcessor
   # slicing operation has not yet taken place. The postprocessing portion
   # receives sliced versions.
   #
-  # Round-trip fixed from mauritslamers garcon.
-  #
   _css_for_slices: ->
     #console.log '_css_for_slices', @slices.length
     output = []
@@ -1435,8 +1433,8 @@ class ChanceProcessor
     
         @output.push @indentString if @indentString
  
-      doReplacements: (css_to_fix) ->
-        replacedLines = []
+      fixCSS: (css_to_fix) ->
+        fixedLines = []
         for line in css_to_fix.split('\n')
           line = line.replace(/\t/g, '  ')
           line = line.replace(/:0/g, ': 0')
@@ -1451,9 +1449,9 @@ class ChanceProcessor
           if line.indexOf(" progid:") isnt -1
             line = line.replace(/\sprogid/g, "\"progid").replace(/30\)/g, "30)\"").replace(/40\)/g, "40)\"").replace(/50\)/g, "50)\"")
     
-          replacedLines.push line if line.trim().length > 0
-        result = replacedLines.join('\n')
-        result
+          fixedLines.push line if line.trim().length > 0
+
+        fixedLines.join('\n')
 
       next: ->
         @pos += 1
@@ -1587,7 +1585,7 @@ class ChanceProcessor
             @output.push @ch
 
         @output = @output.join('').replace(/[\n ]+$/, '')
-        @doReplacements(@output)
+        @fixCSS(@output)
       
     new Converter(css_input, indentSize=4, indentCharacter=' ').convert()
   
@@ -1658,29 +1656,15 @@ class ChanceProcessor
       path_safe = file["path"].replace(re, '-', 'g')
 
       tmp_path = "./tmp/chance/#{path_safe}.styl"
-      tmp2_css_path = "./tmp2/chance/#{path_safe}.css"
-      tmp2_styl_path = "./tmp2/chance/#{path_safe}.styl"
 
       # [TODO] same as for other case of: FileUtils.mkdir_p(path_module.dirname(tmp_path))
       try
         #fs.mkdirSync path_module.dirname(tmp_path), parseInt("0755", 8)
         mkdirp.sync(path_module.dirname(tmp_path))
-        mkdirp.sync(path_module.dirname(tmp2_css_path))
-        mkdirp.sync(path_module.dirname(tmp2_styl_path))
       catch e
         throw e  if e.code isnt "EEXIST"
       
-      console.log 'dirs made'
-      console.log 'not?', file["mtime"]
-      console.log 'not?', file["wtime"]
-      console.log 'or', file["wtime"] < file["mtime"]
-      console.log 'or not?', header_file["mtime"]
-      console.log 'or', file["wtime"] < header_file["mtime"]
       if (not file["mtime"]? or not file["wtime"]? or file["wtime"] < file["mtime"] or not header_file["mtime"]? or file["wtime"] < header_file["mtime"])
-        console.log 'STYL', @_convert_to_styl(parser.css)
-        console.log ">>>>>" + parser.css
-        f = fs.writeFileSync(tmp2_css_path, parser.css, "utf-8")
-        f = fs.writeFileSync(tmp2_styl_path, @_convert_to_styl(parser.css), "utf-8")
         f = fs.writeFileSync(tmp_path, @_convert_to_styl(parser.css), "utf-8")
         file["wtime"] = microtime.nowDouble() # replaces Time.now.to_f in Ruby
 
