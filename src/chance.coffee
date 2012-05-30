@@ -1589,11 +1589,7 @@ class ChanceProcessor
         @output = @output.join('').replace(/[\n ]+$/, '')
         @doReplacements(@output)
       
-    converter = new Converter(css_input, indentSize=4, indentCharacter=' ')
-    output = converter.convert()
-    #output = converter.doReplacements(output)
-    console.log 'output dammit', output, 'dammit end'
-    output
+    new Converter(css_input, indentSize=4, indentCharacter=' ').convert()
   
   # Determines the order of the files, parses them using ChanceParser,
   # and returns a file with an SCSS @import directive for each file.
