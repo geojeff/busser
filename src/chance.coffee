@@ -373,9 +373,8 @@ class ChanceParser
       else
         output.push res
 
-    output = output.join("")
+    output.join("")
     #console.log 'final parsed output', output.length
-    output
 
   handle_comment: ->
       #console.log 'handle_comment'
@@ -405,7 +404,7 @@ class ChanceParser
     result
 
   parse_string: (cssString) ->
-      #console.log 'parse_string', cssString
+    console.log 'parse_string', cssString
     # I cheat: to parse strings, I use JSON.
     if cssString[0..0] is "'" #[TODO] indices?
       # We should still be able to use json to parse single-quoted strings
@@ -464,7 +463,7 @@ class ChanceParser
     output
 
   handle_theme: ->
-    #console.log 'handle_theme'
+    console.log 'handle_theme'
     scanner = @scanner
     scanner.scan ChanceParser.THEME_DIRECTIVE
 
@@ -638,7 +637,7 @@ class ChanceParser
     # the image could be quoted or not; in any case, use parse_string to
     # parse it. Sure, at the moment, we don't parse quoted strings properly,
     # but it should work for most cases. single-quoted strings are out, though...
-    console.log 'ADDING FRAMEWORK NAME', @frameworkName, @parse_string slice[0]
+    #console.log 'ADDING FRAMEWORK NAME', @frameworkName, @parse_string slice[0]
     slice["filename"] = "#{@frameworkName}/#{@parse_string slice[0]}"
 
     # now that we have all of the info, we can get the actual slice information.
@@ -711,7 +710,7 @@ class ChanceParser
     skip_bottom = 'bottom' in skip
     skip_bottom_right = 'bottom-right' in skip
 
-    console.log 'ADDING FRAMEWORK NAME - plural slices', @frameworkName, @parse_string slice[0]
+    #console.log 'ADDING FRAMEWORK NAME - plural slices', @frameworkName, @parse_string slice[0]
     filename = "#{@frameworkName}/#{@parse_string slice_arguments[0]}"
 
     # we are going to form 9 slices. If any are empty we'll skip them
@@ -1083,13 +1082,13 @@ class ChanceProcessor
   #   :sprited    If true, will use sprites rather than data uris.
   #
   css: (opts) ->
-    console.log 'chance css called'
+    #console.log 'chance css called'
     @_render()
-    console.log 'after _render()'
+    #console.log 'after _render()'
     @slice_images opts
-    console.log 'after slice_images'
+    #console.log 'after slice_images'
     ret = @_postprocess_css opts
-    console.log 'after _postprocess_css', ret
+    #console.log 'after _postprocess_css', ret
     ret
 
   # Looks up a slice that has been found by parsing the CSS. This is used by
@@ -1110,7 +1109,7 @@ class ChanceProcessor
   # This is the first step in the ChanceProcessor build process, and is usually
   # called by the output_for() method. It produces a raw, unfinished CSS file.
   _render: ->
-    console.log '_render, has_rendered is', @has_rendered
+    #console.log '_render, has_rendered is', @has_rendered
     return if @has_rendered
 
     # Update the render cycle to invalidate sprites, slices, etc.
@@ -1119,7 +1118,7 @@ class ChanceProcessor
     @files = {}
 
     try
-      console.log 'in the try'
+      #console.log 'in the try'
       # SCSS code executing needs to know what the current instance of ChanceProcessor is,
       # so that lookups for slices, etc. work.
       #
@@ -1131,7 +1130,7 @@ class ChanceProcessor
       #
       import_css = @_preprocess()
 
-      console.log 'import_css', import_css
+      #console.log 'import_css', import_css
       
       # Because we encapsulate with instance_id, we should not have collisions even IF another chance
       # instance were running at the same time (which it couldn't; if it were, there'd be MANY other issues)
@@ -1158,14 +1157,14 @@ class ChanceProcessor
       #
       # Step 3: Apply Sass Engine
       #
-      console.log 'about to stylus', cssWithImports
+      #console.log 'about to stylus', cssWithImports
 
       stylus.render cssWithImports, (err, stylusResult) =>
         if err?
-          util.puts "ERROR: stylus " + err.message
+          util.puts "ERROR: stylus render " + err.message
         else
           @cssParsed = stylusResult
-          console.log "stylus.render cssParsed result: ", @cssParsed
+          #console.log "stylus.render cssParsed result: ", @cssParsed
           @has_rendered = true
 
       #engine = Sass::Engine.new(css, Compass.sass_engine_options.merge
@@ -1179,7 +1178,7 @@ class ChanceProcessor
       #@css = css
       #@has_rendered = true
     catch err
-      console.log 'ERROR in stylus', err
+      console.log 'ERROR in stylus', err.message
     finally
       Chance._current_instance = null
 
@@ -1188,23 +1187,23 @@ class ChanceProcessor
   # is generated with the set of slice definitions in @slices; the actual
   # slicing operation has not yet taken place. The postprocessing portion
   # receives sliced versions.
+  #
+  # Round-trip fixed from mauritslamers garcon.
+  #
   _css_for_slices: ->
-    console.log '_css_for_slices'
+    #console.log '_css_for_slices', @slices.length
     output = []
-
+    
     for name,slice of @slices
       # Write out comments specifying all the files the slice is used from
-      output = []
       output.push "/* Slice #{name}, used in: \n"
-      for used_by in slice["used_by"]
-        output.push "\t#{used_by["path"]}\n"
+      output.push("\t%@\n".fmt(used_by.path)) for used_by in slice.used_by
       output.push "*/\n"
+      output.push ".#{slice.css_name.replace(/\//g, '_')} {\n" # [TODO] This has already been done on the front-end, no?
+      output.push "  _sc_chance: \"#{name}\";"
+      output.push "\n} \n"
 
-      output.push ".#{slice["css_name"]} { "
-      output.push "_sc_chance: \"#{name}\";"
-      output.push "} \n"
-
-    output.join ""
+    output.join("")
 
   # Postprocesses the CSS using either the spriting postprocessor or the
   # data url postprocessor, as specified by opts.
@@ -1215,7 +1214,7 @@ class ChanceProcessor
   # :sprited => whether to use spriting instead of data uris.
   #
   _postprocess_css: (opts) ->
-    console.log '_postprocess_css'
+    #console.log '_postprocess_css'
     if opts["sprited"]
       ret = @postprocess_css_sprited(opts)
     else
@@ -1228,7 +1227,7 @@ class ChanceProcessor
   # but which are no longer needed.
   #
   _strip_slice_class_names: (css) ->
-    console.log '_strip_slice_class_names'
+    #console.log '_strip_slice_class_names'
     re = /\.__chance_slice[^{]*?,/
     css = css.gsub re, ""
     css
@@ -1279,43 +1278,42 @@ class ChanceProcessor
   # The list is created in the variable @file_list.
   #
   _include_file: (file) ->
-    console.log '_include_file -- does it end in .css', /\.css$/.test(file)
+    #console.log '_include_file -- does it end in .css', /\.css$/.test(file)
     return if not /\.css$/.test(file)
     
-    console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)
+    #console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)
 
     # skip _theme.css files
     return if /_theme\.css$/.test(file)
 
-    console.log 'no, it is not a _theme.css file'
+    #console.log 'no, it is not a _theme.css file'
 
     file = @get_file(file)
 
-    console.log 'get_file returned a file?', file?
+    #console.log 'get_file returned a file?', file?
     return if not file?
 
-    console.log 'file[included] is @generation?', file["included"] is @generation
+    #console.log 'file[included] is @generation?', file["included"] is @generation
     return if file["included"] is ChanceProcessor.generation
 
-    console.log 'setting requires'
+    #console.log 'setting requires'
     requires = file["requires"]
 
     file["included"] = ChanceProcessor.generation
 
-    console.log 'do we have any requries?', requires?
+    #console.log 'do we have any requries?', requires?
 
     if requires?
       for r in requires
         # Add the .css extension if needed. it is optional for sc_require
         r = "#{r}.css" if not /\.css$/.test(r)
-        console.log 'including the require', r
+        #console.log 'including the require', r
         @_include_file(@mapped_files[r])
 
-    console.log 'including the file in the file_list'
+    #console.log 'including the file in the file_list'
     @file_list.push(file)
 
-  _convert_to_styl: (css) ->
-    console.log 'converting to styl'
+  _convert_to_styl_old: (css) ->
     convertedLines = []
     for line in css.split('\n')
       trimmed = line.trim()
@@ -1325,7 +1323,7 @@ class ChanceProcessor
       line = line.replace(':0', ': 0', 'g')
       line = line.replace('{', '', 'g')
       line = line.replace('}', '', 'g')
-      line = line.replace(';', '', 'g')
+      line = line.replace(/;\s*?$/g, '') # From garcon: only replace the last semicolon in a line (also if spaces after ;)
       # hacks: if the following string is unquoted, quote it.
       if line.indexOf(" progid:DXImageTransform.Microsoft.Alpha(Opacity=30)") isnt -1
         line = line.replace(' progid', ' \"progid', 'g')
@@ -1344,6 +1342,259 @@ class ChanceProcessor
     else
       ''
 
+  _convert_to_styl_garcon: (css) ->
+    console.log 'converting to styl'
+    spacescheck = /^\s*/
+    convertedLines = []
+    nonBlankLines = []
+    
+    searchOpeningBrace = (from_i) ->
+      for convertedLine,index in convertedLines
+        return index if convertedLine.indexOf '{' isnt -1
+      return -1 # should not happen normally...
+    
+    for line,index in css.split("\n")
+      trimmed = line.trim()
+
+      continue if trimmed is '' # skip empty lines
+      
+      if trimmed in ["{", "}"]
+        if trimmed is "}"
+          openl = searchOpeningBrace index
+          if openl >= 0
+            indent = spacescheck.exec convertedLines[openl]
+            line = indent[0] + "}" if indent
+        convertedLines.push line
+        continue
+      
+      line = line.replace(/\t/g, '  ')
+      line = line.replace(/:0/g, ': 0')
+      #line = line.replace('{', '', 'g')
+      #line = line.replace('}', '', 'g')
+      line = line.replace(/;\s*?$/g, '') # only replace the last semicolon in a line (also if spaces after ;)
+      # data uris without quotes
+      if line.search(/url\(data/) >= 0
+        line = line.replace(/url\(data/, "url('data").replace(/\)/, "')")
+
+      #line = line.replace(/;/g,"")
+      if line.indexOf(" progid:") isnt -1
+        line = line.replace(/\sprogid/g, "\"progid").replace(/30\)/g, "30)\"").replace(/40\)/g, "40)\"").replace(/50\)/g, "50)\"")
+
+      indent = spacescheck.exec line
+
+      if indent?
+        numspaces = indent[0].length
+
+        if index > 1
+          prevline = convertedLines[convertedLines.length-1]
+          previndent = spacescheck.exec prevline
+
+          if (numspaces % 2) > 0
+            if previndent?
+              #tools.log('previndent: ' + tools.inspect(previndent));
+              if prevline.indexOf("{") >= 0
+                line = line.replace spacescheck, "#{previndent[0]}  "
+              else
+                line = line.replace spacescheck, previndent[0]
+            else
+              line = line.replace spacescheck, indent[0].substr(0, indent[0].length-2)
+
+          if numspaces is 0 # if 0, check how much the previous line had
+            if previndent? and previndent[0].length isnt 0
+              line = previndent[0] + line
+
+          if (numspaces % 2) is 0 # if indent is rest 0, the indent should be the same, unless an { is detected
+            if previndent? and previndent[0].length isnt numspaces and prevline? and prevline.indexOf "{" is -1
+              line = line.replace spacescheck, previndent[0]
+
+      if line?
+        convertedLines.push line
+        nonBlankLines.push line.trim().length > 0
+
+    if nonBlankLines.length > 1
+      convertedLines.join '\n'
+    else
+      ''
+
+  # Reference: beautify-css.js in
+  #
+  #   https://github.com/einars/js-beautify
+  #
+  _convert_to_styl: (css_input) ->
+    class Converter
+      constructor: (@css_input, @indentSize=4, @indentCharacter=' ') ->
+        @pos = -1
+        @ch = ''
+        @indentString = @css_input.match(/^[\r\n]*[\t ]*/)[0]
+        @singleIndent = Array(@indentSize+1).join(@indentCharacter)
+        @indentLevel = 0
+        @output = []
+    
+        @whitespaceRE = /^\s+$/
+        @wordRe = /[\w$\-_]/
+    
+        @output.push @indentString if @indentString
+ 
+      doReplacements: (css_to_fix) ->
+        replacedLines = []
+        for line in css_to_fix.split('\n')
+          line = line.replace(/\t/g, '  ')
+          line = line.replace(/:0/g, ': 0')
+          line = line.replace(/{\s*?$/g, '') # only replace the last { in a line (handles spaces after {)
+          line = line.replace(/}\s*?$/g, '') # only replace the last } in a line (handles spaces after })
+          line = line.replace(/;\s*?$/g, '') # only replace the last semicolon in a line (handles spaces after ;)
+          # data uris without quotes
+          if line.search(/url\(data/) >= 0
+            line = line.replace(/url\(data/, "url('data").replace(/\)/, "')")
+    
+          #line = line.replace(/;/g,"")
+          if line.indexOf(" progid:") isnt -1
+            line = line.replace(/\sprogid/g, "\"progid").replace(/30\)/g, "30)\"").replace(/40\)/g, "40)\"").replace(/50\)/g, "50)\"")
+    
+          replacedLines.push line if line.trim().length > 0
+        result = replacedLines.join('\n')
+        result
+
+      next: ->
+        @pos += 1
+        #console.log @pos, @ch
+        @ch = @css_input.charAt(@pos)
+  
+      peek: ->
+        @css_input.charAt @pos+1
+  
+      consumeString: (stopChar) ->
+        start = @pos
+        while @next()
+          if @ch is "\\"
+            @next()
+            @next()
+          else if @ch is stopChar
+            break
+          else break if @ch is "\n"
+  
+        @css_input.substring start, @pos+1
+  
+      # Look ahead with @peek(), checking for whitespace.
+      # If whitespace, advance.
+      # Keep advancing until non-whitespace encountered.
+      # If advancement occurred, return true, else false.
+      #
+      consumeWhitespace: ->
+        start = @pos
+        @pos++ while @whitespaceRE.test(@peek())
+        @pos isnt start
+  
+      # Call @next() to advance one pos, checking for whitespace.
+      # Keep advancing until non-whitespace encountered.
+      # If the advancement is not whitespace, return false, else true.
+      #
+      skipWhitespace: ->
+        start = @pos
+        loop
+          break unless @whitespaceRE.test(@next())
+        @pos isnt start+1
+  
+      # Assume that when called, opening / encountered, so advance one pos.
+      # Keep advancing, breaking if */ encountered.
+      # Return the substring from the /* through the */.
+      #
+      consumeComment: ->
+        start = @pos
+        @next()
+        while @next()
+          if @ch is "*" and @peek() is "/"
+            @pos++
+            break
+        @css_input.substring start, @pos+1
+  
+      # Return a slice of the output from index back to str.length.
+      # Lowercase str is assumed.
+      #
+      lookBack: (str, index) ->
+        @output.slice(-str.length + (index or 0), index).join("").toLowerCase() is str
+
+      # Increase indentLevel, returning indentString expanded by one indent.
+      #
+      indent: ->
+        @indentLevel++
+        @indentString += @singleIndent
+    
+      # Descrease indentLevel, returning indentString reduced by one indent.
+      #
+      outdent: ->
+        @indentLevel--
+        @indentString = @indentString.slice(0, -@indentSize)
+  
+      handleOpeningBrace: (ch) ->
+        @singleSpace()
+        @output.push(ch)
+        @newLine()
+      
+      handleClosingBrace: (ch) ->
+        @newLine()
+        @output.push(ch)
+        @newLine()
+    
+      newLine: (keepWhitespace) ->
+        @output.pop() while @whitespaceRE.test(@output[@output.length-1]) unless keepWhitespace
+        @output.push "\n" if @output.length
+        @output.push @indentString if @indentString
+    
+      singleSpace: ->
+        @output.push " " if @output.length and not @whitespaceRE.test(@output[@output.length-1])
+    
+      convert: ->
+        loop
+          isAfterSpace = @skipWhitespace()
+
+          break unless @ch
+
+          if @ch is '{'
+            @indent()
+            @handleOpeningBrace(@ch)
+          else if @ch is '}'
+            @outdent()
+            @handleClosingBrace(@ch)
+          else if @ch is '"' or @ch is '\''
+            @output.push @consumeString(@ch)
+          else if @ch is ';' # [TODO] But what if the ; is not on the end of the line?
+            @output.push(@ch, '\n', @indentString)
+          else if @ch is '/' and @peek() is '*'
+            @newLine()
+            @output.push(@consumeComment(), "\n", @indentString)
+          else if @ch is '(' # may be a url
+            @output.push @ch
+            @consumeWhitespace()
+            if @lookBack("url", -1) and @next()
+              if @ch isnt ')' and @ch isnt '"' and @ch isnt '\''
+                @output.push @consumeString(')')
+              else
+                @pos -= 1
+          else if @ch is ')'
+            @output.push @ch
+          else if @ch is ','
+            @consumeWhitespace()
+            @output.push @ch
+            @singleSpace()
+          else if @ch is ']'
+            @output.push @ch
+          else if @ch is '[' or @ch is '='
+            @consumeWhitespace()
+            @output.push @ch # no whitespace before or after
+          else
+            @singleSpace() if isAfterSpace
+            @output.push @ch
+
+        @output = @output.join('').replace(/[\n ]+$/, '')
+        @doReplacements(@output)
+      
+    converter = new Converter(css_input, indentSize=4, indentCharacter=' ')
+    output = converter.convert()
+    #output = converter.doReplacements(output)
+    console.log 'output dammit', output, 'dammit end'
+    output
+  
   # Determines the order of the files, parses them using ChanceParser,
   # and returns a file with an SCSS @import directive for each file.
   #
@@ -1354,17 +1605,17 @@ class ChanceProcessor
 
     ChanceProcessor.generation += 1
 
-    console.log '_preprocess, generation:', ChanceProcessor.generation
+    #console.log '_preprocess, generation:', ChanceProcessor.generation
 
     files = (@mapped_files[key] for own key of @mapped_files) # [TODO] files is not used here.
     
-    console.log 'sorting... @mapped_files', @mapped_files
+    #console.log 'sorting... @mapped_files', @mapped_files
 
     # We have to sort alphabetically first...
     tmp_file_list = ({path: p, file: f} for own p,f of @mapped_files)
     tmp_file_list = tmp_file_list.sortProperty 'path'
 
-    console.log 'updating mtimes, and _including_files...', tmp_file_list.length
+    #console.log 'updating mtimes, and _including_files...', tmp_file_list.length
 
     # Empty file_list then refresh it with _include_file calls.
     @file_list = []
@@ -1372,17 +1623,17 @@ class ChanceProcessor
       # Save the mtime for caching
       mtime = @chance.update_file_if_needed(path_and_file.file)
       @file_mtimes[path_and_file.path] = mtime
-      console.log path_and_file.path, mtime
+      #console.log path_and_file.path, mtime
       @_include_file(path_and_file.file)
 
-    console.log 'setting relative_paths'
+    #console.log 'setting relative_paths'
 
     relative_paths = {}
     relative_paths[value] = key for own key,value of @mapped_files
 
     cssImportStatements = []
 
-    console.log 'after update_file_if_needed, and sorting', @file_list.length
+    #console.log 'after update_file_if_needed, and sorting', @file_list.length
 
     for file in @file_list
       # NOTE: WE MUST CALL CHANCE PARSER NOW, because it generates our slices.
@@ -1396,6 +1647,7 @@ class ChanceProcessor
       #console.log 'file content', file["content"]
       content += file["content"]
 
+      console.log 'new ChanceParser', @options
       parser = new ChanceParser(content, @options)
       parser.parse()
       console.log 'after parser'
@@ -1410,15 +1662,29 @@ class ChanceProcessor
       path_safe = file["path"].replace(re, '-', 'g')
 
       tmp_path = "./tmp/chance/#{path_safe}.styl"
+      tmp2_css_path = "./tmp2/chance/#{path_safe}.css"
+      tmp2_styl_path = "./tmp2/chance/#{path_safe}.styl"
 
       # [TODO] same as for other case of: FileUtils.mkdir_p(path_module.dirname(tmp_path))
       try
         #fs.mkdirSync path_module.dirname(tmp_path), parseInt("0755", 8)
         mkdirp.sync(path_module.dirname(tmp_path))
+        mkdirp.sync(path_module.dirname(tmp2_css_path))
+        mkdirp.sync(path_module.dirname(tmp2_styl_path))
       catch e
         throw e  if e.code isnt "EEXIST"
       
-      if (not file["mtime"] or not file["wtime"] or file["wtime"] < file["mtime"] or not header_file["mtime"] or file["wtime"] < header_file["mtime"])
+      console.log 'dirs made'
+      console.log 'not?', file["mtime"]
+      console.log 'not?', file["wtime"]
+      console.log 'or', file["wtime"] < file["mtime"]
+      console.log 'or not?', header_file["mtime"]
+      console.log 'or', file["wtime"] < header_file["mtime"]
+      if (not file["mtime"]? or not file["wtime"]? or file["wtime"] < file["mtime"] or not header_file["mtime"]? or file["wtime"] < header_file["mtime"])
+        console.log 'STYL', @_convert_to_styl(parser.css)
+        console.log ">>>>>" + parser.css
+        f = fs.writeFileSync(tmp2_css_path, parser.css, "utf-8")
+        f = fs.writeFileSync(tmp2_styl_path, @_convert_to_styl(parser.css), "utf-8")
         f = fs.writeFileSync(tmp_path, @_convert_to_styl(parser.css), "utf-8")
         file["wtime"] = microtime.nowDouble() # replaces Time.now.to_f in Ruby
 
@@ -1431,7 +1697,7 @@ class ChanceProcessor
   # PORTING NOTE: from the original Chance data_url module within the instance module
   #
   postprocess_css_dataurl: (opts) ->
-    console.log 'postprocess_css_dataurl', @cssParsed
+    #console.log 'postprocess_css_dataurl', @cssParsed
     re = /_sc_chance\:\s*["'](.*?)["']\s*/
     css = @cssParsed.gsub re, (match) =>
       slice = @slices[match[1]]
@@ -1454,7 +1720,7 @@ class ChanceProcessor
     # We do not modify the offset, so we can just pass the original through.
     re = /-chance-offset:\s?"(.*?)" (-?[0-9]+) (-?[0-9]+)/
     css = css.gsub re, (match) =>
-      console.log 'chance-offset matches', match[2], match[3] # [TODO] Does this still work after replacing / with | in the css_name?
+      #console.log 'chance-offset matches', match[2], match[3] # [TODO] Does this still work after replacing / with | in the css_name?
       "background-position: #{match[2]}px #{match[3]}px"
     css
 
@@ -1540,7 +1806,7 @@ class ChanceProcessor
           
       # In any case, if there is one, we need to get the original file and canvas;
       # this process also tells us if the slice is 2x, etc.
-      console.log 'slice_images... calling canvas_for slice, opts'
+      #console.log 'slice_images... calling canvas_for slice, opts'
       canvas = @canvas_for slice, opts
 
       # Check if a canvas is required
@@ -1581,7 +1847,7 @@ class ChanceProcessor
   # Opts specify if x2, etc. is allowed.
   #
   canvas_for: (slice, opts) ->
-    console.log 'canvas_for', slice, opts
+    #console.log 'canvas_for', slice, opts
     file = @file_for(slice, opts)
     #console.log 'canvas_for ... file from file_for call', file
     file["canvas"]
@@ -1982,12 +2248,12 @@ class ChanceProcessor
         slice_x /= slice["proportion"]
         slice_y /= slice["proportion"]
 
-      console.log 'replacing it'
+      #console.log 'replacing it'
       "background-position: #{slice_x}px #{slice_y}px"
     css
 
   sprite_data: (opts) ->
-    console.log 'sprite_data', opts
+    #console.log 'sprite_data', opts
     @_render()
     @slice_images opts
     @generate_sprite_definitions opts
@@ -2011,7 +2277,7 @@ class ChanceProcessor
     ret
 
   sprite_names: (opts={}) ->
-    console.log 'sprite_names', opts
+    #console.log 'sprite_names', opts
     @_render()
     @slice_images opts
     @generate_sprite_definitions opts
@@ -2044,7 +2310,7 @@ class ChanceProcessorFactory
   # Call with a hash that maps instance paths to absolute paths. This will compare with the last.
   #
   update_instance: (key, opts, files) ->
-    console.log 'in update_instance'
+    #console.log 'in update_instance'
     instance = @instance_for_key(key, opts)
     last_hash = @file_hashes[key] ? {}
       
@@ -2052,7 +2318,7 @@ class ChanceProcessorFactory
     # ChanceProcessor re-running, and it will have to anyway.
     #
     if last_hash isnt files
-      console.log 'update_instance last_hash isnt files'
+      #console.log 'update_instance last_hash isnt files'
       instance.unmap_all
       instance.map_file(path, identifier) for own path,identifier of files
       @file_hashes[key] = files
@@ -2093,10 +2359,10 @@ class Chance
       preprocessed: false
       
     @files[path] = file
-    console.log 'chance added', path
+    #console.log 'chance added', path
 
   update_file: (@path, @content=null) ->
-    console.log 'update_file'
+    #console.log 'update_file'
     if not @files[path]?
       console.log "Could not update #{path} because it is not in system."
       return
@@ -2122,7 +2388,7 @@ class Chance
   # if the path is a valid filesystem path and the mtime has changed, this invalidates
   # the file. Returns the mtime if the file was updated.
   update_file_if_needed: (path, content=null) ->
-    console.log 'update_file_if_needed'
+    #console.log 'update_file_if_needed'
     if @files[path]?
         #      fs.stat path, (err, stats) =>  # [TODO] should use sync version?
         #if err
@@ -2191,7 +2457,7 @@ class Chance
   _preprocess_css: (file) ->
     content = file["content"]
 
-    console.log 'preprocessing css'
+    #console.log 'preprocessing css'
 
     requires = []
     re = /(sc_)?require\(['"]?(.*?)['"]?\);?/
