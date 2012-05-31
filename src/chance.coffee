@@ -1006,17 +1006,18 @@ class ChanceProcessor
   # The identifier would be a name of a file that you added to
   # to the system using add_file.
   #
-  map_file: (path, identifier) ->
-    if @mapped_files[path] is identifier
+  map_file: (path, file_identifier) ->
+    if @mapped_files[path] is file_identifier
       # Don't do anything if there is nothing to do.
       return
       
     path = "#{path}" # [TODO] doesn't this accomplish a conversion to string?
-    file = @chance.has_file(identifier)
 
-    new FileNotFoundError(path).message() unless file?
+    file = @chance.has_file(file_identifier)
 
-    @mapped_files[path] = identifier
+    new FileNotFoundError(path).message() unless file_file?
+
+    @mapped_files[path] = file_identifier
 
     # Invalidate our render because things have changed.
     @clean()
@@ -1041,12 +1042,18 @@ class ChanceProcessor
   # checks all files to see if they have changed
   check_all_files: ->
     needs_clean = false
-    for own p,f of @mapped_files
+    for own p,f of @mapped_files # p, path; f, file_identifier
       mtime = @chance.update_file_if_needed(f)
-      if not @file_mtimes[p]? or mtime > @file_mtimes[p]
+      if not @file_mtimes[p]? or mtime > @file_mtimes[p] # [TODO] Check use of ? operator here.
+      #if p isnt of @file_mtimes or mtime > @file_mtimes[p] # [TODO] Could be better this way.
         needs_clean = true
     
     @clean() if needs_clean
+
+  # Cleans the current render, getting rid of all generated output.
+  clean: ->
+    @has_rendered = false
+    @files = {}
 
   # Using a path relative to this instance, gets an actual system file
   # hash, with any necessary preprocessing already performed. For instance,
@@ -1057,7 +1064,7 @@ class ChanceProcessor
     new FileNotFoundError(path).message() unless path of @mapped_files
     @chance.get_file(@mapped_files[path])
 
-  output_for: (file) ->
+  output_for: (file) -> # [TODO] Call this file_identifier, or just f? See other uses, and make consistent.
     #console.log 'output_for', @chance.files[file]?, file
     return @chance.files[file] if @chance.files[file]?
 
@@ -1095,11 +1102,6 @@ class ChanceProcessor
   # the Sass extensions that handle writing things like slice offset, etc.
   get_slice: (name) ->
     @slices[name]
-
-  # Cleans the current render, getting rid of all generated output.
-  clean: ->
-    @has_rendered = false
-    @files = {}
 
   # Generates output for tests.
   chance_test: (opts) ->
