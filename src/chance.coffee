@@ -341,35 +341,34 @@ class ChanceParser
   # to mean that this is a recursive call.
   _parse: ->
     #console.log '_parse'
-    scanner = @scanner
-
     output = []
 
-    while not scanner.hasTerminated()
+    while not @scanner.hasTerminated()
       output.push @handle_empty()
-      break if scanner.hasTerminated()
+      break if @scanner.hasTerminated()
 
-      #console.log 'rem', scanner.getPosition(), output
+      #console.log 'rem', @scanner.getPosition(), output
 
-      if scanner.check ChanceParser.BEGIN_SCOPE
+      if @scanner.check ChanceParser.BEGIN_SCOPE
         output.push @handle_scope()
-      else if scanner.check ChanceParser.THEME_DIRECTIVE
+      else if @scanner.check ChanceParser.THEME_DIRECTIVE
         output.push @handle_theme()
-      else if scanner.check ChanceParser.SELECTOR_THEME_VARIABLE
+      else if @scanner.check ChanceParser.SELECTOR_THEME_VARIABLE
         output.push @handle_theme_variable()
-      else if scanner.check ChanceParser.INCLUDE_SLICES_DIRECTIVE
+        #console.log 'handle_theme_variable', output[output.length-1]
+      else if @scanner.check ChanceParser.INCLUDE_SLICES_DIRECTIVE
         output.push @handle_slices()
-      else if scanner.check ChanceParser.INCLUDE_SLICE_DIRECTIVE
+      else if @scanner.check ChanceParser.INCLUDE_SLICE_DIRECTIVE
         output.push @handle_slice_include()
-      else if scanner.check ChanceParser.CHANCE_FILE_DIRECTIVE
+      else if @scanner.check ChanceParser.CHANCE_FILE_DIRECTIVE
         @handle_file_change()
 
-      break if scanner.check ChanceParser.END_SCOPE
+      break if @scanner.check ChanceParser.END_SCOPE
 
       # skip over anything that our tokens do not start with
-      res = scanner.scan ChanceParser.NORMAL_SCAN_UNTIL
+      res = @scanner.scan ChanceParser.NORMAL_SCAN_UNTIL
       if not res?
-        output.push scanner.scanChar()
+        output.push @scanner.scanChar()
       else
         output.push res
 
@@ -378,10 +377,9 @@ class ChanceParser
 
   handle_comment: ->
       #console.log 'handle_comment'
-    scanner = @scanner
-    scanner.scanChar() # /
-    scanner.scanChar() # *
-    scanner.scanUntil /\*\//
+    @scanner.scanChar() # /
+    @scanner.scanChar() # *
+    @scanner.scanUntil /\*\//
 
   replace_unescaped_quotes: (target) ->
     result = ''
@@ -421,79 +419,73 @@ class ChanceParser
     JSON.parse("[#{cssString}]")[0]
 
   handle_string: ->
-      #console.log 'handle_string'
-    scanner = @scanner
+    #console.log 'handle_string'
 
-    str = scanner.scanChar()
-    str += scanner.scanUntil(if str is "'" then ChanceParser.UNTIL_SINGLE_QUOTE else ChanceParser.UNTIL_DOUBLE_QUOTE)
+    str = @scanner.scanChar()
+    str += @scanner.scanUntil(if str is "'" then ChanceParser.UNTIL_SINGLE_QUOTE else ChanceParser.UNTIL_DOUBLE_QUOTE)
     str
 
   handle_empty: ->
-      #console.log 'handle_empty'
-    scanner = @scanner
-    output = ""
+    #console.log 'handle_empty'
+    result = ""
 
     while true # [TODO] do? break? next statements were removed, and else if statements added
-      if scanner.check /\s+/
-        output += scanner.scan /\s+/
+      if @scanner.check /\s+/
+        result += @scanner.scan /\s+/
         continue
-      if scanner.check /\/\//
-        scanner.scanUntil /\n/
+      if @scanner.check /\/\//
+        @scanner.scanUntil /\n/
         continue
-      if scanner.check /\/\*/
+      if @scanner.check /\/\*/
         @handle_comment()
         continue
       break
 
     #console.log 'handle_empty', output
-    output
+    result
 
   handle_scope: ->
     #console.log 'handle_scope'
-    scanner = @scanner
+    @scanner.scan /\{/
 
-    scanner.scan /\{/
+    result = '{'
+    result += @_parse()
+    result += '}'
 
-    output = '{'
-    output += @_parse()
-    output += '}'
+    console.log "Expected end of block." unless @scanner.scan /\}/
 
-    console.log "Expected end of block." unless scanner.scan /\}/
-
-    output
+    result
 
   handle_theme: ->
     console.log 'handle_theme'
-    scanner = @scanner
-    scanner.scan ChanceParser.THEME_DIRECTIVE
+    @scanner.scan ChanceParser.THEME_DIRECTIVE
 
-    theme_name = scanner.scan /\((.+?)\)\s*/
+    theme_name = @scanner.scan /\((.+?)\)\s*/
     if not theme_name?
       console.log "Expected (theme-name) after @theme"
 
-    console.log "Expected { after @theme." unless scanner.scan /\{/
+    console.log "Expected { after @theme." unless @scanner.scan /\{/
 
     # calculate new theme name
     old_theme = @theme
     @theme = old_theme + "." + theme_name
 
-    output = ""
-    output += "\n$theme: '#{@theme}';\n"
-    output += @_parse()
+    result = ""
+    result += "\n$theme: '#{@theme}';\n"
+    result += @_parse()
 
     @theme = old_theme
-    output += "$theme: '#{@theme}';\n"
+    result += "$theme: '#{@theme}';\n"
 
-    console.log "Expected end of block." unless scanner.scan /\}/
-    output
+    console.log "Expected end of block." unless @scanner.scan /\}/
+    result
 
   handle_theme_variable: ->
     #console.log 'handle_theme_variable'
-    scanner = @scanner
-    scanner.scan ChanceParser.SELECTOR_THEME_VARIABLE
+    @scanner.scan ChanceParser.SELECTOR_THEME_VARIABLE
 
-    output = "\#{$theme}" # [TODO] Careful, this is literal.
-    output
+    result = '#{$theme}' # [TODO] Careful, this is literal.
+    result
 
   # when we receive a @_chance_file directive, it means that our current file
   # scope has changed. We need to know this because we parse the combined file
@@ -501,10 +493,9 @@ class ChanceParser
   # files.
   handle_file_change: ->
     #console.log 'handle_file_change'
-    scanner = @scanner
-    scanner.scan ChanceParser.CHANCE_FILE_DIRECTIVE
+    @scanner.scan ChanceParser.CHANCE_FILE_DIRECTIVE
 
-    path = scanner.scanUntil /;/
+    path = @scanner.scanUntil /;/
     path = path[0...path.length-1] # -1 to trim semicolon from end
 
     #console.log 'HANDLE_FILE_CHANGE path', path
@@ -513,8 +504,6 @@ class ChanceParser
 
   parse_argument: ->
     #console.log 'parse_argument'
-    scanner = @scanner
-
     # We do not care for whitespace or comments
     @handle_empty()
 
@@ -528,17 +517,17 @@ class ChanceParser
     # The key MAY be present if we are starting with a $.
     # But remember: it could be $abc: $abc + $def
     key = "no_key"
-    if scanner.check(/\$/)
-      scanner.scan /\$/
+    if @scanner.check(/\$/)
+      @scanner.scan /\$/
 
       @handle_empty()
-      parsing_value = scanner.scan(/[a-zA-Z_-][a-zA-Z0-9+_-]*/)
+      parsing_value = @scanner.scan(/[a-zA-Z_-][a-zA-Z0-9+_-]*/)
 
       console.log "Expected a valid key." if not parsing_value? # [TODO] Why if not key? in Ruby code? Look at Ruby Chance.
 
       @handle_empty()
 
-      if scanner.scan(/:/)
+      if @scanner.scan(/:/)
         # ok, it was a key
         key = parsing_value # [TODO] In ruby, was key = parsing_value.intern; that just converts key to string, apparently.
         parsing_value = ""
@@ -554,15 +543,15 @@ class ChanceParser
 
     #console.log 'parsing_value_1', parsing_value
 
-    until scanner.check(/[,)]/) or scanner.hasTerminated()
-      if scanner.check(/["']/)
+    until @scanner.check(/[,)]/) or @scanner.hasTerminated()
+      if @scanner.check(/["']/)
         parsing_value += @handle_string()
         #console.log 'parsing_value_2', parsing_value
         parsing_value += @handle_empty()
         #console.log 'parsing_value_3', parsing_value
         continue
 
-      parsing_value += scanner.scanChar()
+      parsing_value += @scanner.scanChar()
       #console.log 'parsing_value_4', parsing_value
       parsing_value += @handle_empty()
       #console.log 'parsing_value_5', parsing_value
@@ -577,13 +566,11 @@ class ChanceParser
   #
   parse_argument_list: ->
     #console.log 'parse_argument_list'
-    scanner = @scanner
-
-    console.log "Expected ( to begin argument list." unless scanner.scan /\(/
+    console.log "Expected ( to begin argument list." unless @scanner.scan /\(/
 
     idx = 0
     args = {}
-    until scanner.check(/\)/) or scanner.hasTerminated()
+    until @scanner.check(/\)/) or @scanner.hasTerminated()
       arg = @parse_argument()
       if arg["key"] is "no_key"
         arg["key"] = idx
@@ -592,9 +579,9 @@ class ChanceParser
       #console.log "key: #{arg['key']}, value: #{arg['value']}"
       args[arg["key"]] = arg["value"].trim()
 
-      scanner.scan /,/
+      @scanner.scan /,/
 
-    scanner.scan /\)/
+    @scanner.scan /\)/
 
     args
 
@@ -617,20 +604,19 @@ class ChanceParser
 
     slice = @create_slice slice
 
-    output = ""
-    output += "@extend .#{slice["css_name"].replace(/\//g, '_')};\n" # [TODO] hack to replace / with _, because stylus errors on /
+    result = ""
+    result += "@extend .#{slice["css_name"].replace(/\//g, '_')};\n" # [TODO] hack to replace / with _, because stylus errors on /
 
     # We prefix with -chance; this should let everything be passed through more
     # or less as-is. Postprocessing will turn it into -background-position.
     #
-    output += "-chance-offset: \"#{slice["name"]}\" #{offset[0]} #{offset[1]};\n" # [TODO] Fix missing indent and also \n in Ruby Chance.
-    output += "background-repeat: #{slice["repeat"]}"
-    output
+    result += "-chance-offset: \"#{slice["name"]}\" #{offset[0]} #{offset[1]};\n" # [TODO] Fix missing indent and also \n in Ruby Chance.
+    result += "background-repeat: #{slice["repeat"]}"
+    result
     
   handle_slice_include: ->
     #console.log 'handle_slice_include'
-    scanner = @scanner
-    scanner.scan /@include slice\s*/
+    @scanner.scan /@include slice\s*/
 
     slice = @parse_argument_list()
 
@@ -652,7 +638,7 @@ class ChanceParser
     true
 
   slice_layout: (slice)->
-    output = ""
+    result = ""
 
     layout_properties = [ "left", "top", "right", "bottom" ]
 
@@ -664,13 +650,12 @@ class ChanceParser
 
     for prop in layout_properties
       if slice[prop]?
-        output += "  #{prop}: #{slice[prop]}px; \n" # [TODO] Added two leading spaces
+        result += "  #{prop}: #{slice[prop]}px; \n" # [TODO] Added two leading spaces
 
-    output
+    result
 
   handle_slices: ->
-    scanner = @scanner
-    scanner.scan /@include slices\s*/
+    @scanner.scan /@include slices\s*/
 
     slice_arguments = @parse_argument_list()
 
