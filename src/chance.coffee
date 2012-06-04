@@ -355,7 +355,6 @@ class ChanceParser
         output.push @handle_theme()
       else if @scanner.check ChanceParser.SELECTOR_THEME_VARIABLE
         output.push @handle_theme_variable()
-        #console.log 'handle_theme_variable', output[output.length-1]
       else if @scanner.check ChanceParser.INCLUDE_SLICES_DIRECTIVE
         output.push @handle_slices()
       else if @scanner.check ChanceParser.INCLUDE_SLICE_DIRECTIVE
@@ -376,7 +375,7 @@ class ChanceParser
     #console.log 'final parsed output', output.length
 
   handle_comment: ->
-      #console.log 'handle_comment'
+    #console.log 'handle_comment'
     @scanner.scanChar() # /
     @scanner.scanChar() # *
     @scanner.scanUntil /\*\//
@@ -402,7 +401,7 @@ class ChanceParser
     result
 
   parse_string: (cssString) ->
-    console.log 'parse_string', cssString
+    #console.log 'parse_string', cssString
     # I cheat: to parse strings, I use JSON.
     if cssString[0..0] is "'" #[TODO] indices?
       # We should still be able to use json to parse single-quoted strings
@@ -457,7 +456,7 @@ class ChanceParser
     result
 
   handle_theme: ->
-    console.log 'handle_theme'
+    #console.log 'handle_theme'
     @scanner.scan ChanceParser.THEME_DIRECTIVE
 
     theme_name = @scanner.scan /\((.+?)\)\s*/
@@ -606,12 +605,13 @@ class ChanceParser
 
     result = ""
     result += "@extend .#{slice["css_name"].replace(/\//g, '_')};\n" # [TODO] hack to replace / with _, because stylus errors on /
+    #result += "@extend .#{slice["css_name"]};\n"
 
     # We prefix with -chance; this should let everything be passed through more
     # or less as-is. Postprocessing will turn it into -background-position.
     #
-    result += "-chance-offset: \"#{slice["name"]}\" #{offset[0]} #{offset[1]};\n" # [TODO] Fix missing indent and also \n in Ruby Chance.
-    result += "background-repeat: #{slice["repeat"]}"
+    result += "-chance-offset: \"#{slice.name}\" #{offset[0]} #{offset[1]};" # [TODO] Fix missing indent and also \n in Ruby Chance.
+    result += "background-repeat: #{slice.repeat}"
     result
     
   handle_slice_include: ->
@@ -1234,7 +1234,7 @@ class ChanceProcessor
   chance_header_for_file: (file) ->
     # 'file' is the name of a file, so we actually need to start at dirname(file)
     dir = path_module.dirname(file)
-    console.log 'chance_header_for_file', dir
+    #console.log 'chance_header_for_file', dir
     
     # This should not be slow, as this is just a hash lookup
     while dir.length > 0 and dir isnt "."
@@ -1328,7 +1328,7 @@ class ChanceProcessor
       ''
 
   _convert_to_styl_garcon: (css) ->
-    console.log 'converting to styl'
+    #console.log 'converting to styl'
     spacescheck = /^\s*/
     convertedLines = []
     nonBlankLines = []
@@ -1407,18 +1407,18 @@ class ChanceProcessor
   #
   _convert_to_styl: (css_input) ->
     class Converter
+      # css_input is text with newlines.
       constructor: (@css_input, @indentSize=4, @indentCharacter=' ') ->
         @pos = -1
         @ch = ''
         @indentString = @css_input.match(/^[\r\n]*[\t ]*/)[0]
         @singleIndent = Array(@indentSize+1).join(@indentCharacter)
         @indentLevel = 0
-        @output = []
+        @convertedCSS = []
     
         @whitespaceRE = /^\s+$/
-        @wordRe = /[\w$\-_]/
     
-        @output.push @indentString if @indentString
+        @convertedCSS.push @indentString if @indentString
  
       fixCSS: (css_to_fix) ->
         fixedLines = []
@@ -1428,6 +1428,7 @@ class ChanceProcessor
           line = line.replace(/{\s*?$/g, '') # only replace the last { in a line (handles spaces after {)
           line = line.replace(/}\s*?$/g, '') # only replace the last } in a line (handles spaces after })
           line = line.replace(/;\s*?$/g, '') # only replace the last semicolon in a line (handles spaces after ;)
+
           # data uris without quotes
           if line.search(/url\(data/) >= 0
             line = line.replace(/url\(data/, "url('data").replace(/\)/, "')")
@@ -1449,6 +1450,7 @@ class ChanceProcessor
         @css_input.charAt @pos+1
   
       consumeString: (stopChar) ->
+        #console.log 'consumeString'
         start = @pos
         while @next()
           if @ch is "\\"
@@ -1466,6 +1468,7 @@ class ChanceProcessor
       # If advancement occurred, return true, else false.
       #
       consumeWhitespace: ->
+        #console.log 'consumeWhitespace'
         start = @pos
         @pos++ while @whitespaceRE.test(@peek())
         @pos isnt start
@@ -1475,6 +1478,7 @@ class ChanceProcessor
       # If the advancement is not whitespace, return false, else true.
       #
       skipWhitespace: ->
+        #console.log 'skipWhitespace'
         start = @pos
         loop
           break unless @whitespaceRE.test(@next())
@@ -1485,6 +1489,7 @@ class ChanceProcessor
       # Return the substring from the /* through the */.
       #
       consumeComment: ->
+        #console.log 'consumeComment'
         start = @pos
         @next()
         while @next()
@@ -1493,41 +1498,49 @@ class ChanceProcessor
             break
         @css_input.substring start, @pos+1
   
-      # Return a slice of the output from index back to str.length.
+      # Return a slice of the convertedCSS from index back to str.length.
       # Lowercase str is assumed.
       #
-      lookBack: (str, index) ->
-        @output.slice(-str.length + (index or 0), index).join("").toLowerCase() is str
+      lookBack: (str, endIndex) ->
+        #target = @convertedCSS[-str.length..endIndex].join("").toLowerCase() is str
+        #console.log 'lookBack', str, target
+        @convertedCSS[-str.length..endIndex].join("").toLowerCase() is str
 
       # Increase indentLevel, returning indentString expanded by one indent.
       #
       indent: ->
+        #console.log 'indent'
         @indentLevel++
         @indentString += @singleIndent
     
       # Descrease indentLevel, returning indentString reduced by one indent.
       #
       outdent: ->
+        #console.log 'outdent'
         @indentLevel--
         @indentString = @indentString.slice(0, -@indentSize)
   
       handleOpeningBrace: (ch) ->
+        #console.log 'handleOpeningBrace'
         @singleSpace()
-        @output.push(ch)
+        @convertedCSS.push(ch)
         @newLine()
       
       handleClosingBrace: (ch) ->
+        #console.log 'handleClosingBrace'
         @newLine()
-        @output.push(ch)
+        @convertedCSS.push(ch)
         @newLine()
     
       newLine: (keepWhitespace) ->
-        @output.pop() while @whitespaceRE.test(@output[@output.length-1]) unless keepWhitespace
-        @output.push "\n" if @output.length
-        @output.push @indentString if @indentString
+        #console.log 'newLine'
+        @convertedCSS.pop() while @whitespaceRE.test(@convertedCSS[@convertedCSS.length-1]) unless keepWhitespace
+        @convertedCSS.push "\n" if @convertedCSS.length
+        @convertedCSS.push @indentString if @indentString
     
       singleSpace: ->
-        @output.push " " if @output.length and not @whitespaceRE.test(@output[@output.length-1])
+        #console.log 'singleSpace'
+        @convertedCSS.push " " if @convertedCSS.length and not @whitespaceRE.test(@convertedCSS[@convertedCSS.length-1])
     
       convert: ->
         loop
@@ -1535,44 +1548,44 @@ class ChanceProcessor
 
           break unless @ch
 
-          if @ch is '{'
+          if @ch is '{' and not @lookBack('#', -1) # { if not part of a #{something}.something
             @indent()
             @handleOpeningBrace(@ch)
-          else if @ch is '}'
+          else if @ch is '}' and @peek() isnt '.' # } if not part of a #{something}.something
             @outdent()
             @handleClosingBrace(@ch)
           else if @ch is '"' or @ch is '\''
-            @output.push @consumeString(@ch)
-          else if @ch is ';' # [TODO] But what if the ; is not on the end of the line?
-            @output.push(@ch, '\n', @indentString)
+            @convertedCSS.push @consumeString(@ch)
+          else if @ch is ';' and @peek() is '\n' # Only replace if on end of line. [TODO] Has a trim() been done to input?
+            @convertedCSS.push(@ch, '\n', @indentString)
           else if @ch is '/' and @peek() is '*'
             @newLine()
-            @output.push(@consumeComment(), "\n", @indentString)
+            @convertedCSS.push(@consumeComment(), "\n", @indentString)
           else if @ch is '(' # may be a url
-            @output.push @ch
+            @convertedCSS.push @ch
             @consumeWhitespace()
             if @lookBack("url", -1) and @next()
               if @ch isnt ')' and @ch isnt '"' and @ch isnt '\''
-                @output.push @consumeString(')')
+                @convertedCSS.push @consumeString(')')
               else
                 @pos -= 1
           else if @ch is ')'
-            @output.push @ch
+            @convertedCSS.push @ch
           else if @ch is ','
             @consumeWhitespace()
-            @output.push @ch
+            @convertedCSS.push @ch
             @singleSpace()
           else if @ch is ']'
-            @output.push @ch
+            @convertedCSS.push @ch
           else if @ch is '[' or @ch is '='
             @consumeWhitespace()
-            @output.push @ch # no whitespace before or after
+            @convertedCSS.push @ch # no whitespace before or after
           else
             @singleSpace() if isAfterSpace
-            @output.push @ch
+            @convertedCSS.push @ch
 
-        @output = @output.join('').replace(/[\n ]+$/, '')
-        @fixCSS(@output)
+        @convertedCSS = @convertedCSS.join('').replace(/[\n ]+$/, '')
+        @fixCSS(@convertedCSS)
       
     new Converter(css_input, indentSize=4, indentCharacter=' ').convert()
   
@@ -1651,6 +1664,10 @@ class ChanceProcessor
       catch e
         throw e  if e.code isnt "EEXIST"
       
+#      for line in parser.css.split('\n')
+#        console.log(line)
+        #console.log('theme line', line) if line.indexOf('#') isnt -1
+
       if (not file["mtime"]? or not file["wtime"]? or file["wtime"] < file["mtime"] or not header_file["mtime"]? or file["wtime"] < header_file["mtime"])
         f = fs.writeFileSync(tmp_path, @_convert_to_styl(parser.css), "utf-8")
         file["wtime"] = microtime.nowDouble() # replaces Time.now.to_f in Ruby
