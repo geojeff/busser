@@ -280,6 +280,12 @@ class ChanceParser
       modified_path = "#{@opts["instance_id"]}".replace(/[^a-zA-Z0-9]/, '_', 'g') + "_" + slice_path.replace(/[^a-zA-Z0-9]/, '_', 'g')
       css_name = "__chance_slice_#{modified_path}"
 
+      # This will be part of an scss code block that looks like this:
+      #
+      #  974 /* Slice resources/slider/ace/14px/knob_active_0_0___0_0, used in: 
+      #  975     resources/slider/ace/14px/slider.css;
+      #  976 */.__chance_slice__sproutcore_ace_resources_slider_ace_14px_knob_active_0_0___0_0 { _sc_chance: "resources/slider/ace/14px/knob_active_0_0___0_0";}
+
       newOpts =
         name: slice_path
         path: path
@@ -604,8 +610,8 @@ class ChanceParser
     slice = @create_slice slice
 
     result = ""
-    result += "@extend .#{slice["css_name"].replace(/\//g, '_')};\n" # [TODO] hack to replace / with _, because stylus errors on /
-    #result += "@extend .#{slice["css_name"]};\n"
+    #result += "@extend .#{slice["css_name"].replace(/\//g, '_')};\n" # [TODO] hack to replace / with _, because stylus errors on /
+    result += "@extend .#{slice["css_name"]};\n"
 
     # We prefix with -chance; this should let everything be passed through more
     # or less as-is. Postprocessing will turn it into -background-position.
@@ -954,7 +960,7 @@ class ChanceProcessor
     @uid = ChanceProcessor.uid
     @options["instance_id"] ?= @uid
 
-    #console.log 'options[instance_id] is', @options["instance_id"]
+    console.log 'options[instance_id] is', @options["instance_id"]
       
     # The mapped files are a map from file names in the ChanceProcessor instance to
     # their identifiers in the system.
@@ -1184,7 +1190,7 @@ class ChanceProcessor
       output.push "/* Slice #{name}, used in: \n"
       output.push("\t%@\n".fmt(used_by.path)) for used_by in slice.used_by
       output.push "*/\n"
-      output.push ".#{slice.css_name.replace(/\//g, '_')} {\n" # [TODO] This has already been done on the front-end, no?
+      output.push ".#{slice.css_name.replace(/\//g, '_')} {\n"
       output.push "  _sc_chance: \"#{name}\";"
       output.push "\n} \n"
 
