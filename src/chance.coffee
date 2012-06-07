@@ -217,6 +217,7 @@ class ChanceParser
     @slices = @opts["slices"]  # we update the slices given to us
     @theme = @opts["theme"]
     @frameworkName = @opts["frameworkName"]
+    @instanceId = @opts["instance_id"]
 
     #console.log 'ChanceParser...', @frameworkName
 
@@ -277,8 +278,7 @@ class ChanceParser
       slice["max_offset_x"] = Math.max [slice["max_offset_x"], opts["offset_x"]]...
       slice["max_offset_y"] = Math.max [slice["max_offset_y"], opts["offset_y"]]...
     else
-      modified_path = "#{@opts["instance_id"]}".replace(/[^a-zA-Z0-9]/, '_', 'g') + "_" + slice_path.replace(/[^a-zA-Z0-9]/, '_', 'g')
-      css_name = "__chance_slice_#{modified_path}"
+      css_name = "__chance_slice_#{@instanceId}_#{slice_path.replace(/[^a-zA-Z0-9]/g, '_')}"
 
       # This will be part of an scss code block that looks like this:
       #
@@ -480,7 +480,7 @@ class ChanceParser
     result += @_parse()
 
     @theme = old_theme
-    result += "$theme: '#{@theme}';\n"
+    #result += "$theme: '#{@theme}';\n" # [TODO] Remove this in SC version.
 
     console.log "Expected end of block." unless @scanner.scan /\}/
     result
@@ -960,7 +960,7 @@ class ChanceProcessor
     @uid = ChanceProcessor.uid
     @options["instance_id"] ?= @uid
 
-    console.log 'options[instance_id] is', @options["instance_id"]
+    #console.log 'options[instance_id] is', @options["instance_id"]
       
     # The mapped files are a map from file names in the ChanceProcessor instance to
     # their identifiers in the system.
