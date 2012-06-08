@@ -1193,6 +1193,11 @@ class Framework
   addResourceFile: (path) ->
     @resourceFiles.push(new ResourceFile({ path: path, framework: this }))
 
+  findResourceFile: (filename) ->
+    targetFilename = path_module.basename(filename)
+    @resourceFiles.filter (f) ->
+      return true if path_module.basename(f.path) is targetFilename
+  
   # The allFiles method returns virtual (combined) files, if defined, and also
   # the individual stylesheet, script, test, and resource files, as a concatenated
   # list.
@@ -2040,7 +2045,7 @@ class App
       chanceKey = path_module.join(framework.stageDir, @buildVersion.toString(), "#{framework.path}.css")
       #chanceKey = @url()
       #@chanceKey = @path
-      console.log 'chanceKey', chanceKey
+      console.log 'chanceKey', chanceKey, framework.path
     
       # Create the ChanceProcessor instance for this framework, with general options for the app.
       #
@@ -2048,7 +2053,7 @@ class App
         theme: framework.cssTheme
         optimizeSprites: framework.optimizeSprites
         padSpritesForDebugging: framework.padSpritesForDebugging
-        frameworkName: framework.name
+        framework: framework
 
       framework.chanceProcessor = chanceProcessorFactory.instance_for_key chanceKey, opts
     

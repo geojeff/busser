@@ -216,10 +216,10 @@ class ChanceParser
 
     @slices = @opts["slices"]  # we update the slices given to us
     @theme = @opts["theme"]
-    @frameworkName = @opts["frameworkName"]
+    @framework = @opts["framework"]
     @instanceId = @opts["instance_id"]
 
-    #console.log 'ChanceParser...', @frameworkName
+    #console.log 'ChanceParser...', @framework.name
 
   @UNTIL_SINGLE_QUOTE: /(?!\\)'/
   @UNTIL_DOUBLE_QUOTE: /(?!\\)"/
@@ -235,18 +235,27 @@ class ChanceParser
   # SLICE MANAGEMENT
   # -----------------------
   create_slice: (opts) ->
-    filename = opts["filename"]
+    filename = if opts["x2"]? then "#{opts["filename"][0..(-1 - extname(opts["filename"]).length)]}@2x.png" else opts["filename"]
 
-    #console.log 'CREATE_SLICE', filename
+    optFiles = @framework.findResourceFile(filename)
+
+    unless optFiles?
+      console.log 'Resource file not found.'
+      return
+
+    file = optFiles[0]
+    path = file.path
+    path = path[2...path.length] if path[0..1] is "./"
+    # Omitted a step here where in ruby, path = Pathname.new(path).cleanpath.to_s
 
     # get current relative path
-    relative = path_module.dirname(@path)
+    #relative = path_module.dirname(path)
+    #path = path_module.join(relative, filename)
 
-    # Create a path
-    path = path_module.join(relative, filename)
-    path = path[2...path.length] if path[0..1] is "./"
+    path = "#{@framework.stageDir}/#{@framework.buildVersion}/#{@framework.reducedPathFor(file.path)}"
 
-    opts[path] = path
+    opts['path'] = path
+
     opts = @normalize_rectangle(opts)
 
     slice_path = path[0...(path.length - extname(filename).length)]
@@ -588,6 +597,7 @@ class ChanceParser
 
     @scanner.scan /\)/
 
+    #console.log 'parse_argument_list', args
     args
 
   generate_slice_include: (slice) ->
@@ -629,8 +639,8 @@ class ChanceParser
     # the image could be quoted or not; in any case, use parse_string to
     # parse it. Sure, at the moment, we don't parse quoted strings properly,
     # but it should work for most cases. single-quoted strings are out, though...
-    #console.log 'ADDING FRAMEWORK NAME', @frameworkName, @parse_string slice[0]
-    slice["filename"] = "#{@frameworkName}/#{@parse_string slice[0]}"
+    #console.log 'ADDING FRAMEWORK NAME', @framework.name, @parse_string slice[0]
+    slice["filename"] = "#{@framework.name}/#{@parse_string slice[0]}"
 
     # now that we have all of the info, we can get the actual slice information.
     # This process will create a slice entry if needed.
@@ -701,8 +711,8 @@ class ChanceParser
     skip_bottom = 'bottom' in skip
     skip_bottom_right = 'bottom-right' in skip
 
-    #console.log 'ADDING FRAMEWORK NAME - plural slices', @frameworkName, @parse_string slice[0]
-    filename = "#{@frameworkName}/#{@parse_string slice_arguments[0]}"
+    #console.log 'ADDING FRAMEWORK NAME - plural slices', @framework.name, @parse_string slice[0]
+    filename = "#{@framework.name}/#{@parse_string slice_arguments[0]}"
 
     # we are going to form 9 slices. If any are empty we'll skip them
 
@@ -951,9 +961,9 @@ class ChanceProcessor
     if options["theme"]? and options["theme"].length > 0 and options["theme"][0] isnt "."
       @options["theme"] = ".#{options["theme"]}"
 
-    @frameworkName = @options["frameworkName"]
+    @framework = @options["framework"]
 
-    #console.log 'ChanceProcessor...', @frameworkName
+    #console.log 'ChanceProcessor...', @framework.name
     #console.log 'cssTheme', @options["theme"]
 
     ChanceProcessor.uid += 1
@@ -1278,7 +1288,7 @@ class ChanceProcessor
     return if /_theme\.css$/.test(file)
 
     #console.log 'no, it is not a _theme.css file'
-
+    
     file = @get_file(file)
 
     #console.log 'get_file returned a file?', file?
@@ -1607,7 +1617,7 @@ class ChanceProcessor
 
     #console.log '_preprocess, generation:', ChanceProcessor.generation
 
-    files = (@mapped_files[key] for own key of @mapped_files) # [TODO] files is not used here.
+    files = (@mapped_files[key] for own key of @mapped_files) # [TODO] files is not used here. Fix this in SC version.
     
     #console.log 'sorting... @mapped_files', @mapped_files
 
@@ -1647,10 +1657,8 @@ class ChanceProcessor
       #console.log 'file content', file["content"]
       content += file["content"]
 
-      console.log 'new ChanceParser', @options
       parser = new ChanceParser(content, @options)
       parser.parse()
-      console.log 'after parser'
       file["parsed_css"] = parser.css
 
       # We used to use an md5 hash here, but this hides the original file name
@@ -2040,6 +2048,8 @@ class ChanceProcessor
       # or on the slice's file. Otherwise, we're in big shit.
       canvas = slice["canvas"] ? slice["file"]["canvas"]
     
+      console.log 'canvas', canvas
+
       # TODO: MAKE A BETTER ERROR.
       unless canvas
         throw new TypeError("Could not sprite image #{slice["path"]}; if it is not a PNG, make sure you have rmagick installed")
@@ -2154,7 +2164,9 @@ class ChanceProcessor
       
           sprite["width"] = if is_horizontal then pos else size
           sprite["height"] = if is_horizontal then size else pos
-      
+
+    return
+
   # Generates the image for the specified sprite, putting it in the sprite's
   # canvas property.
   generate_sprite: (sprite) ->
