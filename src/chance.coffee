@@ -3,8 +3,8 @@ fs            = require "fs"
 path_module   = require "path"
 microtime     = require "microtime"
 sys           = require "sys"
-gm            = require "../node_modules/gm"
 stylus        = require "stylus"
+Canvas        = require "canvas"
 mkdirp        = require "mkdirp"
 SC            = require "sc-runtime"
 StringScanner = require("strscan").StringScanner
@@ -44,11 +44,6 @@ StringScanner = require("strscan").StringScanner
 # * microtime.nowDouble(), replacing Time.now.to_f in Ruby
 # * underscore sortBy, a convenience array sorting function, replacing the Ruby sortBy
 # * sc-runtime, SproutCore runtime utility methods
-#
-# The graphics handling parts of Ruby Chance were more challenging to write in
-# CoffeeScript Chance, not just for the style of programming, but for finding a
-# suitable easy-to-install replacement system. At the time of this writing, the node.js
-# graphicsmagick wrapper, gm, is being tried as the main workhorse.
 #
 
 # mkdir_p, as used in Ruby Chance, ported to CoffeeScript from:
@@ -239,8 +234,8 @@ class ChanceParser
 
     optFiles = @framework.findResourceFile(filename)
 
-    unless optFiles?
-      console.log 'Resource file not found.'
+    unless optFiles.length > 0
+      console.log 'Resource file not found.', filename
       return
 
     file = optFiles[0]
@@ -980,7 +975,7 @@ class ChanceProcessor
     # read a file we record the mtime, and then we compare on check_all_files
     @file_mtimes = {}
 
-    # The @files set is a set cached generated output files, used by the output_for
+    # The @files set is a set of cached generated output files, used by the output_for
     # method.
     @files = {}
 
@@ -1090,13 +1085,9 @@ class ChanceProcessor
   #   :sprited    If true, will use sprites rather than data uris.
   #
   css: (opts) ->
-    #console.log 'chance css called'
     @_render()
-    #console.log 'after _render()'
     @slice_images opts
-    #console.log 'after slice_images'
     ret = @_postprocess_css opts
-    #console.log 'after _postprocess_css', ret
     ret
 
   # Looks up a slice that has been found by parsing the CSS. This is used by
@@ -1824,7 +1815,7 @@ class ChanceProcessor
 
           # The math that uses canvas_width and canvas_height needs to return numbers that,
           # when multiplied by f, are valid. So, divide by f first.
-          rect = @slice_rect(slice, canvas_width / f, canvas_height / f)
+          rect = @slice_rect(slice, canvas_width/f, canvas_height/f)
 
           if rect?
             ## CHECK CACHE ##
@@ -1833,7 +1824,11 @@ class ChanceProcessor
             if cached_canvas?
               slice["canvas"] = cached_canvas
             else
-              slice["canvas"] = gm(canvas).crop(rect["width"] * f, rect["height"] * f, rect["left"] * f, rect["top"] * f)
+              img = file['canvas']
+              canvas_for_crop = new Canvas(rect.width*f, rect.height*f)
+              ctx = canvas_for_crop.getContext("2d")
+              ctx.drawImage(canvas,rect.left*f,rect.top*f,rect.width*f,rect.height*f,0,0,rect.width*f,rect.height*f)
+              slice["canvas"] = canvas_for_crop
               @add_canvas_to_cache(slice["canvas"], file, rect)
                 
             canvas_width = rect["height"] * f
@@ -1984,6 +1979,7 @@ class ChanceProcessor
 
     newOpts =
       horizontal_layout: if slice["repeat"] is "repeat-y" then true else false
+
     opts[key] = value for own key,value of newOpts
 
     @get_sprite_named sprite_name, opts
@@ -2012,7 +2008,6 @@ class ChanceProcessor
   # Performs the layout operation, laying either up-to-down, or "
   # (for repeat-y slices) left-to-right.
   layout_slices_in_sprite: (sprite, opts) ->
-    #console.log 'layout_slices_in_sprite', sprite, opts
     # The position is the position in the layout direction. In vertical mode
     # (the usual) it is the Y position.
     pos = 0
@@ -2048,119 +2043,113 @@ class ChanceProcessor
       # or on the slice's file. Otherwise, we're in big shit.
       canvas = slice["canvas"] ? slice["file"]["canvas"]
     
-      console.log 'canvas', canvas
-
       # TODO: MAKE A BETTER ERROR.
       unless canvas
         throw new TypeError("Could not sprite image #{slice["path"]}; if it is not a PNG, make sure you have rmagick installed")
-          
-      gm(canvas).size (err, data) ->
-        if err
-          console.log "Error -- sizing canvas image"
-        else
-          slice_width = canvas.width
-          slice_height = canvas.height
+
+      slice_width = canvas.width
+      slice_height = canvas.height
+  
+      slice_length = if is_horizontal then slice_width else slice_height
+      slice_size = if is_horizontal then slice_height else slice_width
       
-          slice_length = if is_horizontal then slice_width else slice_height
-          slice_size = if is_horizontal then slice_height else slice_width
-          
-          # When repeating, we must use the least common multiple so that
-          # we can ensure the repeat pattern works even with multiple repeat
-          # sizes. However, we should take into account how much extra we are
-          # adding by tracking the smallest size item as well.
-          if slice["repeat"] isnt "no-repeat"
-            smallest_size = slice_size if not smallest_size?
-            smallest_size = Math.min [slice_size, smallest_size]...
+      # When repeating, we must use the least common multiple so that
+      # we can ensure the repeat pattern works even with multiple repeat
+      # sizes. However, we should take into account how much extra we are
+      # adding by tracking the smallest size item as well.
+      if slice["repeat"] isnt "no-repeat"
+        smallest_size = slice_size if not smallest_size?
+        smallest_size = Math.min [slice_size, smallest_size]...
+
+        lcmCalculator = new LCMCalculator size, slice_size
+        size = lcmCalculator.lcm()
+      else
+        size = Math.max [size, slice_size + padding * 2]...
+      
+      slice["slice_width"] = +slice_width
+      slice["slice_height"] = +slice_height
     
-            lcmCalculator = new LCMCalculator size, slice_size
-            size = lcmCalculator.lcm()
-          else
-            size = Math.max [size, slice_size + padding * 2]...
-          
-          slice["slice_width"] = +slice_width
-          slice["slice_height"] = +slice_height
+      # Sort slices from widest/tallest (dependent on is_horizontal) or is_vertical
+      # NOTE: This means we are technically sorting reversed
+      sprite["slices"].sort (a, b) ->
+        # WHY <=> NO WORK?
+        if is_horizontal
+          -1 if b["slice_height"] < a["slice_height"]
+          0 if b["slice_height"] is a["slice_height"]
+          1 if b["slice_height"] > a["slice_height"]
+        else
+          -1 if b["slice_width"] < a["slice_width"]
+          0 if b["slice_width"] is a["slice_width"]
+          1 if b["slice_width"] > a["slice_width"]
+  
+      for slice in sprite["slices"]
+        # We must find a canvas either on the slice (if it was actually sliced),
+        # or on the slice's file. Otherwise, we're in big shit.
+        canvas = slice["canvas"] or slice["file"]["canvas"]
+            
+        slice_width = slice["slice_width"]
+        slice_height = slice["slice_height"]
+            
+        slice_length = if is_horizontal then slice_width else slice_height
+        slice_size = if is_horizontal then slice_height else slice_width
+            
+        if slice["repeat"] isnt "no-repeat" or inset + slice_size + padding * 2 > size or not @options["optimizeSprites"]
+          pos += row_length
+          inset = 0
+          row_length = 0
+              
+  
+        # We have extras for manual tweaking of offsetx/y. We have to make sure there
+        # is padding for this (on either side)
+        #
+        # We have to add room for the minimum offset by adding to the end, and add
+        # room for the max by adding to the front. We only care about it in our
+        # layout direction. Otherwise, the slices are flush to the edge, so it won't
+        # matter.
+        if slice["min_offset_x"] < 0 and is_horizontal
+          slice_length -= slice["min_offset_x"]
+        else if slice["min_offset_y"] < 0 and not is_horizontal
+          slice_length -= slice["min_offset_y"]
+  
+        if slice["max_offset_x"] > 0 and is_horizontal
+          pos += slice["max_offset_x"]
+        else if slice["max_offset_y"] > 0 and not is_horizontal
+          pos += slice["max_offset_y"]
         
-          # Sort slices from widest/tallest (dependent on is_horizontal) or is_vertical
-          # NOTE: This means we are technically sorting reversed
-          sprite["slices"].sort (a, b) ->
-            # WHY <=> NO WORK?
-            if is_horizontal
-              -1 if b["slice_height"] < a["slice_height"]
-              0 if b["slice_height"] is a["slice_height"]
-              1 if b["slice_height"] > a["slice_height"]
-            else
-              -1 if b["slice_width"] < a["slice_width"]
-              0 if b["slice_width"] is a["slice_width"]
-              1 if b["slice_width"] > a["slice_width"]
-      
-          for slice in sprite["slices"]
-            # We must find a canvas either on the slice (if it was actually sliced),
-            # or on the slice's file. Otherwise, we're in big shit.
-            canvas = slice["canvas"] or slice["file"]["canvas"]
-                
-            slice_width = slice["slice_width"]
-            slice_height = slice["slice_height"]
-                
-            slice_length = if is_horizontal then slice_width else slice_height
-            slice_size = if is_horizontal then slice_height else slice_width
-                
-            if slice["repeat"] isnt "no-repeat" or inset + slice_size + padding * 2 > size or not @options["optimizeSprites"]
-              pos += row_length
-              inset = 0
-              row_length = 0
-                  
-      
-            # We have extras for manual tweaking of offsetx/y. We have to make sure there
-            # is padding for this (on either side)
-            #
-            # We have to add room for the minimum offset by adding to the end, and add
-            # room for the max by adding to the front. We only care about it in our
-            # layout direction. Otherwise, the slices are flush to the edge, so it won't
-            # matter.
-            if slice["min_offset_x"] < 0 and is_horizontal
-              slice_length -= slice["min_offset_x"]
-            else if slice["min_offset_y"] < 0 and not is_horizontal
-              slice_length -= slice["min_offset_y"]
-      
-            if slice["max_offset_x"] > 0 and is_horizontal
-              pos += slice["max_offset_x"]
-            else if slice["max_offset_y"] > 0 and not is_horizontal
-              pos += slice["max_offset_y"]
-            
-            slice["sprite_slice_x"] = (if is_horizontal then pos else inset)
-            slice["sprite_slice_y"] = (if is_horizontal then inset else pos)
-            
-            # add padding for x, only if it a) doesn't repeat or b) repeats vertically because it has horizontal layout
-            if slice["repeat"] is "no-repeat" or slice["repeat"] is "repeat-y"
-              slice["sprite_slice_x"] += padding
-            
-            if slice["repeat"] is "no-repeat" or slice["repeat"] is "repeat-x"
-              slice["sprite_slice_y"] += padding
-            
-            slice["sprite_slice_width"] = slice_width
-            slice["sprite_slice_height"] = slice_height
-      
-            inset += slice_size + padding * 2
-            
-            # We pad the row length ONLY if it is a repeat-x, repeat-y, or no-repeat image.
-            # If it is 'repeat', we do not pad it, because it should be processed raw.
-            row_length = Math.max [slice_length + (if slice["repeat"] isnt "repeat" then padding * 2 else 0), row_length]...
-            
-            # In 2X, make sure we are aligned on a 2px grid.
-            # We correct this AFTER positioning because we always position on an even grid anyway;
-            # we just may leave that even grid if we have an odd-sized image. We do this after positioning
-            # so that the next loop knows if there is space.
-            if opts["x2"]
-              row_length = Math.ceil(row_length.to_f / 2) * 2
-              inset = Math.ceil(inset.to_f / 2) * 2
-      
+        slice["sprite_slice_x"] = (if is_horizontal then pos else inset)
+        slice["sprite_slice_y"] = (if is_horizontal then inset else pos)
+        
+        # add padding for x, only if it a) doesn't repeat or b) repeats vertically because it has horizontal layout
+        if slice["repeat"] is "no-repeat" or slice["repeat"] is "repeat-y"
+          slice["sprite_slice_x"] += padding
+        
+        if slice["repeat"] is "no-repeat" or slice["repeat"] is "repeat-x"
+          slice["sprite_slice_y"] += padding
+        
+        slice["sprite_slice_width"] = slice_width
+        slice["sprite_slice_height"] = slice_height
+  
+        inset += slice_size + padding * 2
+        
+        # We pad the row length ONLY if it is a repeat-x, repeat-y, or no-repeat image.
+        # If it is 'repeat', we do not pad it, because it should be processed raw.
+        row_length = Math.max [slice_length + (if slice["repeat"] isnt "repeat" then padding * 2 else 0), row_length]...
+        
+        # In 2X, make sure we are aligned on a 2px grid.
+        # We correct this AFTER positioning because we always position on an even grid anyway;
+        # we just may leave that even grid if we have an odd-sized image. We do this after positioning
+        # so that the next loop knows if there is space.
+        if opts["x2"]
+          row_length = Math.ceil(row_length.to_f / 2) * 2
+          inset = Math.ceil(inset.to_f / 2) * 2
+  
           pos += row_length
       
           # TODO: USE A CONSTANT FOR THIS WARNING
           smallest_size = size if smallest_size is null
           if size - smallest_size > 10
-            puts "WARNING: Used more than 10 extra rows or columns to accommodate repeating slices."
-            puts "Wasted up to #{(pos * size-smallest_size)} pixels"
+            console.log "WARNING: Used more than 10 extra rows or columns to accommodate repeating slices."
+            console.log "Wasted up to #{(pos * size-smallest_size)} pixels"
       
           sprite["width"] = if is_horizontal then pos else size
           sprite["height"] = if is_horizontal then size else pos
@@ -2195,13 +2184,14 @@ class ChanceProcessor
       @compose_slice_on_canvas(canvas, slice, x, y, width, height)
 
   canvas_for_sprite: (sprite) ->
-    gm sprite["width"] sprite["height"]
+    new Canvas.Image sprite["width"], sprite["height"]
 
   # Writes a slice to the target canvas, repeating it as necessary to fill the width/height.
-  compose_slice_on_canvas: (target, slice, x, y, width, height) ->
+  compose_slice_on_canvas: (target_canvas, slice, x, y, width, height) ->
     source_canvas = slice["canvas"] or slice["file"]["canvas"]
     source_width = slice["sprite_slice_width"]
     source_height = slice["sprite_slice_height"]
+    target_ctx = target_canvas.getContext("2d")
 
     top = 0
     left = 0
@@ -2210,7 +2200,7 @@ class ChanceProcessor
     while top < height
       left = 0
       while left < width
-        gm.draw "-geometry +#{left + x}+#{top + y} #{source_canvas} #{target}"
+        target_ctx.drawImage(source_canvas, left+x, top+y, source_width, source_height)
         left += source_width
         top += source_height
 
@@ -2255,7 +2245,6 @@ class ChanceProcessor
     css
 
   sprite_data: (opts) ->
-    #console.log 'sprite_data', opts
     @_render()
     @slice_images opts
     @generate_sprite_definitions opts
@@ -2279,7 +2268,6 @@ class ChanceProcessor
     ret
 
   sprite_names: (opts={}) ->
-    #console.log 'sprite_names', opts
     @_render()
     @slice_images opts
     @generate_sprite_definitions opts
@@ -2437,7 +2425,19 @@ class Chance
       
     if not file["content"]?
       # note: CSS files should be opened as UTF-8.
-      file["content"] = fs.readFileSync(path, if /css$/.test(path) then 'UTF-8' else 'binary') # [TODO] ruby version had rb for reading binary flag
+      #file["content"] = fs.readFileSync(path, if /css$/.test(path) then 'UTF-8' else 'binary') # [TODO] ruby version had rb for reading binary flag
+      if /css$/.test(path)
+        file["content"] = fs.readFileSync(path, 'UTF-8')
+      else # images
+        img = new Canvas.Image
+
+        img.onerror = (err) ->
+          throw err
+
+        img.onload = =>
+          file["content"] = img
+
+        img.src = path
       
     if not file["preprocessed"]
       @_preprocess file
@@ -2454,7 +2454,7 @@ class Chance
     # [TODO] was from_blob?  the Rmagick one needed file["content"][0]
     #console.log 'preprocessing image', file
     #console.log file["content"]
-    file["canvas"] = new Buffer(file["content"], 'binary').toString('base64') # replaces Base64.encode64(contents) in ruby
+    file["canvas"] = file['content']
 
   _preprocess_css: (file) ->
     content = file["content"]
