@@ -8,7 +8,7 @@
     "theme": "sc-theme",
     "buildLanguage": "english",
     "combineScripts": true,
-    "combineStylesheets": true,
+    "combineStylesheets": false,
     "minifyScripts": false,
     "minifyStylesheets": false,
     "saveDir": "build",
@@ -21,7 +21,7 @@
     "theme": "sc-theme",
     "buildLanguage": "english",
     "combineScripts": true,
-    "combineStylesheets": true,
+    "combineStylesheets": false,
     "minifyScripts": true,
     "minifyStylesheets": true,
     "saveDir": "build",
@@ -42,7 +42,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -57,7 +57,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -72,7 +72,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -87,7 +87,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -102,7 +102,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -117,7 +117,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -132,7 +132,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -147,7 +147,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -162,7 +162,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -177,7 +177,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -192,7 +192,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -207,7 +207,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -222,7 +222,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -237,7 +237,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -252,7 +252,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -267,7 +267,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -282,7 +282,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -297,7 +297,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -312,7 +312,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -327,7 +327,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -342,7 +342,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -357,7 +357,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     },
@@ -372,7 +372,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false
     }
@@ -390,7 +390,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -406,7 +406,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -422,7 +422,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -438,7 +438,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -454,7 +454,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -470,7 +470,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -486,7 +486,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -502,7 +502,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -518,7 +518,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -534,7 +534,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -550,7 +550,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -566,7 +566,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true 
     },
@@ -582,7 +582,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -598,7 +598,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -614,7 +614,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -630,7 +630,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -646,7 +646,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -662,7 +662,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -678,7 +678,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -694,7 +694,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -710,7 +710,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -726,7 +726,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     },
@@ -742,7 +742,7 @@
       "optimizeSprites": false,
       "padSpritesForDebugging": false,
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true
     }
@@ -779,7 +779,7 @@
             "optimizeSprites": false,
             "padSpritesForDebugging": false,
             "combineScripts": true,
-            "combineStylesheets": true,
+            "combineStylesheets": false,
             "minifyScripts": false,
             "minifyStylesheets": false 
           }
@@ -796,7 +796,7 @@
             "optimizeSprites": false,
             "padSpritesForDebugging": false,
             "combineScripts": true,
-            "combineStylesheets": true,
+            "combineStylesheets": false,
             "minifyScripts": false,
             "minifyStylesheets": false
           }
@@ -814,7 +814,7 @@
             "optimizeSprites": false,
             "padSpritesForDebugging": false,
             "combineScripts": true,
-            "combineStylesheets": true,
+            "combineStylesheets": false,
             "minifyScripts": false,
             "minifyStylesheets": false 
           }
@@ -830,7 +830,7 @@
       "theme": "sc-theme",
       "buildLanguage": "english",
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": true,
       "minifyStylesheets": true,
       "cssTheme": "ace.todos-three",
@@ -874,7 +874,7 @@
       "theme": "sc-theme",
       "buildLanguage": "english",
       "combineScripts": true,
-      "combineStylesheets": true,
+      "combineStylesheets": false,
       "minifyScripts": false,
       "minifyStylesheets": false,
       "sc-frameworks": [
@@ -894,7 +894,7 @@
             "name": "empty_theme",
             "path": "frameworks/sproutcore/themes/empty_theme",
             "combineScripts": true,
-            "combineStylesheets": true,
+            "combineStylesheets": false,
             "minifyScripts": false,
             "minifyStylesheets": false 
           }
@@ -904,7 +904,7 @@
             "name": "ace",
             "path": "frameworks/sproutcore/themes/ace",
             "combineScripts": true,
-            "combineStylesheets": true,
+            "combineStylesheets": false,
             "minifyScripts": false,
             "minifyStylesheets": false 
           }
@@ -935,7 +935,7 @@
           "conf": { 
             "path": "frameworks/sproutcore/themes/empty_theme",
             "combineScripts": true,
-            "combineStylesheets": false,
+            "combineStylesheets": true,
             "minifyScripts": false,
             "minifyStylesheets": false 
           }
@@ -944,7 +944,7 @@
           "conf": {
             "path": "frameworks/sproutcore/themes/ace",
             "combineScripts": true,
-            "combineStylesheets": false,
+            "combineStylesheets": true,
             "minifyScripts": false,
             "minifyStylesheets": false 
           }

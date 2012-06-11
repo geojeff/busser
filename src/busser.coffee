@@ -1968,7 +1968,8 @@ class App
     for framework in @frameworks
       @registerFile(file.url(), file) for file in framework.allFiles()
 
-  # The contained **Stager** class is used to save frameworks and their files.
+  # The contained **Stager** class is used to save frameworks and their css and 
+  # resource files to the framework's staging directory.
   #
   stage: (callbackAfterStage) =>
     stage_files = (files, callbackAfterStage) =>
@@ -1987,7 +1988,7 @@ class App
             save: =>
               console.log 'STAGING', @file.path, @file.taskHandlerSet
               @file.taskHandlerSet.exec @file, null, (response) =>
-                if response.data? and response.data.length > 0
+                if response.data? # Removing, if response.data.length > 0, to allow empty files
                   path = path_module.join(@file.framework.stageDir, @buildVersion.toString(), @file.pathForSave())
                   File.createDirectory path_module.dirname(path)
                   console.log 'writing', path
@@ -2061,16 +2062,18 @@ class App
       # which will operate on staged files.
       #
       for chanceFile in [framework.orderedStylesheetFiles..., framework.resourceFiles...]
-        #chance.add_file chanceFile.path
-        chance.add_file chanceFile.pathForStage()
     
         # Remove source/ from the filename for sc_require and @import
-        #@app.chanceFiles[chanceFile.path.replace(/^source\//, '')] = chanceFile.path
+        #@app.chanceFiles[chanceFile.path.replace(/^source\//, '')] = chanceFile.path # [TODO] this is skipped?
         #@chanceFiles[chanceFile.url()] = chanceFile
-        if chanceFile instanceof  VirtualStylesheetFile or chanceFile instanceof ResourceFile
-          framework.chanceFiles[chanceFile.pathForStage()] = chanceFile.pathForStage()
-        else
-          framework.chanceFiles[chanceFile.url()] = chanceFile.path
+
+          #if chanceFile instanceof VirtualStylesheetFile or chanceFile instanceof ResourceFile
+        chance.add_file chanceFile.pathForStage()
+        framework.chanceFiles[chanceFile.pathForStage()] = chanceFile.pathForStage()
+        #else
+          #chance.add_file chanceFile.path
+          #framework.chanceFiles[chanceFile.url()] = chanceFile.path
+          
         #framework.chanceFiles[chanceFile.url()] = chanceFile.path
 
         chanceFile.taskHandlerSet = chanceTasks

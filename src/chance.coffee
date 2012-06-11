@@ -385,7 +385,6 @@ class ChanceParser
     #console.log 'final parsed output', output.length
 
   handle_comment: ->
-    #console.log 'handle_comment'
     @scanner.scanChar() # /
     @scanner.scanChar() # *
     @scanner.scanUntil /\*\//
@@ -435,22 +434,18 @@ class ChanceParser
     str
 
   handle_empty: ->
-    #console.log 'handle_empty'
     result = ""
 
-    while true # [TODO] do? break? next statements were removed, and else if statements added
+    loop
       if @scanner.check /\s+/
         result += @scanner.scan /\s+/
-        continue
-      if @scanner.check /\/\//
+      else if @scanner.check /\/\//
         @scanner.scanUntil /\n/
-        continue
-      if @scanner.check /\/\*/
+      else if @scanner.check /\/\*/
         @handle_comment()
-        continue
-      break
+      else
+        break
 
-    #console.log 'handle_empty', output
     result
 
   handle_scope: ->
@@ -512,7 +507,6 @@ class ChanceParser
     @path = path
 
   parse_argument: ->
-    #console.log 'parse_argument'
     # We do not care for whitespace or comments
     @handle_empty()
 
@@ -532,7 +526,7 @@ class ChanceParser
       @handle_empty()
       parsing_value = @scanner.scan(/[a-zA-Z_-][a-zA-Z0-9+_-]*/)
 
-      console.log "Expected a valid key." if not parsing_value? # [TODO] Why if not key? in Ruby code? Look at Ruby Chance.
+      console.log "Expected a valid key." unless parsing_value? # [TODO] Why if not key? in Ruby code? Look at Ruby Chance.
 
       @handle_empty()
 
@@ -1002,18 +996,18 @@ class ChanceProcessor
   # The identifier would be a name of a file that you added to
   # to the system using add_file.
   #
-  map_file: (path, file_identifier) ->
-    if @mapped_files[path] is file_identifier
+  map_file: (path, identifier) ->
+    if @mapped_files[path] is identifier
       # Don't do anything if there is nothing to do.
       return
       
     path = "#{path}" # [TODO] doesn't this accomplish a conversion to string?
 
-    file = @chance.has_file(file_identifier)
+    file = @chance.has_file(identifier)
 
     new FileNotFoundError(path).message() unless file_file?
 
-    @mapped_files[path] = file_identifier
+    @mapped_files[path] = identifier
 
     # Invalidate our render because things have changed.
     @clean()
@@ -1038,7 +1032,7 @@ class ChanceProcessor
   # checks all files to see if they have changed
   check_all_files: ->
     needs_clean = false
-    for own p,f of @mapped_files # p, path; f, file_identifier
+    for own p,f of @mapped_files # p, path; f, identifier
       mtime = @chance.update_file_if_needed(f)
       if not @file_mtimes[p]? or mtime > @file_mtimes[p] # [TODO] Check use of ? operator here.
       #if p isnt of @file_mtimes or mtime > @file_mtimes[p] # [TODO] Could be better this way.
@@ -1060,22 +1054,22 @@ class ChanceProcessor
     new FileNotFoundError(path).message() unless path of @mapped_files
     @chance.get_file(@mapped_files[path])
 
-  output_for: (file) -> # [TODO] Call this file_identifier, or just f? See other uses, and make consistent.
-    #console.log 'output_for', @chance.files[file]?, file
-    return @chance.files[file] if @chance.files[file]?
+  output_for: (path) ->
+    #console.log 'output_for', path
+    return @chance.files[path] if @chance.files[path]?
 
     # small hack: we are going to determine whether it is x2 by whether it has
     # @2x in the name.
     x2 = if file.indexOf "@2x" isnt -1 then true else false
 
-    opts = ChanceProcessor.CHANCE_FILES[file]
+    opts = ChanceProcessor.CHANCE_FILES[path]
 
     if opts?
       @[opts["method"]] opts
     else if file in @sprite_names({ x2: x2 })
-      return @sprite_data({ name: file, x2: x2 })
+      return @sprite_data({ name: path, x2: x2 })
     else
-      console.log "ChanceProcessor does not generate a file named '#{file}'" if not opts?
+      console.log "ChanceProcessor does not generate a file named '#{path}'" if not opts?
 
   # Generates CSS output according to the options provided.
   #
@@ -1269,18 +1263,19 @@ class ChanceProcessor
   #
   # The list is created in the variable @file_list.
   #
-  _include_file: (file) ->
+  _include_file: (path, identifier) ->
     #console.log '_include_file -- does it end in .css', /\.css$/.test(file)
-    return if not /\.css$/.test(file)
+    return if not /\.css$/.test(identifier)
     
     #console.log 'this is a .css file alright -- is it a _theme.css file?', /_theme\.css$/.test(file)
 
-    # skip _theme.css files
-    return if /_theme\.css$/.test(file)
+    # skip _theme.css files [TODO] Check basename, so custom_theme.css is not filtered out.
+    #console.log('_include_file skip check', identifier) if identifier.indexOf('_theme') isnt -1
+    return if /_theme\.css$/.test(identifier)
 
     #console.log 'no, it is not a _theme.css file'
     
-    file = @get_file(file)
+    file = @get_file(identifier)
 
     #console.log 'get_file returned a file?', file?
     return if not file?
@@ -1298,9 +1293,9 @@ class ChanceProcessor
     if requires?
       for r in requires
         # Add the .css extension if needed. it is optional for sc_require
-        r = "#{r}.css" if not /\.css$/.test(r)
+        r_path = "#{r}.css" if not /\.css$/.test(r)
         #console.log 'including the require', r
-        @_include_file(@mapped_files[r])
+        @_include_file(r_path, @mapped_files[r_path])
 
     #console.log 'including the file in the file_list'
     @file_list.push(file)
@@ -1613,19 +1608,20 @@ class ChanceProcessor
     #console.log 'sorting... @mapped_files', @mapped_files
 
     # We have to sort alphabetically first...
-    tmp_file_list = ({path: p, file: f} for own p,f of @mapped_files)
+    tmp_file_list = ({path: p, identifier: i} for own p,i of @mapped_files)
     tmp_file_list = tmp_file_list.sortProperty 'path'
 
     #console.log 'updating mtimes, and _including_files...', tmp_file_list.length
 
     # Empty file_list then refresh it with _include_file calls.
     @file_list = []
-    for path_and_file in tmp_file_list
+    for path_and_identifier in tmp_file_list
+      path = path_and_identifier.path
+      identifier = path_and_identifier.identifier
       # Save the mtime for caching
-      mtime = @chance.update_file_if_needed(path_and_file.file)
-      @file_mtimes[path_and_file.path] = mtime
-      #console.log path_and_file.path, mtime
-      @_include_file(path_and_file.file)
+      mtime = @chance.update_file_if_needed(identifier)
+      @file_mtimes[path] = mtime
+      @_include_file(path, identifier)
 
     #console.log 'setting relative_paths'
 
