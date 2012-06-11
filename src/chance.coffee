@@ -1441,7 +1441,11 @@ class ChanceProcessor
     
           fixedLines.push line if line.trim().length > 0
 
-        fixedLines.join('\n')
+        # hack to check for an empty file, with only the $theme line
+        if fixedLines.length is 1 and fixedLines[0].indexOf('$theme') isnt -1
+          ''
+        else
+          fixedLines.join('\n')
 
       next: ->
         @pos += 1

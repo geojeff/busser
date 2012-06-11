@@ -1839,24 +1839,15 @@ class BootstrapFramework extends Framework
 class App
   constructor: (options={}) ->
     @title = null
-
     @name = null
-
     @path = ""
-
     @saveDir = "./build"
-
     @urlPrefix = "/"
-
     @buildVersion = ""
-
     @frameworks = []
-
     @files = []
-
     @htmlFileReference = null
     @htmlSymlinkReference = null
-
     @[key] = options[key] for own key of options
 
   # See class Framework -- copy of that function.
