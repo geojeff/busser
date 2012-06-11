@@ -3,7 +3,7 @@
 util         = require "util"
 fs           = require "fs"
 http         = require "http"
-url          = require "url"
+url_module   = require "url"
 path_module  = require "path"
 nconf        = require "nconf"
 prompt       = require "prompt"
@@ -2189,7 +2189,7 @@ class Proxy
 
   proxy: (request, response) ->
     prefix = @prefix
-    path = url.parse(request.url).pathname
+    path = url_module.parse(request.url).pathname
     if path.substr(0, prefix.length) is prefix
       console.log "Proxying #{request.url}"
       request.addListener "data", (chunk) =>
@@ -2264,7 +2264,7 @@ class Server
   run: ->
     http.createServer(
       (request, response) =>
-        path = url.parse(request.url).pathname.slice(1)
+        path = url_module.parse(request.url).pathname.slice(1)
         file = @file(path)
         if not file?
           console.log 'not file? is true'
@@ -2279,7 +2279,7 @@ class Server
           console.log 'serving it'
           @serve file, request, response
     ).listen @port, @hostname, =>
-      app_url = url.format
+      app_url = url_module.format
         protocol: "http"
         hostname: @hostname
         port: @port

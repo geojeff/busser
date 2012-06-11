@@ -361,16 +361,22 @@ class ChanceParser
 
       if @scanner.check ChanceParser.BEGIN_SCOPE
         output.push @handle_scope()
-      else if @scanner.check ChanceParser.THEME_DIRECTIVE
+        continue
+      if @scanner.check ChanceParser.THEME_DIRECTIVE
         output.push @handle_theme()
-      else if @scanner.check ChanceParser.SELECTOR_THEME_VARIABLE
+        continue
+      if @scanner.check ChanceParser.SELECTOR_THEME_VARIABLE
         output.push @handle_theme_variable()
-      else if @scanner.check ChanceParser.INCLUDE_SLICES_DIRECTIVE
+        continue
+      if @scanner.check ChanceParser.INCLUDE_SLICES_DIRECTIVE
         output.push @handle_slices()
-      else if @scanner.check ChanceParser.INCLUDE_SLICE_DIRECTIVE
+        continue
+      if @scanner.check ChanceParser.INCLUDE_SLICE_DIRECTIVE
         output.push @handle_slice_include()
-      else if @scanner.check ChanceParser.CHANCE_FILE_DIRECTIVE
+        continue
+      if @scanner.check ChanceParser.CHANCE_FILE_DIRECTIVE
         @handle_file_change()
+        continue
 
       break if @scanner.check ChanceParser.END_SCOPE
 
@@ -385,9 +391,11 @@ class ChanceParser
     #console.log 'final parsed output', output.length
 
   handle_comment: ->
+    console.log 'handle_comment', @scanner.getPosition()
     @scanner.scanChar() # /
     @scanner.scanChar() # *
     @scanner.scanUntil /\*\//
+    console.log 'handle_comment, done', @scanner.getPosition()
 
   replace_unescaped_quotes: (target) ->
     result = ''
@@ -438,13 +446,19 @@ class ChanceParser
 
     loop
       if @scanner.check /\s+/
+        console.log 'handle_empty, scan whitespace'
         result += @scanner.scan /\s+/
-      else if @scanner.check /\/\//
+        continue
+      if @scanner.check /\/\//
+        console.log 'handle_empty, scan until newline'
         @scanner.scanUntil /\n/
-      else if @scanner.check /\/\*/
+        continue
+      if @scanner.check /\/\*/
+        console.log 'handle_empty, handle_comment'
         @handle_comment()
-      else
-        break
+        continue
+      console.log 'handle_empty, break'
+      break
 
     result
 
@@ -620,7 +634,7 @@ class ChanceParser
     result
     
   handle_slice_include: ->
-    #console.log 'handle_slice_include'
+    console.log 'handle_slice_include'
     @scanner.scan /@include slice\s*/
 
     slice = @parse_argument_list()
