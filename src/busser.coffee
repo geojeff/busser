@@ -2293,8 +2293,6 @@ class Server
 # ===========================
 #
 exec = (appTargets, actionItems) ->
-  defaultAppDevConf = nconf.get("default-app-dev")
-  defaultAppProdConf = nconf.get("default-app-prod")
   defaultFrameworksDevConf = nconf.get("default-sc-frameworks-dev")
   defaultFrameworksProdConf = nconf.get("default-sc-frameworks-prod")
   

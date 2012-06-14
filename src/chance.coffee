@@ -241,7 +241,7 @@ class ChanceParser
     file = optFiles[0]
     path = file.path
     path = path[2...path.length] if path[0..1] is "./"
-    # Omitted a step here where in ruby, path = Pathname.new(path).cleanpath.to_s
+    # [TODO] Check this: Omitted a step here where in ruby, path = Pathname.new(path).cleanpath.to_s
 
     # get current relative path
     #relative = path_module.dirname(path)
@@ -391,11 +391,9 @@ class ChanceParser
     #console.log 'final parsed output', output.length
 
   handle_comment: ->
-    console.log 'handle_comment', @scanner.getPosition()
     @scanner.scanChar() # /
     @scanner.scanChar() # *
     @scanner.scanUntil /\*\//
-    console.log 'handle_comment, done', @scanner.getPosition()
 
   replace_unescaped_quotes: (target) ->
     result = ''
@@ -446,18 +444,14 @@ class ChanceParser
 
     loop
       if @scanner.check /\s+/
-        console.log 'handle_empty, scan whitespace'
         result += @scanner.scan /\s+/
         continue
       if @scanner.check /\/\//
-        console.log 'handle_empty, scan until newline'
         @scanner.scanUntil /\n/
         continue
       if @scanner.check /\/\*/
-        console.log 'handle_empty, handle_comment'
         @handle_comment()
         continue
-      console.log 'handle_empty, break'
       break
 
     result
@@ -634,7 +628,6 @@ class ChanceParser
     result
     
   handle_slice_include: ->
-    console.log 'handle_slice_include'
     @scanner.scan /@include slice\s*/
 
     slice = @parse_argument_list()
