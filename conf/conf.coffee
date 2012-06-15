@@ -1,8 +1,16 @@
+fs   = require('fs')
+util = require('util')
+
 # Until this is incorporated into busser, perhaps as an option to straight
-# preparation of the .json file, this will be a standalong .json generator.
+# preparation of the .json file, this will be a standalone .json generator.
 #
-# Run with coffee conf.coffee > myconfig.json, and use this .json file
-# in the call to start busser.
+# Modify the coffeescript config (projectConfig and contents). Then runun as:
+#
+#     coffee conf.coffee
+#
+# conf.json is saved.
+#
+# Use this .json file # in the call to start busser.
 #
 class ProjectConfig
   constructor: (options) ->
@@ -16,14 +24,22 @@ class ProjectConfig
     config.initPathWithName(name) for own name,config of @prodSCFrameworkConfigs
     config.initPathWithName(name) for own name,config of @applicationConfigs
     
-  hash: ->
-    {
-    "server": JSON.stringify(@serverConfig),
-    "default-app-dev": (JSON.stringify(config) for own name,config of @devSCFrameworkConfigs).join(',')
-    "default-app-prod": (JSON.stringify(config) for own name,config of @prodSCFrameworkConfigs).join(',')
-    "apps": (JSON.stringify(config) for own name,config of @applicationConfigs).join(',')
-    }
-    
+  hash_console_colors: ->
+    console.log '{'
+    console.log "\"server\": #{util.inspect(@serverConfig, true, null, true)}"
+    console.log "\"default-app-dev\": #{(util.inspect(config, true, null, true) for own name,config of @devSCFrameworkConfigs).join(',')}"
+    console.log "\"default-app-prod\": #{(util.inspect(config, true, null, true) for own name,config of @prodSCFrameworkConfigs).join(',')}"
+    console.log "\"apps\": #{(util.inspect(config, true, null, true) for own name,config of @applicationConfigs).join(',')}"
+    console.log '}'
+
+  hash_console: ->
+    console.log '{'
+    console.log "\"server\": #{util.inspect(@serverConfig, true, null)}"
+    console.log "\"default-app-dev\": #{(util.inspect(config, true, null) for own name,config of @devSCFrameworkConfigs).join(',')}"
+    console.log "\"default-app-prod\": #{(util.inspect(config, true, null) for own name,config of @prodSCFrameworkConfigs).join(',')}"
+    console.log "\"apps\": #{(util.inspect(config, true, null) for own name,config of @applicationConfigs).join(',')}"
+    console.log '}'
+  
 
 class ServerConfig
   constructor: (options) ->
@@ -240,4 +256,11 @@ projectConfig = new ProjectConfig
           minifyScripts: false
           minifyStylesheets: false
 
-console.log projectConfig.hash()
+#projectConfig.hash_console_color()
+#projectConfig.hash_console()
+
+fs.writeFile "conf.json", JSON.stringify(projectConfig, null, 2), (err) ->
+    if err
+      console.log err
+    else
+      console.log "JSON config file was saved."
